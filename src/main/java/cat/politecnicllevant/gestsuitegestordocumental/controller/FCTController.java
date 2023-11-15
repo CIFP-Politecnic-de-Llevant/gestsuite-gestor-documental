@@ -23,9 +23,10 @@ public class FCTController {
     @GetMapping("/prova")
     public void prova() throws GeneralSecurityException, IOException {
         //this.googleDriveService.prova();
-        this.googleDriveService.createFolder("root","Test");
+        this.googleDriveService.createFolder("","Test");
         this.googleDriveService.createFolder("Test","prova inside");
         this.googleDriveService.createFolder("Test/prova inside","prova inside 2");
+        this.googleDriveService.createFolder("Test/prova inside","prova inside 3");
         List<File> files = this.googleDriveService.getFilesInFolder("Test/prova inside/prova inside 2");
         if (files == null || files.isEmpty()) {
             System.out.println("No files found.");
@@ -43,6 +44,10 @@ public class FCTController {
                 propietaris.add(user2);
 
                 file.setOwners(propietaris);
+
+
+                this.googleDriveService.updateFile(file);
+
                 System.out.println("name: "+file.getName());
                 System.out.println("id: "+file.getId());
 

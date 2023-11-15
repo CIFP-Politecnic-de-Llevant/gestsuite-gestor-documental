@@ -1,6 +1,8 @@
 package cat.politecnicllevant.gestsuitegestordocumental.service;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.MimeType;
+import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
+import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -9,6 +11,7 @@ import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.Permission;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.beans.factory.annotation.Value;
@@ -151,8 +154,10 @@ public class GoogleDriveService {
             String[] folders = path.split("/");
             String folderId = "root";
 
-            for(int i=0;i<folders.length;i++){
-                folderId = getFolderIdByNameAndIdParent(service, folders[i], folderId);
+            if(!path.isEmpty()) {
+                for (String folder : folders) {
+                    folderId = getFolderIdByNameAndIdParent(service, folder, folderId);
+                }
             }
 
             String folderIdTarget = getFolderIdByNameAndIdParent(service, folderName, folderId);
@@ -160,7 +165,7 @@ public class GoogleDriveService {
             // Get the folder ID by querying for the folder with the given name.
             //String folderId = getFolderIdByName(service, folderName);
             System.out.println("folderId: "+folderId);
-            if (folderId != null && folderIdTarget == null) {
+            if (folderId != null && (folderIdTarget == null)) {
                 File fileMetadata = new File();
                 fileMetadata.setName(folderName);
                 fileMetadata.setParents(Collections.singletonList(folderId));
@@ -178,6 +183,28 @@ public class GoogleDriveService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void updateFile(File file){
+        try {
+            String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
+            HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
+
+            Permission permission = new Permission();
+            permission.setEmailAddress("csorell@politecnicllevant.cat");
+            permission.setType(PermissionType.USER.toString());
+            permission.setRole(PermissionRole.WRITER.toString());
+
+            service.permissions().create(file.getId(),permission).execute();
+
+        } catch (IOException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
     }
 
     private static String getFolderIdByName(Drive service, String folderName) throws IOException {
