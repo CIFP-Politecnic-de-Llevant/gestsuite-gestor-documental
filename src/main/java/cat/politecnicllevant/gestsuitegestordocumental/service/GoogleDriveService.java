@@ -1,5 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.service;
 
+import cat.politecnicllevant.gestsuitegestordocumental.domain.MimeType;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -63,6 +64,16 @@ public class GoogleDriveService {
 
             }
         }
+
+        //Create folder
+        File fileMetadata = new File();
+        fileMetadata.setName("Test");
+        //fileMetadata.setParents()
+        fileMetadata.setMimeType(MimeType.FOLDER.toString());
+
+        File file = service.files().create(fileMetadata)
+            .setFields("id")
+            .execute();
     }
 
     public List<File> getFilesInFolder(String path) {
@@ -80,19 +91,18 @@ public class GoogleDriveService {
             String[] folders = path.split("/");
             String folderId = "root";
 
-            for(int i=0;i<folders.length;i++){
-                folderId = getFolderIdByNameAndIdParent(service, folders[i], folderId);
+            for (String folder : folders) {
+                folderId = getFolderIdByNameAndIdParent(service, folder, folderId);
             }
 
             // Get the folder ID by querying for the folder with the given name.
-            //String folderId = getFolderIdByName(service, folderName);
             System.out.println("folderId: "+folderId);
             if (folderId != null) {
                 List<File> result = new ArrayList<>();
 
                 // List files in the specified folder.
                 FileList query = service.files().list()
-                        .setQ("'" + folderId + "' in parents")
+                        .setQ("'" + folderId + "' in parents and not trashed")
                         .setFields("files(id, name)")
                         .execute();
 
@@ -104,7 +114,7 @@ public class GoogleDriveService {
 
                     while (pageToken != null) {
                         FileList query2 = service.files().list()
-                                .setQ("'" + folderId + "' in parents")
+                                .setQ("'" + folderId + "' in parents and not trashed")
                                 .setFields("files(id, name)")
                                 .setPageToken(pageToken)
                                 .execute();
@@ -128,11 +138,53 @@ public class GoogleDriveService {
         return Collections.emptyList();
     }
 
+    public File createFolder(String path, String folderName) {
+        try {
+            String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
+            HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
+
+            String[] folders = path.split("/");
+            String folderId = "root";
+
+            for(int i=0;i<folders.length;i++){
+                folderId = getFolderIdByNameAndIdParent(service, folders[i], folderId);
+            }
+
+            String folderIdTarget = getFolderIdByNameAndIdParent(service, folderName, folderId);
+
+            // Get the folder ID by querying for the folder with the given name.
+            //String folderId = getFolderIdByName(service, folderName);
+            System.out.println("folderId: "+folderId);
+            if (folderId != null && folderIdTarget == null) {
+                File fileMetadata = new File();
+                fileMetadata.setName(folderName);
+                fileMetadata.setParents(Collections.singletonList(folderId));
+                fileMetadata.setMimeType(MimeType.FOLDER.toString());
+
+                File file = service.files().create(fileMetadata)
+                        .setFields("id")
+                        .execute();
+
+                return file;
+            } else {
+                System.out.println("Folder not created. Folder already exists in this path: " + path);
+            }
+        } catch (IOException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private static String getFolderIdByName(Drive service, String folderName) throws IOException {
         System.out.println("getFolderIdByName: "+folderName);
 
         FileList result = service.files().list()
-                .setQ("mimeType='application/vnd.google-apps.folder' and name='" + folderName + "'")
+                .setQ("mimeType='"+MimeType.FOLDER+"' and name='" + folderName + "' and not trashed")
                 .setFields("files(id)")
                 .execute();
 
@@ -149,7 +201,7 @@ public class GoogleDriveService {
         System.out.println("getFolderIdByName: "+folderName);
 
         FileList result = service.files().list()
-                .setQ("mimeType='application/vnd.google-apps.folder' and name='" + folderName + "' and '"+idParent+"' in parents")
+                .setQ("mimeType='"+MimeType.FOLDER+"' and name='" + folderName + "' and '"+idParent+"' in parents and not trashed")
                 .setFields("files(id)")
                 .execute();
 
