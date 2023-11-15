@@ -11,13 +11,17 @@ import com.google.api.services.drive.model.FileList;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+@Service
 public class GoogleDriveService {
     @Value("${gc.keyfile}")
     private String keyFile;
@@ -29,9 +33,10 @@ public class GoogleDriveService {
     private String nomProjecte;
 
     public void prova() throws IOException, GeneralSecurityException {
-        String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY};
+        String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
 
         GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
+        //GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated("qualitat@politecnicllevant.cat");
         HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
 
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -40,8 +45,7 @@ public class GoogleDriveService {
 
         // Print the names and IDs for up to 10 files.
         FileList result = service.files().list()
-                .setPageSize(10)
-                .setFields("nextPageToken, files(id, name)")
+                .setFields("nextPageToken, files(id, name,webViewLink,fullFileExtension)")
                 .execute();
         List<File> files = result.getFiles();
         if (files == null || files.isEmpty()) {
@@ -49,8 +53,113 @@ public class GoogleDriveService {
         } else {
             System.out.println("Files:");
             for (File file : files) {
-                System.out.printf("%s (%s)\n", file.getName(), file.getId());
+                System.out.println("name: "+file.getName());
+                System.out.println("id: "+file.getId());
+                System.out.println("getFullFileExtension: "+file.getFullFileExtension());
+                System.out.println("getDriveId: "+file.getDriveId());
+                System.out.println("getOriginalFilename: "+file.getOriginalFilename());
+                System.out.println("getWebContentLink: "+file.getWebContentLink());
+                System.out.println("getWebViewLink: "+file.getWebViewLink());
+
             }
         }
     }
+
+    public List<File> getFilesInFolder(String path) {
+        try {
+            String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
+            //GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated("qualitat@politecnicllevant.cat");
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
+
+            HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
+
+            String[] folders = path.split("/");
+            String folderId = "root";
+
+            for(int i=0;i<folders.length;i++){
+                folderId = getFolderIdByNameAndIdParent(service, folders[i], folderId);
+            }
+
+            // Get the folder ID by querying for the folder with the given name.
+            //String folderId = getFolderIdByName(service, folderName);
+            System.out.println("folderId: "+folderId);
+            if (folderId != null) {
+                List<File> result = new ArrayList<>();
+
+                // List files in the specified folder.
+                FileList query = service.files().list()
+                        .setQ("'" + folderId + "' in parents")
+                        .setFields("files(id, name)")
+                        .execute();
+
+                List<File> files = query.getFiles();
+                String pageToken = query.getNextPageToken();
+
+                if(files!=null) {
+                    result.addAll(files);
+
+                    while (pageToken != null) {
+                        FileList query2 = service.files().list()
+                                .setQ("'" + folderId + "' in parents")
+                                .setFields("files(id, name)")
+                                .setPageToken(pageToken)
+                                .execute();
+                        List<File> files2 = query2.getFiles();
+                        pageToken = query2.getNextPageToken();
+
+                        if (files2 != null) {
+                            System.out.println("files2: "+files2.size());
+                            result.addAll(files2);
+                        }
+                    }
+                }
+
+                return result;
+            } else {
+                System.out.println("Folder not found in this path: " + path);
+            }
+        } catch (IOException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+        return Collections.emptyList();
+    }
+
+    private static String getFolderIdByName(Drive service, String folderName) throws IOException {
+        System.out.println("getFolderIdByName: "+folderName);
+
+        FileList result = service.files().list()
+                .setQ("mimeType='application/vnd.google-apps.folder' and name='" + folderName + "'")
+                .setFields("files(id)")
+                .execute();
+
+        List<File> folders = result.getFiles();
+        if (folders != null && !folders.isEmpty()) {
+            System.out.println("Hi ha resultat");
+            return folders.get(0).getId();
+        }
+        System.out.println("No hi ha resultat");
+        return null;
+    }
+
+    private static String getFolderIdByNameAndIdParent(Drive service, String folderName, String idParent) throws IOException {
+        System.out.println("getFolderIdByName: "+folderName);
+
+        FileList result = service.files().list()
+                .setQ("mimeType='application/vnd.google-apps.folder' and name='" + folderName + "' and '"+idParent+"' in parents")
+                .setFields("files(id)")
+                .execute();
+
+        List<File> folders = result.getFiles();
+        if (folders != null && !folders.isEmpty()) {
+            System.out.println("Hi ha resultat");
+            return folders.get(0).getId();
+        }
+        System.out.println("No hi ha resultat");
+        return null;
+    }
+
 }
