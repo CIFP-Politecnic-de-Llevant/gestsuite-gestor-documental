@@ -1,5 +1,7 @@
 package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
+import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
+import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.service.GoogleDriveService;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.User;
@@ -33,20 +35,7 @@ public class FCTController {
         } else {
             System.out.println("Files:"+files.size());
             for (File file : files) {
-                User user = new User();
-                user.setEmailAddress("jgalmes@politecnicllevant.cat");
-
-                User user2 = new User();
-                user.setEmailAddress("csorell@politecnicllevant.cat");
-
-                List<User> propietaris = new ArrayList<>();
-                propietaris.add(user);
-                propietaris.add(user2);
-
-                file.setOwners(propietaris);
-
-
-                this.googleDriveService.updateFile(file);
+                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.WRITER, "jgalmes@politecnicllevant.cat");
 
                 System.out.println("name: "+file.getName());
                 System.out.println("id: "+file.getId());

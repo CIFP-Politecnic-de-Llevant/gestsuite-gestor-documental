@@ -185,7 +185,7 @@ public class GoogleDriveService {
         return null;
     }
 
-    public void updateFile(File file){
+    public void assignPermission(File file,PermissionType permissionType, PermissionRole permissionRole, String email){
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
@@ -196,9 +196,9 @@ public class GoogleDriveService {
             Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
 
             Permission permission = new Permission();
-            permission.setEmailAddress("csorell@politecnicllevant.cat");
-            permission.setType(PermissionType.USER.toString());
-            permission.setRole(PermissionRole.WRITER.toString());
+            permission.setEmailAddress(email);
+            permission.setType(permissionType.toString());
+            permission.setRole(permissionRole.toString());
 
             service.permissions().create(file.getId(),permission).execute();
 
