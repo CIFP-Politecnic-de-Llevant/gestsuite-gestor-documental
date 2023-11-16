@@ -58,7 +58,8 @@ public class FCTController {
         List<UsuariDto> usuarisAutoritzats = new ArrayList<>();
 
         for(String autoritzat: autoritzats){
-            UsuariDto usuariAutoritzat = coreRestClient.getProfile(autoritzat).getBody();
+            UsuariDto usuariAutoritzat = coreRestClient.getUsuariByEmail(autoritzat).getBody();
+            System.out.println(usuariAutoritzat.getGsuiteEmail()+usuariAutoritzat.getGestibNom()+" "+usuariAutoritzat.getGestibCognom1()+" "+usuariAutoritzat.getGestibCognom2());
             usuarisAutoritzats.add(usuariAutoritzat);
         }
         return usuarisAutoritzats;

@@ -14,6 +14,9 @@ public interface CoreRestClient {
     @GetMapping("/usuaris/profile/{id}")
     ResponseEntity<UsuariDto> getProfile(@PathVariable("id") String idUsuari) throws Exception;
 
+    @GetMapping("/usuaris/profile-by-email/{id}")
+    ResponseEntity<UsuariDto> getUsuariByEmail(@PathVariable("id") String email) throws Exception;
+
     @GetMapping("/public/usuaris/profile/{id}")
     ResponseEntity<UsuariDto> getPublicProfile(@PathVariable("id") String idUsuari) throws Exception;
 
