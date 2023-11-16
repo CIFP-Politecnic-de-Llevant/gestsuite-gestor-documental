@@ -53,6 +53,7 @@ public class FCTController {
     }
 
 
+    @GetMapping("/autoritzats")
     public List<UsuariDto> getAutoritzats() throws Exception {
         List<UsuariDto> usuarisAutoritzats = new ArrayList<>();
 
