@@ -13,6 +13,13 @@ public class Document {
     @Column(name = "nom", unique = true, nullable = false, length = 2048)
     private String nom;
 
-    @Column(name = "gestib_nom", nullable = false, length = 2048)
-    private String gestibNom;
+    @Column(name = "idusuari", nullable = false, length = 2048)
+    private Long idUsuari;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "tipusdocument_idtipusdocument",
+            nullable = true)
+    //@JsonBackReference
+    private TipusDocument tipusDocument;
 }
