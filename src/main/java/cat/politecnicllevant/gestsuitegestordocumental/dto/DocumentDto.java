@@ -8,6 +8,7 @@ import lombok.Data;
 public class DocumentDto {
     private Long idDocument;
     private String nom;
+    private String idDrive;
     private Long idUsuari;
     private TipusDocument tipusDocument;
 }

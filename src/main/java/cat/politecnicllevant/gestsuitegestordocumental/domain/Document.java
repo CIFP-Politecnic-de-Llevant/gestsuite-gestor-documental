@@ -13,6 +13,9 @@ public class Document {
     @Column(name = "nom", unique = true, nullable = false, length = 2048)
     private String nom;
 
+    @Column(name = "iddrive", unique = true, nullable = false, length = 2048)
+    private String idDrive;
+
     @Column(name = "idusuari", nullable = false, length = 2048)
     private Long idUsuari;
 

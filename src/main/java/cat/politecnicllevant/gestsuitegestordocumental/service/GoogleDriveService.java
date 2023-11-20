@@ -79,11 +79,10 @@ public class GoogleDriveService {
             .execute();
     }
 
-    public List<File> getFilesInFolder(String path) {
+    public List<File> getFilesInFolder(String path,String user) {
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
-            //GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated("qualitat@politecnicllevant.cat");
-            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
 
             HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
 
@@ -141,10 +140,10 @@ public class GoogleDriveService {
         return Collections.emptyList();
     }
 
-    public File createFolder(String path, String folderName) {
+    public File createFolder(String path, String folderName, String user) {
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
-            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
             HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
 
             final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -185,10 +184,10 @@ public class GoogleDriveService {
         return null;
     }
 
-    public void assignPermission(File file,PermissionType permissionType, PermissionRole permissionRole, String email){
+    public void assignPermission(File file,PermissionType permissionType, PermissionRole permissionRole, String email, String user){
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
-            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
             HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
 
             final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
