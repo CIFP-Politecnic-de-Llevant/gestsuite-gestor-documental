@@ -16,6 +16,9 @@ public class Document {
     private String nom;
 
     //GOOGLE DRIVE
+    @Column(name = "id_google_drive", nullable = true, length = 2048)
+    private String idGoogleDrive;
+
     @Column(name = "iddrive_google_drive", nullable = true, length = 2048)
     private String idDriveGoogleDrive;
 

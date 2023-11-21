@@ -10,6 +10,7 @@ public class DocumentDto {
     private String nom;
 
     //GOOGLE DRIVE
+    private String idGoogleDrive;
     private String idDriveGoogleDrive;
     private String pathGoogleDrive;
     private String ownerGoogleDrive;

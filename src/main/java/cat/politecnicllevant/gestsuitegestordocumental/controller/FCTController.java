@@ -95,6 +95,8 @@ public class FCTController {
             if(document == null){
                 document = new DocumentDto();
 
+                document.setIdGoogleDrive(driveFile.getId());
+
                 if(driveFile.getDriveId()!=null) {
                     document.setIdDriveGoogleDrive(driveFile.getDriveId());
                 }
