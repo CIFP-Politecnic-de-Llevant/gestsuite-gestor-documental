@@ -30,7 +30,10 @@ public class DocumentService {
 
     public DocumentDto getDocumentByIdDrive(String idDrive) {
         ModelMapper modelMapper = new ModelMapper();
-        Document document =  documentRepository.findByIdDrive(idDrive);
+        Document document =  documentRepository.findByIdDriveGoogleDrive(idDrive).orElse(null);
+
+        if(document == null) return null;
+
         return modelMapper.map(document,DocumentDto.class);
     }
 

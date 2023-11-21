@@ -1,7 +1,9 @@
 package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "pll_document")
 public class Document {
@@ -14,23 +16,23 @@ public class Document {
     private String nom;
 
     //GOOGLE DRIVE
-    @Column(name = "iddrive", unique = true, nullable = false, length = 2048)
-    private String idDrive;
+    @Column(name = "iddrive_google_drive", nullable = true, length = 2048)
+    private String idDriveGoogleDrive;
 
-    @Column(name = "path", nullable = false, length = 2048)
-    private String path;
+    @Column(name = "path_google_drive", nullable = false, length = 2048)
+    private String pathGoogleDrive;
 
-    @Column(name = "owner", nullable = false, length = 2048)
-    private String owner;
+    @Column(name = "owner_google_drive", nullable = true, length = 2048)
+    private String ownerGoogleDrive;
 
-    @Column(name = "mimetype",nullable = false, length = 2048)
-    private String mimeType;
+    @Column(name = "mimetype_google_drive",nullable = false, length = 2048)
+    private String mimeTypeGoogleDrive;
 
-    @Column(name = "createdTime", nullable = false, length = 2048)
-    private String createdTime;
+    @Column(name = "createdTime_google_drive", nullable = true, length = 2048)
+    private String createdTimeGoogleDrive;
 
-    @Column(name = "modifiedTime", nullable = false, length = 2048)
-    private String modifiedTime;
+    @Column(name = "modifiedTime_google_drive", nullable = true, length = 2048)
+    private String modifiedTimeGoogleDrive;
 
 
     //MS CORE

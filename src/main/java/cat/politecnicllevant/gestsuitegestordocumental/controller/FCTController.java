@@ -79,7 +79,7 @@ public class FCTController {
     }
 
     @PostMapping("/documents")
-    public List<DocumentDto> getDocumentsByPath(@RequestBody String json){
+    public List<DocumentDto> getDocumentsByPath(@RequestBody String json) throws Exception {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String path = jsonObject.get("path").getAsString();
         String email = jsonObject.get("email").getAsString();
@@ -88,17 +88,37 @@ public class FCTController {
         List<DocumentDto> documents = new ArrayList<>();
         for(File driveFile: driveFiles){
 
+            System.out.println(driveFile);
+
             DocumentDto document = documentService.getDocumentByIdDrive(driveFile.getId());
 
             if(document == null){
                 document = new DocumentDto();
-                document.setIdDrive(driveFile.getId());
+
+                if(driveFile.getDriveId()!=null) {
+                    document.setIdDriveGoogleDrive(driveFile.getDriveId());
+                }
+
                 document.setNom(driveFile.getName());
-                document.setMimeType(driveFile.getMimeType());
-                document.setModifiedTime(driveFile.getModifiedTime().toString());
-                document.setCreatedTime(driveFile.getCreatedTime().toString());
-                document.setOwner(driveFile.getOwners().get(0).getDisplayName());
-                document.setPath(path);
+
+                document.setMimeTypeGoogleDrive(driveFile.getMimeType());
+
+                if(driveFile.getModifiedTime() != null) {
+                    document.setModifiedTimeGoogleDrive(driveFile.getModifiedTime().toString());
+                }
+
+                if(driveFile.getCreatedTime() != null) {
+                    document.setCreatedTimeGoogleDrive(driveFile.getCreatedTime().toString());
+                }
+
+                if(driveFile.getOwners() != null && !driveFile.getOwners().isEmpty()) {
+                    document.setOwnerGoogleDrive(driveFile.getOwners().get(0).getDisplayName());
+                }
+
+                document.setIdUsuari(coreRestClient.getUsuariByEmail(email).getBody().getIdusuari());
+
+                document.setPathGoogleDrive(path);
+
                 documentService.save(document);
             }
         }

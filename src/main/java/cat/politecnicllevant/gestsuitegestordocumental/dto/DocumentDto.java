@@ -10,12 +10,12 @@ public class DocumentDto {
     private String nom;
 
     //GOOGLE DRIVE
-    private String idDrive;
-    private String path;
-    private String owner;
-    private String mimeType;
-    private String createdTime;
-    private String modifiedTime;
+    private String idDriveGoogleDrive;
+    private String pathGoogleDrive;
+    private String ownerGoogleDrive;
+    private String mimeTypeGoogleDrive;
+    private String createdTimeGoogleDrive;
+    private String modifiedTimeGoogleDrive;
 
     //MS CORE
     private Long idUsuari;
