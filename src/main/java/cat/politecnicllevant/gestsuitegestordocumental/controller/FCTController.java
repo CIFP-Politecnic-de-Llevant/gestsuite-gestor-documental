@@ -9,10 +9,10 @@ import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient
 import cat.politecnicllevant.gestsuitegestordocumental.service.DocumentService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.GoogleDriveService;
 import com.google.api.services.drive.model.File;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -31,10 +31,18 @@ public class FCTController {
 
     private final DocumentService documentService;
 
-    public FCTController(GoogleDriveService googleDriveService, CoreRestClient coreRestClient, DocumentService documentService) {
+    private final Gson gson;
+
+    public FCTController(
+            GoogleDriveService googleDriveService,
+            CoreRestClient coreRestClient,
+            DocumentService documentService,
+            Gson gson
+    ) {
         this.googleDriveService = googleDriveService;
         this.coreRestClient = coreRestClient;
         this.documentService = documentService;
+        this.gson = gson;
     }
 
     @GetMapping("/prova")
@@ -70,20 +78,29 @@ public class FCTController {
         return usuarisAutoritzats;
     }
 
-    @GetMapping("/documents/{user}/{path}")
-    public List<DocumentDto> getDocumentsByPath(@PathVariable("user") String user, @PathVariable("path") String path){
-        List<File> driveFiles = googleDriveService.getFilesInFolder(path,user);
+    @PostMapping("/documents")
+    public List<DocumentDto> getDocumentsByPath(@RequestBody String json){
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        String path = jsonObject.get("path").getAsString();
+        String email = jsonObject.get("email").getAsString();
+
+        List<File> driveFiles = googleDriveService.getFilesInFolder(path,email);
         List<DocumentDto> documents = new ArrayList<>();
         for(File driveFile: driveFiles){
 
             DocumentDto document = documentService.getDocumentByIdDrive(driveFile.getId());
-            /*document.setTipusDocument(TipusDocument.DOCUMENT);
-            document.setId(driveFile.getId());
-            document.setName(driveFile.getName());
-            document.setMimeType(driveFile.getMimeType());
-            document.setModifiedTime(driveFile.getModifiedTime().toString());
-            document.setCreatedTime(driveFile.getCreatedTime().toString());
-            document.setOwner(driveFile.getOwners().get(0).getDisplayName());*/
+
+            if(document == null){
+                document = new DocumentDto();
+                document.setIdDrive(driveFile.getId());
+                document.setNom(driveFile.getName());
+                document.setMimeType(driveFile.getMimeType());
+                document.setModifiedTime(driveFile.getModifiedTime().toString());
+                document.setCreatedTime(driveFile.getCreatedTime().toString());
+                document.setOwner(driveFile.getOwners().get(0).getDisplayName());
+                document.setPath(path);
+                documentService.save(document);
+            }
         }
         return documents;
     }

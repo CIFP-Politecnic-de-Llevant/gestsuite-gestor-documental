@@ -34,5 +34,11 @@ public class DocumentService {
         return modelMapper.map(document,DocumentDto.class);
     }
 
+    public void save(DocumentDto documentDto){
+        ModelMapper modelMapper = new ModelMapper();
+        Document document = modelMapper.map(documentDto,Document.class);
+        documentRepository.save(document);
+    }
+
 
 }
