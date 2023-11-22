@@ -206,6 +206,39 @@ public class GoogleDriveService {
         }
     }
 
+    public File getFileById(String id, String user){
+        try {
+            String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+            HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
+
+            return service.files().get(id).execute();
+        } catch (IOException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void copy(File file, String user) {
+        try {
+            String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+            HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
+
+            service.files().copy(file.getId(), file).execute();
+        } catch (IOException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static String getFolderIdByName(Drive service, String folderName) throws IOException {
         System.out.println("getFolderIdByName: "+folderName);
 
@@ -239,5 +272,4 @@ public class GoogleDriveService {
         System.out.println("No hi ha resultat");
         return null;
     }
-
 }

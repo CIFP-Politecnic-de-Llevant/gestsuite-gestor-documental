@@ -110,4 +110,15 @@ public class FCTController {
         String email = jsonObject.get("email").getAsString();
         this.googleDriveService.createFolder(path,folderName,email);
     }
+
+    @PostMapping("/copy")
+    public void copyFile(@RequestBody String json){
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        String idFile = jsonObject.get("idFile").getAsString();
+        String email = jsonObject.get("email").getAsString();
+
+        File file = this.googleDriveService.getFileById(idFile,email);
+        
+        this.googleDriveService.copy(file,email);
+    }
 }
