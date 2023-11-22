@@ -93,35 +93,10 @@ public class FCTController {
             DocumentDto document = documentService.getDocumentByIdDrive(driveFile.getId());
 
             if(document == null){
-                document = new DocumentDto();
+                document = documentService.getDocumentByGoogleDriveFile(driveFile,path);
 
-                document.setIdGoogleDrive(driveFile.getId());
-
-                if(driveFile.getDriveId()!=null) {
-                    document.setIdDriveGoogleDrive(driveFile.getDriveId());
-                }
-
-                document.setNom(driveFile.getName());
-
-                document.setMimeTypeGoogleDrive(driveFile.getMimeType());
-
-                if(driveFile.getModifiedTime() != null) {
-                    document.setModifiedTimeGoogleDrive(driveFile.getModifiedTime().toString());
-                }
-
-                if(driveFile.getCreatedTime() != null) {
-                    document.setCreatedTimeGoogleDrive(driveFile.getCreatedTime().toString());
-                }
-
-                if(driveFile.getOwners() != null && !driveFile.getOwners().isEmpty()) {
-                    document.setOwnerGoogleDrive(driveFile.getOwners().get(0).getDisplayName());
-                }
-
-                document.setIdUsuari(coreRestClient.getUsuariByEmail(email).getBody().getIdusuari());
-
-                document.setPathGoogleDrive(path);
-
-                documentService.save(document);
+                documents.add(document);
+                //documentService.save(document);
             }
         }
         return documents;
