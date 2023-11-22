@@ -101,4 +101,13 @@ public class FCTController {
         }
         return documents;
     }
+
+    @PostMapping("/crear-carpeta")
+    public void createFolder(@RequestBody String json){
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        String path = jsonObject.get("path").getAsString();
+        String folderName = jsonObject.get("folderName").getAsString();
+        String email = jsonObject.get("email").getAsString();
+        this.googleDriveService.createFolder(path,folderName,email);
+    }
 }
