@@ -5,10 +5,11 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
+@Data
 @Entity
 @Table(name="pll_document_signatura")
 @IdClass(DocumentSignaturaId.class)
-public @Data class DocumentSignatura {
+public class DocumentSignatura {
     @Id
     @ManyToOne
     @JoinColumn(name = "document_iddocument", insertable = false, updatable = false)

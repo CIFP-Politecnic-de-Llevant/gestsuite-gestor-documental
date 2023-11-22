@@ -16,25 +16,25 @@ public class Document {
     private String nom;
 
     //GOOGLE DRIVE
-    @Column(name = "id_google_drive", nullable = true, length = 2048)
+    @Column(name = "id_google_drive", nullable = true, length = 128)
     private String idGoogleDrive;
 
-    @Column(name = "iddrive_google_drive", nullable = true, length = 2048)
+    @Column(name = "iddrive_google_drive", nullable = true, length = 128)
     private String idDriveGoogleDrive;
 
     @Column(name = "path_google_drive", nullable = false, length = 2048)
     private String pathGoogleDrive;
 
-    @Column(name = "owner_google_drive", nullable = true, length = 2048)
+    @Column(name = "owner_google_drive", nullable = true, length = 128)
     private String ownerGoogleDrive;
 
-    @Column(name = "mimetype_google_drive",nullable = false, length = 2048)
+    @Column(name = "mimetype_google_drive",nullable = false, length = 128)
     private String mimeTypeGoogleDrive;
 
-    @Column(name = "createdTime_google_drive", nullable = true, length = 2048)
+    @Column(name = "createdTime_google_drive", nullable = true, length = 64)
     private String createdTimeGoogleDrive;
 
-    @Column(name = "modifiedTime_google_drive", nullable = true, length = 2048)
+    @Column(name = "modifiedTime_google_drive", nullable = true, length = 64)
     private String modifiedTimeGoogleDrive;
 
 

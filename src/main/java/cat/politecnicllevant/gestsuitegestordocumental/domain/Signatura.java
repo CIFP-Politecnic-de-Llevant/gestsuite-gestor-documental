@@ -1,7 +1,9 @@
 package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "pll_signatura")
 public class Signatura {
