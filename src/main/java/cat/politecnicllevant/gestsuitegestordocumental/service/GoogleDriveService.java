@@ -233,7 +233,21 @@ public class GoogleDriveService {
 
             Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
 
-            service.files().copy(file.getId(), file).execute();
+            String parentFolderId = getFolderIdByNameAndIdParent(service, "JOAN FCT RESOLT", "root");
+
+            // Create a new file in the destination folder
+            File copiedFile = new File();
+            copiedFile.setName(file.getName() + "_copy");
+            copiedFile.setParents(java.util.Collections.singletonList(parentFolderId));
+
+            // Copy the content of the original file to the new file
+            service.files().copy(file.getId(), copiedFile).setSupportsAllDrives(true).execute();
+            System.out.println("File copied successfully!");
+
+           /* service.files()
+                    .copy("1vYTHBpr0I9Nh6JoiiaJsPljJZcvVuK2j", file)
+                    .setSupportsAllDrives(true)
+                    .execute();*/
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
         }
