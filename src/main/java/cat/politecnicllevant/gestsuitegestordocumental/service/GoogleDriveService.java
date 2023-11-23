@@ -170,13 +170,12 @@ public class GoogleDriveService {
                 fileMetadata.setParents(Collections.singletonList(folderId));
                 fileMetadata.setMimeType(MimeType.FOLDER.toString());
 
-                File file = service.files().create(fileMetadata)
+                return service.files().create(fileMetadata)
                         .setFields("id")
                         .execute();
-
-                return file;
             } else {
                 System.out.println("Folder not created. Folder already exists in this path: " + path);
+                return service.files().get(folderIdTarget).execute();
             }
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
@@ -223,7 +222,7 @@ public class GoogleDriveService {
         return null;
     }
 
-    public void copy(File file, String user, String newFileName) {
+    public void copy(File file, String user, String newFileName,String parentFolderId) {
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
@@ -233,7 +232,7 @@ public class GoogleDriveService {
 
             Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
 
-            String parentFolderId = getFolderIdByNameAndIdParent(service, "JOAN FCT RESOLT", "root");
+            //String parentFolderId = getFolderIdByNameAndIdParent(service, "JOAN FCT RESOLT", "root");
 
             // Create a new file in the destination folder
             File copiedFile = new File();

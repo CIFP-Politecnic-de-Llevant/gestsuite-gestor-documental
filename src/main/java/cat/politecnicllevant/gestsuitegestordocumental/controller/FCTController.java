@@ -12,6 +12,8 @@ import com.google.api.services.drive.model.File;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -67,7 +69,7 @@ public class FCTController {
 
 
     @GetMapping("/autoritzats")
-    public List<UsuariDto> getAutoritzats() throws Exception {
+    public ResponseEntity<List<UsuariDto>> getAutoritzats() throws Exception {
         List<UsuariDto> usuarisAutoritzats = new ArrayList<>();
 
         for(String autoritzat: autoritzats){
@@ -75,11 +77,11 @@ public class FCTController {
             System.out.println(usuariAutoritzat.getGsuiteEmail()+usuariAutoritzat.getGestibNom()+" "+usuariAutoritzat.getGestibCognom1()+" "+usuariAutoritzat.getGestibCognom2());
             usuarisAutoritzats.add(usuariAutoritzat);
         }
-        return usuarisAutoritzats;
+        return new ResponseEntity<>(usuarisAutoritzats, HttpStatus.OK);
     }
 
     @PostMapping("/documents")
-    public List<DocumentDto> getDocumentsByPath(@RequestBody String json) throws Exception {
+    public ResponseEntity<List<DocumentDto>> getDocumentsByPath(@RequestBody String json) throws Exception {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String path = jsonObject.get("path").getAsString();
         String email = jsonObject.get("email").getAsString();
@@ -99,16 +101,17 @@ public class FCTController {
                 //documentService.save(document);
             }
         }
-        return documents;
+        return new ResponseEntity<>(documents, HttpStatus.OK);
     }
 
     @PostMapping("/crear-carpeta")
-    public void createFolder(@RequestBody String json){
+    public ResponseEntity<File> createFolder(@RequestBody String json){
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String path = jsonObject.get("path").getAsString();
         String folderName = jsonObject.get("folderName").getAsString();
         String email = jsonObject.get("email").getAsString();
-        this.googleDriveService.createFolder(path,folderName,email);
+        File file = this.googleDriveService.createFolder(path,folderName,email);
+        return new ResponseEntity<>(file, HttpStatus.OK);
     }
 
     @PostMapping("/copy")
@@ -118,8 +121,14 @@ public class FCTController {
         String email = jsonObject.get("email").getAsString();
         String filename = jsonObject.get("filename").getAsString();
 
+        String parentFolderId = "root";
+
+        if(jsonObject.get("parentFolderId")!=null && !jsonObject.get("parentFolderId").isJsonNull()) {
+            parentFolderId = jsonObject.get("parentFolderId").getAsString();
+        }
+
         File file = this.googleDriveService.getFileById(idFile,email);
         
-        this.googleDriveService.copy(file,email,filename);
+        this.googleDriveService.copy(file,email,filename,parentFolderId);
     }
 }
