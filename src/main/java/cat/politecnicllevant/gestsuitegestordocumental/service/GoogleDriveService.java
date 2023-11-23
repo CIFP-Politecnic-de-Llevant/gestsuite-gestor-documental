@@ -223,7 +223,7 @@ public class GoogleDriveService {
         return null;
     }
 
-    public void copy(File file, String user) {
+    public void copy(File file, String user, String newFileName) {
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
@@ -237,7 +237,7 @@ public class GoogleDriveService {
 
             // Create a new file in the destination folder
             File copiedFile = new File();
-            copiedFile.setName(file.getName() + "_copy");
+            copiedFile.setName(newFileName);
             copiedFile.setParents(java.util.Collections.singletonList(parentFolderId));
 
             // Copy the content of the original file to the new file

@@ -116,9 +116,10 @@ public class FCTController {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String idFile = jsonObject.get("idFile").getAsString();
         String email = jsonObject.get("email").getAsString();
+        String filename = jsonObject.get("filename").getAsString();
 
         File file = this.googleDriveService.getFileById(idFile,email);
         
-        this.googleDriveService.copy(file,email);
+        this.googleDriveService.copy(file,email,filename);
     }
 }
