@@ -10,6 +10,8 @@ import cat.politecnicllevant.gestsuitegestordocumental.service.DocumentService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.GoogleDriveService;
 import com.google.api.services.drive.model.File;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -45,26 +47,6 @@ public class FCTController {
         this.coreRestClient = coreRestClient;
         this.documentService = documentService;
         this.gson = gson;
-    }
-
-    @GetMapping("/prova")
-    public void prova() throws GeneralSecurityException, IOException {
-        //this.googleDriveService.prova();
-        this.googleDriveService.createFolder("","Test","jgalmes1@politecnicllevant.cat");
-        this.googleDriveService.createFolder("Test","prova inside","jgalmes1@politecnicllevant.cat");
-        this.googleDriveService.createFolder("Test/prova inside","prova inside 2","jgalmes1@politecnicllevant.cat");
-        this.googleDriveService.createFolder("Test/prova inside","prova inside 3","jgalmes1@politecnicllevant.cat");
-        List<File> files = this.googleDriveService.getFilesInFolder("Test/prova inside/prova inside 2","jgalmes1@politecnicllevant.cat");
-        if (files == null || files.isEmpty()) {
-            System.out.println("No files found.");
-        } else {
-            System.out.println("Files:"+files.size());
-            for (File file : files) {
-                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.WRITER, "jgalmes@politecnicllevant.cat","jgalmes1@politecnicllevant.cat");
-                System.out.println("name: "+file.getName());
-                System.out.println("id: "+file.getId());
-            }
-        }
     }
 
 
@@ -107,10 +89,30 @@ public class FCTController {
     @PostMapping("/crear-carpeta")
     public ResponseEntity<File> createFolder(@RequestBody String json){
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
-        String path = jsonObject.get("path").getAsString();
         String folderName = jsonObject.get("folderName").getAsString();
         String email = jsonObject.get("email").getAsString();
-        File file = this.googleDriveService.createFolder(path,folderName,email);
+
+        String parentFolderId = "root";
+        if(jsonObject.get("parentFolderId")!=null && !jsonObject.get("parentFolderId").isJsonNull()) {
+            parentFolderId = jsonObject.get("parentFolderId").getAsString();
+        }
+
+        File file = this.googleDriveService.createFolder(folderName,email,parentFolderId);
+
+        if(jsonObject.get("administrators")!=null && !jsonObject.get("administrators").isJsonNull()) {
+            JsonArray administrators = jsonObject.get("administrators").getAsJsonArray();
+            for(JsonElement administrador: administrators){
+                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.WRITER, administrador.getAsString(),email);
+            }
+        }
+
+        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull()) {
+            JsonArray editors = jsonObject.get("editors").getAsJsonArray();
+            for (JsonElement editor : editors) {
+                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.ORGANIZER, editor.getAsString(), email);
+            }
+        }
+
         return new ResponseEntity<>(file, HttpStatus.OK);
     }
 
@@ -128,7 +130,21 @@ public class FCTController {
         }
 
         File file = this.googleDriveService.getFileById(idFile,email);
-        
+
+        if(jsonObject.get("administrators")!=null && !jsonObject.get("administrators").isJsonNull()) {
+            JsonArray administrators = jsonObject.get("administrators").getAsJsonArray();
+            for(JsonElement administrador: administrators){
+                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.WRITER, administrador.getAsString(),email);
+            }
+        }
+
+        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull()) {
+            JsonArray editors = jsonObject.get("editors").getAsJsonArray();
+            for (JsonElement editor : editors) {
+                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.ORGANIZER, editor.getAsString(), email);
+            }
+        }
+
         this.googleDriveService.copy(file,email,filename,parentFolderId);
     }
 }

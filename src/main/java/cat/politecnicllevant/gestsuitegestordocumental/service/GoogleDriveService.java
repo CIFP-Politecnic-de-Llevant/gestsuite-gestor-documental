@@ -36,6 +36,9 @@ public class GoogleDriveService {
     @Value("${gc.nomprojecte}")
     private String nomProjecte;
 
+    @Value("${app.shared-drive-id}")
+    private String sharedDriveId;
+
     public void prova() throws IOException, GeneralSecurityException {
         String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
 
@@ -105,6 +108,7 @@ public class GoogleDriveService {
                 // List files in the specified folder.
                 FileList query = service.files().list()
                         .setQ("'" + folderId + "' in parents and not trashed")
+                        .setSupportsAllDrives(true)
                         .setFields("files(id,name,owners,mimeType,createdTime,modifiedTime,webViewLink,fullFileExtension,driveId,originalFilename,webContentLink)")
                         .execute();
 
@@ -117,6 +121,7 @@ public class GoogleDriveService {
                     while (pageToken != null) {
                         FileList query2 = service.files().list()
                                 .setQ("'" + folderId + "' in parents and not trashed")
+                                .setSupportsAllDrives(true)
                                 .setFields("files(id,name,owners,mimeType,createdTime,modifiedTime,webViewLink,fullFileExtension,driveId,originalFilename,webContentLink)")
                                 .setPageToken(pageToken)
                                 .execute();
@@ -140,7 +145,7 @@ public class GoogleDriveService {
         return Collections.emptyList();
     }
 
-    public File createFolder(String path, String folderName, String user) {
+    public File createFolder(String folderName, String user, String idParent) {
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
@@ -150,32 +155,24 @@ public class GoogleDriveService {
 
             Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
 
-            String[] folders = path.split("/");
-            String folderId = "root";
+            String idCurrent = getFolderIdByNameAndIdParent(service, folderName, idParent,this.sharedDriveId);
 
-            if(!path.isEmpty()) {
-                for (String folder : folders) {
-                    folderId = getFolderIdByNameAndIdParent(service, folder, folderId);
-                }
-            }
+            System.out.println("idCurrent"+idCurrent+"-idParent: "+idParent);
 
-            String folderIdTarget = getFolderIdByNameAndIdParent(service, folderName, folderId);
-
-            // Get the folder ID by querying for the folder with the given name.
-            //String folderId = getFolderIdByName(service, folderName);
-            System.out.println("folderId: "+folderId);
-            if (folderId != null && (folderIdTarget == null)) {
+            if (idCurrent == null) {
                 File fileMetadata = new File();
                 fileMetadata.setName(folderName);
-                fileMetadata.setParents(Collections.singletonList(folderId));
+                fileMetadata.setParents(Collections.singletonList(idParent));
                 fileMetadata.setMimeType(MimeType.FOLDER.toString());
 
+                System.out.println("Folder created with name "+folderName+" and idParent "+idParent);
                 return service.files().create(fileMetadata)
+                        .setSupportsAllDrives(true)
                         .setFields("id")
                         .execute();
             } else {
-                System.out.println("Folder not created. Folder already exists in this path: " + path);
-                return service.files().get(folderIdTarget).execute();
+                System.out.println("Folder not created. Folder already exists");
+                return service.files().get(idCurrent).setSupportsAllDrives(true).execute();
             }
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
@@ -198,7 +195,7 @@ public class GoogleDriveService {
             permission.setType(permissionType.toString());
             permission.setRole(permissionRole.toString());
 
-            service.permissions().create(file.getId(),permission).execute();
+            service.permissions().create(file.getId(),permission).setSupportsAllDrives(true).execute();
 
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
@@ -215,7 +212,7 @@ public class GoogleDriveService {
 
             Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
 
-            return service.files().get(id).execute();
+            return service.files().get(id).setSupportsAllDrives(true).execute();
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
         }
@@ -257,6 +254,7 @@ public class GoogleDriveService {
 
         FileList result = service.files().list()
                 .setQ("mimeType='"+MimeType.FOLDER+"' and name='" + folderName + "' and not trashed")
+                .setSupportsAllDrives(true)
                 .setFields("files(id)")
                 .execute();
 
@@ -270,16 +268,28 @@ public class GoogleDriveService {
     }
 
     private static String getFolderIdByNameAndIdParent(Drive service, String folderName, String idParent) throws IOException {
-        System.out.println("getFolderIdByName: "+folderName);
+        return getFolderIdByNameAndIdParent(service,folderName,idParent,null);
+    }
 
-        FileList result = service.files().list()
+    private static String getFolderIdByNameAndIdParent(Drive service, String folderName, String idParent, String idSharedDrive) throws IOException {
+        System.out.println("getFolderIdByName: "+folderName+"-idParent: "+idParent);
+
+        com.google.api.services.drive.Drive.Files.List resultPartial = service.files().list()
                 .setQ("mimeType='"+MimeType.FOLDER+"' and name='" + folderName + "' and '"+idParent+"' in parents and not trashed")
-                .setFields("files(id)")
-                .execute();
+                .setFields("files(id)");
+
+        if(idSharedDrive!=null){
+            resultPartial.setCorpora("drive");
+            resultPartial.setDriveId(idSharedDrive);
+            resultPartial.setIncludeItemsFromAllDrives(true);
+            resultPartial.setSupportsAllDrives(true);
+        }
+
+        FileList result = resultPartial.execute();
 
         List<File> folders = result.getFiles();
         if (folders != null && !folders.isEmpty()) {
-            System.out.println("Hi ha resultat");
+            System.out.println("Hi ha resultat. Size:"+folders.size());
             return folders.get(0).getId();
         }
         System.out.println("No hi ha resultat");
