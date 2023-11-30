@@ -219,7 +219,7 @@ public class GoogleDriveService {
         return null;
     }
 
-    public void copy(File file, String user, String newFileName,String parentFolderId) {
+    public File copy(File file, String user, String newFileName,String parentFolderId) {
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
@@ -237,8 +237,8 @@ public class GoogleDriveService {
             copiedFile.setParents(java.util.Collections.singletonList(parentFolderId));
 
             // Copy the content of the original file to the new file
-            service.files().copy(file.getId(), copiedFile).setSupportsAllDrives(true).execute();
             System.out.println("File copied successfully!");
+            return service.files().copy(file.getId(), copiedFile).setSupportsAllDrives(true).execute();
 
            /* service.files()
                     .copy("1vYTHBpr0I9Nh6JoiiaJsPljJZcvVuK2j", file)
@@ -247,6 +247,7 @@ public class GoogleDriveService {
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     private static String getFolderIdByName(Drive service, String folderName) throws IOException {

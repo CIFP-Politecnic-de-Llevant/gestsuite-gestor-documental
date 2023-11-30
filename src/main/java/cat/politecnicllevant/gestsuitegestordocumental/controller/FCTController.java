@@ -86,6 +86,17 @@ public class FCTController {
         return new ResponseEntity<>(documents, HttpStatus.OK);
     }
 
+    @PostMapping("/documents/crear-document")
+    public ResponseEntity<DocumentDto> createDocument(@RequestBody String json) throws Exception {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        String idFile = jsonObject.get("idFile").getAsString();
+        DocumentDto document = documentService.getDocumentByIdDrive(idFile);
+        documentService.save(document);
+
+        return new ResponseEntity<>(document, HttpStatus.OK);
+    }
+
+
     @PostMapping("/crear-carpeta")
     public ResponseEntity<File> createFolder(@RequestBody String json){
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
@@ -117,7 +128,7 @@ public class FCTController {
     }
 
     @PostMapping("/copy")
-    public void copyFile(@RequestBody String json){
+    public ResponseEntity<File> copyFile(@RequestBody String json){
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String idFile = jsonObject.get("idFile").getAsString();
         String email = jsonObject.get("email").getAsString();
@@ -145,6 +156,8 @@ public class FCTController {
             }
         }
 
-        this.googleDriveService.copy(file,email,filename,parentFolderId);
+        File fileCopy = this.googleDriveService.copy(file,email,filename,parentFolderId);
+
+        return new ResponseEntity<>(fileCopy, HttpStatus.OK);
     }
 }
