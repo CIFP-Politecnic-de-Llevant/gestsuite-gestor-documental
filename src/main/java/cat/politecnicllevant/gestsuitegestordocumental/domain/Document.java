@@ -12,7 +12,7 @@ public class Document {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idDocument;
 
-    @Column(name = "nom", unique = true, nullable = false, length = 2048)
+    @Column(name = "nom", nullable = false, length = 2048)
     private String nom;
 
     //GOOGLE DRIVE
@@ -28,7 +28,7 @@ public class Document {
     @Column(name = "owner_google_drive", nullable = true, length = 128)
     private String ownerGoogleDrive;
 
-    @Column(name = "mimetype_google_drive",nullable = false, length = 128)
+    @Column(name = "mimetype_google_drive",nullable = true, length = 128)
     private String mimeTypeGoogleDrive;
 
     @Column(name = "createdTime_google_drive", nullable = true, length = 64)
@@ -39,7 +39,7 @@ public class Document {
 
 
     //MS CORE
-    @Column(name = "idusuari", nullable = false, length = 2048)
+    @Column(name = "idusuari", nullable = true)
     private Long idUsuari;
 
 

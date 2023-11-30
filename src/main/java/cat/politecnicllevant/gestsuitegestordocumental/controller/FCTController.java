@@ -2,12 +2,13 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.TipusDocument;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.DocumentDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.TipusDocumentDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.DocumentService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.GoogleDriveService;
+import cat.politecnicllevant.gestsuitegestordocumental.service.TipusDocumentService;
 import com.google.api.services.drive.model.File;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -18,8 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,17 +34,21 @@ public class FCTController {
 
     private final DocumentService documentService;
 
+    private final TipusDocumentService tipusDocumentService;
+
     private final Gson gson;
 
     public FCTController(
             GoogleDriveService googleDriveService,
             CoreRestClient coreRestClient,
             DocumentService documentService,
+            TipusDocumentService tipusDocumentService,
             Gson gson
     ) {
         this.googleDriveService = googleDriveService;
         this.coreRestClient = coreRestClient;
         this.documentService = documentService;
+        this.tipusDocumentService = tipusDocumentService;
         this.gson = gson;
     }
 
@@ -77,7 +80,7 @@ public class FCTController {
             DocumentDto document = documentService.getDocumentByIdDrive(driveFile.getId());
 
             if(document == null){
-                document = documentService.getDocumentByGoogleDriveFile(driveFile,path);
+                document = documentService.getDocumentByGoogleDriveFile(driveFile);
 
                 documents.add(document);
                 //documentService.save(document);
@@ -90,10 +93,28 @@ public class FCTController {
     public ResponseEntity<DocumentDto> createDocument(@RequestBody String json) throws Exception {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String idFile = jsonObject.get("idFile").getAsString();
-        DocumentDto document = documentService.getDocumentByIdDrive(idFile);
-        documentService.save(document);
+        String path = jsonObject.get("path").getAsString();
+        String emailUser = jsonObject.get("email").getAsString();
+        String tipus = jsonObject.get("tipus").getAsString();
 
-        return new ResponseEntity<>(document, HttpStatus.OK);
+        File file = googleDriveService.getFileById(idFile,emailUser);
+
+        DocumentDto document = documentService.getDocumentByGoogleDriveFile(file);
+        DocumentDto documentSaved = null;
+        if(document!=null) {
+            document.setIdGoogleDrive(file.getId());
+            document.setIdDriveGoogleDrive(file.getDriveId());
+            document.setPathGoogleDrive(path);
+
+
+            TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipus);
+            if(tipusDocumentDto!=null) {
+                document.setTipusDocument(tipusDocumentDto);
+            }
+            documentSaved = documentService.save(document);
+        }
+
+        return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }
 
 
@@ -120,7 +141,7 @@ public class FCTController {
         if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull()) {
             JsonArray editors = jsonObject.get("editors").getAsJsonArray();
             for (JsonElement editor : editors) {
-                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.ORGANIZER, editor.getAsString(), email);
+                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.FILE_ORGANIZER, editor.getAsString(), email);
             }
         }
 
@@ -152,7 +173,7 @@ public class FCTController {
         if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull()) {
             JsonArray editors = jsonObject.get("editors").getAsJsonArray();
             for (JsonElement editor : editors) {
-                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.ORGANIZER, editor.getAsString(), email);
+                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.FILE_ORGANIZER, editor.getAsString(), email);
             }
         }
 

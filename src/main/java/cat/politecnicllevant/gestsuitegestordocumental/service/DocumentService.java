@@ -44,13 +44,14 @@ public class DocumentService {
         return modelMapper.map(document,DocumentDto.class);
     }
 
-    public void save(DocumentDto documentDto){
+    public DocumentDto save(DocumentDto documentDto){
         ModelMapper modelMapper = new ModelMapper();
         Document document = modelMapper.map(documentDto,Document.class);
-        documentRepository.save(document);
+        Document documentSaved = documentRepository.save(document);
+        return modelMapper.map(documentSaved,DocumentDto.class);
     }
 
-    public DocumentDto getDocumentByGoogleDriveFile(File driveFile,String path) throws Exception {
+    public DocumentDto getDocumentByGoogleDriveFile(File driveFile) throws Exception {
         DocumentDto document = new DocumentDto();
 
         document.setIdGoogleDrive(driveFile.getId());
@@ -76,7 +77,6 @@ public class DocumentService {
             document.setIdUsuari(coreRestClient.getUsuariByEmail(driveFile.getOwners().get(0).getEmailAddress()).getBody().getIdusuari());
         }
 
-        document.setPathGoogleDrive(path);
         return document;
     }
 

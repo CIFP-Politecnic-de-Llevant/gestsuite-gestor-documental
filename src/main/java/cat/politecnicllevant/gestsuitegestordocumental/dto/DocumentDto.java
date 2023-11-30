@@ -22,5 +22,5 @@ public class DocumentDto {
     private Long idUsuari;
 
     //FK
-    private TipusDocument tipusDocument;
+    private TipusDocumentDto tipusDocument;
 }
