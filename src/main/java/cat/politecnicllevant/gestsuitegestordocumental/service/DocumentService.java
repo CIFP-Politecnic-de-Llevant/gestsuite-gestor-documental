@@ -35,9 +35,31 @@ public class DocumentService {
         return modelMapper.map(document,DocumentDto.class);
     }
 
-    public DocumentDto getDocumentByIdDrive(String idDrive) {
+    public DocumentDto getDocumentByOriginalName(String nom) {
+        ModelMapper modelMapper = new ModelMapper();
+        Document document = documentRepository.findByNomOriginal(nom).orElse(null);
+        if(document == null) return null;
+        return modelMapper.map(document,DocumentDto.class);
+    }
+
+    public boolean existDocumentByOriginalName(String nom) {
+        ModelMapper modelMapper = new ModelMapper();
+        Document document = documentRepository.findByNomOriginal(nom).orElse(null);
+        return document != null;
+    }
+
+    public DocumentDto getDocumentByIdDriveGoogleDrive(String idDrive) {
         ModelMapper modelMapper = new ModelMapper();
         Document document =  documentRepository.findByIdDriveGoogleDrive(idDrive).orElse(null);
+
+        if(document == null) return null;
+
+        return modelMapper.map(document,DocumentDto.class);
+    }
+
+    public DocumentDto getDocumentByIdGoogleDrive(String id) {
+        ModelMapper modelMapper = new ModelMapper();
+        Document document =  documentRepository.findByIdGoogleDrive(id).orElse(null);
 
         if(document == null) return null;
 

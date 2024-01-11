@@ -1,5 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
+import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.DocumentDto;
@@ -77,7 +78,7 @@ public class FCTController {
 
             System.out.println(driveFile);
 
-            DocumentDto document = documentService.getDocumentByIdDrive(driveFile.getId());
+            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId());
 
             if(document == null){
                 document = documentService.getDocumentByGoogleDriveFile(driveFile);
@@ -96,23 +97,40 @@ public class FCTController {
         String path = jsonObject.get("path").getAsString();
         String emailUser = jsonObject.get("email").getAsString();
         String tipus = jsonObject.get("tipus").getAsString();
+        String originalName = jsonObject.get("originalName").getAsString();
 
         File file = googleDriveService.getFileById(idFile,emailUser);
 
-        DocumentDto document = documentService.getDocumentByGoogleDriveFile(file);
-        DocumentDto documentSaved = null;
-        if(document!=null) {
-            document.setIdGoogleDrive(file.getId());
-            document.setIdDriveGoogleDrive(file.getDriveId());
-            document.setPathGoogleDrive(path);
+        DocumentDto document = documentService.getDocumentByOriginalName(originalName);
 
-
-            TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipus);
-            if(tipusDocumentDto!=null) {
-                document.setTipusDocument(tipusDocumentDto);
-            }
-            documentSaved = documentService.save(document);
+        if(document == null){
+            document = new DocumentDto();
+            document.setNomOriginal(originalName);
         }
+
+        document.setIdGoogleDrive(file.getId());
+        document.setIdDriveGoogleDrive(file.getDriveId());
+        document.setPathGoogleDrive(path);
+        if(file.getOwners()!=null && !file.getOwners().isEmpty()) {
+            document.setOwnerGoogleDrive(file.getOwners().get(0).getEmailAddress());
+        }
+
+        document.setMimeTypeGoogleDrive(file.getMimeType());
+
+        if(file.getCreatedTime()!=null) {
+            document.setCreatedTimeGoogleDrive(file.getCreatedTime().toString());
+        }
+
+        if(file.getModifiedTime()!=null) {
+            document.setModifiedTimeGoogleDrive(file.getModifiedTime().toString());
+        }
+
+        TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipus);
+        if(tipusDocumentDto!=null) {
+            document.setTipusDocument(tipusDocumentDto);
+        }
+        DocumentDto documentSaved = documentService.save(document);
+
 
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }
@@ -154,6 +172,7 @@ public class FCTController {
         String idFile = jsonObject.get("idFile").getAsString();
         String email = jsonObject.get("email").getAsString();
         String filename = jsonObject.get("filename").getAsString();
+        String originalName = jsonObject.get("originalName").getAsString();
 
         String parentFolderId = "root";
 
@@ -161,6 +180,15 @@ public class FCTController {
             parentFolderId = jsonObject.get("parentFolderId").getAsString();
         }
 
+        //Comprovem si ja existeix
+        System.out.println("nom original: "+originalName);
+        boolean existDocumentByOriginalName = this.documentService.existDocumentByOriginalName(originalName);
+
+        if(existDocumentByOriginalName){
+            return new ResponseEntity<>(null, HttpStatus.OK);
+        }
+
+        //Si no existeix el copiem
         File file = this.googleDriveService.getFileById(idFile,email);
 
         if(jsonObject.get("administrators")!=null && !jsonObject.get("administrators").isJsonNull()) {
