@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, Long> {
     Optional<Document> findByIdDriveGoogleDrive(String idDrive);
+    Optional<Document> findByNomOriginal(String nom);
 }

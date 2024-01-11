@@ -47,6 +47,10 @@ public class DocumentService {
     public DocumentDto save(DocumentDto documentDto){
         ModelMapper modelMapper = new ModelMapper();
         Document document = modelMapper.map(documentDto,Document.class);
+
+        //Comprovem si el document ja existeix i si és així el sobreescrivim
+        documentRepository.findByNomOriginal(documentDto.getNomOriginal()).ifPresent(documentOriginal -> document.setIdDocument(documentOriginal.getIdDocument()));
+
         Document documentSaved = documentRepository.save(document);
         return modelMapper.map(documentSaved,DocumentDto.class);
     }
@@ -60,7 +64,7 @@ public class DocumentService {
             document.setIdDriveGoogleDrive(driveFile.getDriveId());
         }
 
-        document.setNom(driveFile.getName());
+        document.setNomOriginal(driveFile.getName());
 
         document.setMimeTypeGoogleDrive(driveFile.getMimeType());
 

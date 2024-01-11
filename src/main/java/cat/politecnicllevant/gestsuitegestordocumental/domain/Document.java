@@ -12,8 +12,8 @@ public class Document {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idDocument;
 
-    @Column(name = "nom", nullable = false, length = 2048)
-    private String nom;
+    @Column(name = "nom_original", unique = true, nullable = false, length = 2048)
+    private String nomOriginal;
 
     //GOOGLE DRIVE
     @Column(name = "id_google_drive", nullable = true, length = 128)
