@@ -11,6 +11,9 @@ import com.google.api.services.drive.model.File;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class TipusDocumentService {
 
@@ -21,6 +24,13 @@ public class TipusDocumentService {
             TipusDocumentRepository tipusDocumentRepository
     ) {
         this.tipusDocumentRepository = tipusDocumentRepository;
+    }
+
+    public List<TipusDocumentDto> findAll() {
+        ModelMapper modelMapper = new ModelMapper();
+        return tipusDocumentRepository.findAll().stream().map(td->modelMapper.map(td,TipusDocumentDto.class)).collect(Collectors.toList());
+
+
     }
 
     public TipusDocumentDto getTipusDocumentByNom(String nom) {

@@ -209,4 +209,10 @@ public class FCTController {
 
         return new ResponseEntity<>(fileCopy, HttpStatus.OK);
     }
+
+    @GetMapping("/tipusdocument/list")
+    public ResponseEntity<List<TipusDocumentDto>> getTipusDocumentList() throws Exception {
+        List<TipusDocumentDto> tipusDocumentList = tipusDocumentService.findAll();
+        return new ResponseEntity<>(tipusDocumentList, HttpStatus.OK);
+    }
 }
