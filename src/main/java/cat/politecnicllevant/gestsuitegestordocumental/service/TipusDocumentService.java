@@ -42,4 +42,13 @@ public class TipusDocumentService {
         return null;
     }
 
+    public TipusDocumentDto getTipusDocumentById(Long id) {
+        ModelMapper modelMapper = new ModelMapper();
+        TipusDocument tipusDocument = tipusDocumentRepository.findById(id).orElse(null);
+        if(tipusDocument!=null) {
+            return modelMapper.map(tipusDocument, TipusDocumentDto.class);
+        }
+        return null;
+    }
+
 }

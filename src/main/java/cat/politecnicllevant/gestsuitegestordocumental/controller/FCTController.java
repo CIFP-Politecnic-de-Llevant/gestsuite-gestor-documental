@@ -99,6 +99,17 @@ public class FCTController {
         String tipus = jsonObject.get("tipus").getAsString();
         String originalName = jsonObject.get("originalName").getAsString();
 
+        JsonObject jsonObjectTipusDocument = jsonObject.get("tipusDocument").getAsJsonObject();
+        Long idTipusDocument = jsonObjectTipusDocument.get("id").getAsLong();
+
+        Long idUsuari = null;
+
+        if(jsonObject.get("usuari")!=null && !jsonObject.get("usuari").isJsonNull()) {
+            JsonObject jsonObjectUsuari = jsonObject.get("usuari").getAsJsonObject();
+            idUsuari = jsonObjectUsuari.get("id").getAsLong();
+        }
+
+
         File file = googleDriveService.getFileById(idFile,emailUser);
 
         DocumentDto document = documentService.getDocumentByOriginalName(originalName);
@@ -106,8 +117,11 @@ public class FCTController {
         if(document == null){
             document = new DocumentDto();
             document.setNomOriginal(originalName);
+
         }
 
+        document.setTipusDocument(tipusDocumentService.getTipusDocumentById(idTipusDocument));
+        document.setIdUsuari(idUsuari);
         document.setIdGoogleDrive(file.getId());
         document.setIdDriveGoogleDrive(file.getDriveId());
         document.setPathGoogleDrive(path);
