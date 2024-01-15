@@ -2,6 +2,7 @@ package cat.politecnicllevant.gestsuitegestordocumental.service;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.DocumentDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.TipusDocumentDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DocumentService {
@@ -27,6 +29,12 @@ public class DocumentService {
     ) {
         this.documentRepository = documentRepository;
         this.coreRestClient = coreRestClient;
+    }
+
+
+    public List<DocumentDto> findAll(){
+        ModelMapper modelMapper = new ModelMapper();
+        return documentRepository.findAll().stream().map(d->modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
     }
 
     public DocumentDto getDocumentById(Long id) {

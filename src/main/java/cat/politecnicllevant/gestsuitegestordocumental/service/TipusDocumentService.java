@@ -29,8 +29,6 @@ public class TipusDocumentService {
     public List<TipusDocumentDto> findAll() {
         ModelMapper modelMapper = new ModelMapper();
         return tipusDocumentRepository.findAll().stream().map(td->modelMapper.map(td,TipusDocumentDto.class)).collect(Collectors.toList());
-
-
     }
 
     public TipusDocumentDto getTipusDocumentByNom(String nom) {

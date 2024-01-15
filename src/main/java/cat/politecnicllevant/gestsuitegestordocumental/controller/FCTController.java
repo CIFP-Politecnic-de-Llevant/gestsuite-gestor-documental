@@ -90,6 +90,48 @@ public class FCTController {
         return new ResponseEntity<>(documents, HttpStatus.OK);
     }
 
+    @PostMapping("/documents-no-traspassats")
+    public ResponseEntity<List<DocumentDto>> getDocumentsNoTraspassatsByPath(@RequestBody String json) throws Exception {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        String path = jsonObject.get("path").getAsString();
+        String email = jsonObject.get("email").getAsString();
+
+        List<File> driveFiles = googleDriveService.getFilesInFolder(path,email);
+        List<DocumentDto> documents = new ArrayList<>();
+        for(File driveFile: driveFiles){
+
+            System.out.println(driveFile);
+
+            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId());
+
+            if(document == null){
+                document = documentService.getDocumentByGoogleDriveFile(driveFile);
+
+                documents.add(document);
+                //documentService.save(document);
+            }
+        }
+
+        List<DocumentDto> documentsTraspassats = documentService.findAll();
+
+        //Esborrem els documents trobats
+        for(DocumentDto documentDto: documentsTraspassats){
+            documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
+        }
+
+        return new ResponseEntity<>(documents, HttpStatus.OK);
+    }
+
+    @GetMapping("/documents-grup/{idGrup}")
+    public ResponseEntity<List<DocumentDto>> getDocumentsByGrup(@PathVariable Long idGrup) throws Exception {
+        List<DocumentDto> documents = documentService.findAll();
+        List<DocumentDto> documentsGrup = new ArrayList<>();
+
+        return new ResponseEntity<>(documentsGrup, HttpStatus.OK);
+    }
+
+
+
     @PostMapping("/documents/crear-document")
     public ResponseEntity<DocumentDto> createDocument(@RequestBody String json) throws Exception {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);

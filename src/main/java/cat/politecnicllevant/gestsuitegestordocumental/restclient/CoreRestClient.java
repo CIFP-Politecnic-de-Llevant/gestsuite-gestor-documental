@@ -1,5 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.restclient;
 
+import cat.politecnicllevant.gestsuitegestordocumental.dto.GrupDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -22,5 +23,12 @@ public interface CoreRestClient {
 
     @GetMapping("/usuaris/llistat/actius")
     ResponseEntity<List<UsuariDto>> getUsuarisActius();
+
+    @GetMapping("/usuaris/alumnes-by-codigrup/{cursgrup}")
+    ResponseEntity<List<UsuariDto>> getAlumnesByCodiGrup(@PathVariable("cursgrup") String cursGrup);
+
+    //GRUP
+    @GetMapping("/grup/getById/{idgrup}")
+    ResponseEntity<GrupDto> getById(@PathVariable("idgrup") Long idgrup);
 
 }
