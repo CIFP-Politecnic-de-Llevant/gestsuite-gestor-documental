@@ -37,6 +37,11 @@ public class DocumentService {
         return documentRepository.findAll().stream().map(d->modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
     }
 
+    public List<DocumentDto> findAllByGrupCodi(String grupCodi){
+        ModelMapper modelMapper = new ModelMapper();
+        return documentRepository.findAllByGrupCodi(grupCodi).stream().map(d->modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
+    }
+
     public DocumentDto getDocumentById(Long id) {
         ModelMapper modelMapper = new ModelMapper();
         Document document = documentRepository.findById(id).orElse(null);

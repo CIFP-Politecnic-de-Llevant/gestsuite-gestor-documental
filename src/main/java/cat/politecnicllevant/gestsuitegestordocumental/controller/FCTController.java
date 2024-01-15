@@ -4,11 +4,13 @@ import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.DocumentDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.SignaturaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.TipusDocumentDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.DocumentService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.GoogleDriveService;
+import cat.politecnicllevant.gestsuitegestordocumental.service.SignaturaService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.TipusDocumentService;
 import com.google.api.services.drive.model.File;
 import com.google.gson.Gson;
@@ -37,6 +39,8 @@ public class FCTController {
 
     private final TipusDocumentService tipusDocumentService;
 
+    private final SignaturaService signaturaService;
+
     private final Gson gson;
 
     public FCTController(
@@ -44,12 +48,14 @@ public class FCTController {
             CoreRestClient coreRestClient,
             DocumentService documentService,
             TipusDocumentService tipusDocumentService,
+            SignaturaService signaturaService,
             Gson gson
     ) {
         this.googleDriveService = googleDriveService;
         this.coreRestClient = coreRestClient;
         this.documentService = documentService;
         this.tipusDocumentService = tipusDocumentService;
+        this.signaturaService = signaturaService;
         this.gson = gson;
     }
 
@@ -122,13 +128,13 @@ public class FCTController {
         return new ResponseEntity<>(documents, HttpStatus.OK);
     }
 
-    @GetMapping("/documents-grup/{idGrup}")
-    public ResponseEntity<List<DocumentDto>> getDocumentsByGrup(@PathVariable Long idGrup) throws Exception {
-        List<DocumentDto> documents = documentService.findAll();
-        List<DocumentDto> documentsGrup = new ArrayList<>();
+    @GetMapping("/documents-grup/{grupCodi}")
+    public ResponseEntity<List<DocumentDto>> getDocumentsByGrup(@PathVariable String grupCodi) throws Exception {
+        List<DocumentDto> documents = documentService.findAllByGrupCodi(grupCodi);
 
-        return new ResponseEntity<>(documentsGrup, HttpStatus.OK);
+        return new ResponseEntity<>(documents, HttpStatus.OK);
     }
+
 
 
 
@@ -140,6 +146,7 @@ public class FCTController {
         String emailUser = jsonObject.get("email").getAsString();
         String tipus = jsonObject.get("tipus").getAsString();
         String originalName = jsonObject.get("originalName").getAsString();
+        String codiGrup = jsonObject.get("codiGrup").getAsString();
 
         JsonObject jsonObjectTipusDocument = jsonObject.get("tipusDocument").getAsJsonObject();
         Long idTipusDocument = jsonObjectTipusDocument.get("id").getAsLong();
@@ -164,6 +171,7 @@ public class FCTController {
 
         document.setTipusDocument(tipusDocumentService.getTipusDocumentById(idTipusDocument));
         document.setIdUsuari(idUsuari);
+        document.setGrupCodi(codiGrup);
         document.setIdGoogleDrive(file.getId());
         document.setIdDriveGoogleDrive(file.getDriveId());
         document.setPathGoogleDrive(path);
@@ -270,5 +278,11 @@ public class FCTController {
     public ResponseEntity<List<TipusDocumentDto>> getTipusDocumentList() throws Exception {
         List<TipusDocumentDto> tipusDocumentList = tipusDocumentService.findAll();
         return new ResponseEntity<>(tipusDocumentList, HttpStatus.OK);
+    }
+
+    @GetMapping("/signatura/list")
+    public ResponseEntity<List<SignaturaDto>> getSignaturaList() throws Exception {
+        List<SignaturaDto> signatures = signaturaService.findAll();
+        return new ResponseEntity<>(signatures, HttpStatus.OK);
     }
 }

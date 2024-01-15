@@ -17,6 +17,7 @@ public class DocumentDto {
     private String mimeTypeGoogleDrive;
     private String createdTimeGoogleDrive;
     private String modifiedTimeGoogleDrive;
+    private String grupCodi;
 
     //MS CORE
     private Long idUsuari;

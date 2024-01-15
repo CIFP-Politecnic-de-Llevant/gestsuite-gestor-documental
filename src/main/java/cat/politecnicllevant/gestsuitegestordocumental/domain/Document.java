@@ -37,6 +37,9 @@ public class Document {
     @Column(name = "modifiedTime_google_drive", nullable = true, length = 64)
     private String modifiedTimeGoogleDrive;
 
+    @Column(name = "grup_codi", nullable = true, length = 10)
+    private String grupCodi;
+
 
     //MS CORE
     @Column(name = "idusuari", nullable = true)
