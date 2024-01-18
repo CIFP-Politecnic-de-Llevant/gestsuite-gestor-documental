@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>cat.politecnicllevant</groupId>
-	<artifactId>gestsuite-gestor-documental</artifactId>
+	<artifactId>gestor-documental</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>gestsuite-gestor-documental</name>
-	<description>gestsuite-gestor-documental</description>
+	<name>gestor-documental</name>
+	<description>gestor-documental</description>
 	<properties>
 		<java.version>17</java.version>
 		<spring-cloud.version>2022.0.4</spring-cloud.version>
