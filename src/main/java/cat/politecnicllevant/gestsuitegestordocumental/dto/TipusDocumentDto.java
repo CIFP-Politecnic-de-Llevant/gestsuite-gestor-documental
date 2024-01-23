@@ -10,4 +10,5 @@ public class TipusDocumentDto {
         private Long idTipusDocument;
         private String nom;
         private Set<Signatura> signatures;
+        private TipusDocumentPropietariDto propietari;
 }

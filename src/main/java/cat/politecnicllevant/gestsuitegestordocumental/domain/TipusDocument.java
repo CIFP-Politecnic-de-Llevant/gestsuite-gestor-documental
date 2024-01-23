@@ -17,6 +17,10 @@ public class TipusDocument {
     @Column(name = "nom", unique = true, nullable = false, length = 2048)
     private String nom;
 
+    @Column(name = "propietari", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TipusDocumentPropietari propietari;
+
     @ManyToMany
     private Set<Signatura> signatures;
 }
