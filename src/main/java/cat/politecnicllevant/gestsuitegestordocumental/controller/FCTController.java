@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 public class FCTController {
@@ -201,6 +202,15 @@ public class FCTController {
         }
         DocumentDto documentSaved = documentService.save(document);
 
+        //Creem les signatures
+        Set<SignaturaDto> signatures = documentSaved.getTipusDocument().getSignatures();
+        for(SignaturaDto signatura: signatures){
+            DocumentSignaturaDto documentSignaturaDto = new DocumentSignaturaDto();
+            documentSignaturaDto.setDocument(documentSaved);
+            documentSignaturaDto.setSignatura(signatura);
+            documentSignaturaDto.setSignat(false);
+            documentSignaturaService.save(documentSignaturaDto);
+        }
 
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }
