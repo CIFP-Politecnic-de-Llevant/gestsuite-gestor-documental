@@ -28,5 +28,10 @@ public class SignaturaService {
         return signaturaRepository.findAll().stream().map(s->modelMapper.map(s,SignaturaDto.class)).collect(Collectors.toList());
     }
 
+    public SignaturaDto getSignaturaById(Long id) {
+        ModelMapper modelMapper = new ModelMapper();
+        return modelMapper.map(signaturaRepository.findById(id).orElse(null),SignaturaDto.class);
+    }
+
 
 }

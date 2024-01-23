@@ -23,6 +23,6 @@ public class DocumentSignatura {
     private Signatura signatura;
 
 
-    @Column(name = "bloquejat", nullable = false)
+    @Column(name = "signat", nullable = false)
     private Boolean signat;
 }

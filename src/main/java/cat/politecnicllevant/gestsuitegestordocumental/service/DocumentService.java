@@ -1,10 +1,10 @@
 package cat.politecnicllevant.gestsuitegestordocumental.service;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.DocumentDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.TipusDocumentDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
+import cat.politecnicllevant.gestsuitegestordocumental.domain.DocumentSignatura;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentRepository;
+import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentSignaturaRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import com.google.api.services.drive.model.File;
 import org.modelmapper.ModelMapper;
@@ -20,14 +20,17 @@ import java.util.stream.Collectors;
 public class DocumentService {
 
     public final DocumentRepository documentRepository;
+    public final DocumentSignaturaRepository documentSignaturaRepository;
 
     public final CoreRestClient coreRestClient;
 
     public DocumentService(
             DocumentRepository documentRepository,
+            DocumentSignaturaRepository documentSignaturaRepository,
             CoreRestClient coreRestClient
     ) {
         this.documentRepository = documentRepository;
+        this.documentSignaturaRepository = documentSignaturaRepository;
         this.coreRestClient = coreRestClient;
     }
 
@@ -117,6 +120,17 @@ public class DocumentService {
         }
 
         return document;
+    }
+
+    public void signarDocument(DocumentDto documentDto, SignaturaDto signaturaDto, boolean signat) {
+        ModelMapper modelMapper = new ModelMapper();
+        DocumentSignaturaDto documentSignaturaDto = new DocumentSignaturaDto();
+        documentSignaturaDto.setDocument(documentDto);
+        documentSignaturaDto.setSignatura(signaturaDto);
+        documentSignaturaDto.setSignat(signat);
+
+        DocumentSignatura documentSignatura = modelMapper.map(documentSignaturaDto,DocumentSignatura.class);
+        documentSignaturaRepository.save(documentSignatura);
     }
 
 

@@ -1,5 +1,7 @@
 package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
+import cat.politecnicllevant.common.model.Notificacio;
+import cat.politecnicllevant.common.model.NotificacioTipus;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
@@ -284,5 +286,22 @@ public class FCTController {
     public ResponseEntity<List<SignaturaDto>> getSignaturaList() throws Exception {
         List<SignaturaDto> signatures = signaturaService.findAll();
         return new ResponseEntity<>(signatures, HttpStatus.OK);
+    }
+
+    @PostMapping("/document/signar")
+    public ResponseEntity<Notificacio> signarDocument(@RequestBody String json) throws Exception {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        Long idDocument = jsonObject.get("idDocument").getAsLong();
+        Long idSignatura = jsonObject.get("idSignatura").getAsLong();
+        Boolean signat = jsonObject.get("signat").getAsBoolean();
+
+        DocumentDto document = documentService.getDocumentById(idDocument);
+        SignaturaDto signatura = signaturaService.getSignaturaById(idSignatura);
+        documentService.signarDocument(document,signatura,signat);
+
+        Notificacio notificacio = new Notificacio();
+        notificacio.setNotifyMessage("Document signat correctament");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 }
