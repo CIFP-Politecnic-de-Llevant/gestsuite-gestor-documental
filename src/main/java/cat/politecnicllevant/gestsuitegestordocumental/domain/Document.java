@@ -1,7 +1,11 @@
 package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Entity
@@ -53,4 +57,8 @@ public class Document {
             nullable = true)
     //@JsonBackReference
     private TipusDocument tipusDocument;
+
+    @OneToMany(mappedBy="document", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private Set<DocumentSignatura> documentSignatures = new HashSet<>();
 }

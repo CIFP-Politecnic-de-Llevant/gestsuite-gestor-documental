@@ -122,16 +122,4 @@ public class DocumentService {
         return document;
     }
 
-    public void signarDocument(DocumentDto documentDto, SignaturaDto signaturaDto, boolean signat) {
-        ModelMapper modelMapper = new ModelMapper();
-        DocumentSignaturaDto documentSignaturaDto = new DocumentSignaturaDto();
-        documentSignaturaDto.setDocument(documentDto);
-        documentSignaturaDto.setSignatura(signaturaDto);
-        documentSignaturaDto.setSignat(signat);
-
-        DocumentSignatura documentSignatura = modelMapper.map(documentSignaturaDto,DocumentSignatura.class);
-        documentSignaturaRepository.save(documentSignatura);
-    }
-
-
 }

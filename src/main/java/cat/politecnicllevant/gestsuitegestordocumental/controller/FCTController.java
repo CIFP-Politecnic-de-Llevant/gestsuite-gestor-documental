@@ -10,10 +10,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.dto.SignaturaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.TipusDocumentDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
-import cat.politecnicllevant.gestsuitegestordocumental.service.DocumentService;
-import cat.politecnicllevant.gestsuitegestordocumental.service.GoogleDriveService;
-import cat.politecnicllevant.gestsuitegestordocumental.service.SignaturaService;
-import cat.politecnicllevant.gestsuitegestordocumental.service.TipusDocumentService;
+import cat.politecnicllevant.gestsuitegestordocumental.service.*;
 import com.google.api.services.drive.model.File;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -43,6 +40,8 @@ public class FCTController {
 
     private final SignaturaService signaturaService;
 
+    private final DocumentSignaturaService documentSignaturaService;
+
     private final Gson gson;
 
     public FCTController(
@@ -51,6 +50,7 @@ public class FCTController {
             DocumentService documentService,
             TipusDocumentService tipusDocumentService,
             SignaturaService signaturaService,
+            DocumentSignaturaService documentSignaturaService,
             Gson gson
     ) {
         this.googleDriveService = googleDriveService;
@@ -58,6 +58,7 @@ public class FCTController {
         this.documentService = documentService;
         this.tipusDocumentService = tipusDocumentService;
         this.signaturaService = signaturaService;
+        this.documentSignaturaService = documentSignaturaService;
         this.gson = gson;
     }
 
@@ -133,6 +134,12 @@ public class FCTController {
     @GetMapping("/documents-grup/{grupCodi}")
     public ResponseEntity<List<DocumentDto>> getDocumentsByGrup(@PathVariable String grupCodi) throws Exception {
         List<DocumentDto> documents = documentService.findAllByGrupCodi(grupCodi);
+        /*for(DocumentDto documentDto: documents){
+            documentDto.getDocumentSignatures()
+            for(SignaturaDto signaturaDto: documentDto.getTipusDocument().getSignatures()){
+                awef
+            }
+        }*/
 
         return new ResponseEntity<>(documents, HttpStatus.OK);
     }
@@ -293,11 +300,11 @@ public class FCTController {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         Long idDocument = jsonObject.get("idDocument").getAsLong();
         Long idSignatura = jsonObject.get("idSignatura").getAsLong();
-        Boolean signat = jsonObject.get("signat").getAsBoolean();
+        boolean signat = jsonObject.get("signat").getAsBoolean();
 
         DocumentDto document = documentService.getDocumentById(idDocument);
         SignaturaDto signatura = signaturaService.getSignaturaById(idSignatura);
-        documentService.signarDocument(document,signatura,signat);
+        documentSignaturaService.signarDocument(document,signatura,signat);
 
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Document signat correctament");

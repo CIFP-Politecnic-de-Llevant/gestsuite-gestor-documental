@@ -13,7 +13,7 @@ public class DocumentSignatura {
     @Id
     @ManyToOne
     @JoinColumn(name = "document_iddocument", insertable = false, updatable = false)
-    @JsonManagedReference
+    @JsonBackReference
     private Document document;
 
     @Id
