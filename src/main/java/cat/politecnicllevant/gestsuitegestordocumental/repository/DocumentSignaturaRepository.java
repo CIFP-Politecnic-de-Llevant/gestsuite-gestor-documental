@@ -11,5 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface DocumentSignaturaRepository extends JpaRepository<DocumentSignatura, DocumentSignaturaId> {
-
+    List<DocumentSignatura> findAllByDocument(Document document);
+    Optional<DocumentSignatura> findByDocumentAndSignatura(Document document, Document signatura);
 }

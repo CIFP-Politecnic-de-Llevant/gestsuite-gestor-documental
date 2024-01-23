@@ -37,5 +37,15 @@ public class DocumentSignaturaService {
         documentSignaturaRepository.save(documentSignatura);
     }
 
+    public List<DocumentSignaturaDto> findByDocument(DocumentDto documentDto){
+        ModelMapper modelMapper = new ModelMapper();
+        return documentSignaturaRepository.findAllByDocument(modelMapper.map(documentDto,Document.class)).stream().map(d->modelMapper.map(d,DocumentSignaturaDto.class)).collect(Collectors.toList());
+    }
+
+    public DocumentSignaturaDto findByDocumentAndSignatura(DocumentDto documentDto, SignaturaDto signaturaDto){
+        ModelMapper modelMapper = new ModelMapper();
+        return modelMapper.map(documentSignaturaRepository.findByDocumentAndSignatura(modelMapper.map(documentDto,Document.class),modelMapper.map(signaturaDto,Document.class)).orElse(null),DocumentSignaturaDto.class);
+    }
+
 
 }

@@ -5,10 +5,7 @@ import cat.politecnicllevant.common.model.NotificacioTipus;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.DocumentDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.SignaturaDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.TipusDocumentDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.*;
 import com.google.api.services.drive.model.File;
@@ -22,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @RestController
@@ -134,12 +132,11 @@ public class FCTController {
     @GetMapping("/documents-grup/{grupCodi}")
     public ResponseEntity<List<DocumentDto>> getDocumentsByGrup(@PathVariable String grupCodi) throws Exception {
         List<DocumentDto> documents = documentService.findAllByGrupCodi(grupCodi);
-        /*for(DocumentDto documentDto: documents){
-            documentDto.getDocumentSignatures()
-            for(SignaturaDto signaturaDto: documentDto.getTipusDocument().getSignatures()){
-                awef
-            }
-        }*/
+
+        for(DocumentDto documentDto: documents){
+            List<DocumentSignaturaDto> documentSignaturaDtos = documentSignaturaService.findByDocument(documentDto);
+            documentDto.setDocumentSignatures(new HashSet<>(documentSignaturaDtos));
+        }
 
         return new ResponseEntity<>(documents, HttpStatus.OK);
     }
