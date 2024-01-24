@@ -6,6 +6,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.*;
 import com.google.api.services.drive.model.File;
@@ -13,11 +14,19 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -25,9 +34,6 @@ import java.util.Set;
 
 @RestController
 public class FCTController {
-
-    @Value("${app.allowed-users}")
-    private String[] autoritzats;
 
     private final CoreRestClient coreRestClient;
 
@@ -42,6 +48,18 @@ public class FCTController {
     private final DocumentSignaturaService documentSignaturaService;
 
     private final Gson gson;
+
+    @Value("${app.allowed-users}")
+    private String[] autoritzats;
+
+    @Value("${server.tmp}")
+    private String tmpPath;
+
+    @Value("${gc.storage.bucketnamedata}")
+    private String bucketName;
+
+    @Value("${gc.storage.convalidacions.path-files}")
+    private String bucketPathFiles;
 
     public FCTController(
             GoogleDriveService googleDriveService,
@@ -316,6 +334,43 @@ public class FCTController {
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Document signat correctament");
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
+    @PostMapping("/document/uploadFile")
+    public ResponseEntity<Notificacio> uploadFile(@RequestParam("id") Long idDocument, HttpServletRequest request) throws Exception {
+        DocumentDto document = documentService.getDocumentById(idDocument);
+        Part filePart = request.getPart("arxiu");
+
+        InputStream is = filePart.getInputStream();
+
+        // Reads the file into memory
+        /*
+         * Path path = Paths.get(audioPath); byte[] data = Files.readAllBytes(path);
+         * ByteString audioBytes = ByteString.copyFrom(data);
+         */
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        byte[] readBuf = new byte[4096];
+        while (is.available() > 0) {
+            int bytesRead = is.read(readBuf);
+            os.write(readBuf, 0, bytesRead);
+        }
+
+        // Passam l'arxiu a dins una carpeta
+        String pathArxiu = this.tmpPath + "/arxiu-"+document.getIdDocument()+".pdf";
+
+        OutputStream outputStream = new FileOutputStream(pathArxiu);
+        os.writeTo(outputStream);
+
+        java.io.File f = new java.io.File(pathArxiu);
+
+        ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal(), pathArxiu, bucketName);
+        FitxerBucketDto fitxerBucket = fitxerBucketResponse.getBody();
+
+        Notificacio notificacio = new Notificacio();
+        notificacio.setNotifyMessage("Arxiu pujat amb èxit.");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 }
