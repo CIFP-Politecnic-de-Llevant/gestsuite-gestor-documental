@@ -49,6 +49,9 @@ public class Document {
     @Column(name = "idusuari", nullable = true)
     private Long idUsuari;
 
+    @Column(name = "idfitxer", nullable = true)
+    private Long idFitxer;
+
 
     //FK
     @ManyToOne

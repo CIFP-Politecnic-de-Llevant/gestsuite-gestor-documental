@@ -367,6 +367,9 @@ public class FCTController {
         ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal(), pathArxiu, bucketName);
         FitxerBucketDto fitxerBucket = fitxerBucketResponse.getBody();
 
+        document.setIdFitxer(fitxerBucket.getIdfitxer());
+        documentService.save(document);
+
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Arxiu pujat amb èxit.");
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);

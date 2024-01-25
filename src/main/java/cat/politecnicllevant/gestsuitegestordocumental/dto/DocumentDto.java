@@ -25,8 +25,10 @@ public class DocumentDto {
 
     //MS CORE
     private Long idUsuari;
+    private Long idFitxer;
 
     //FK
     private TipusDocumentDto tipusDocument;
     private Set<DocumentSignaturaDto> documentSignatures;
+
 }
