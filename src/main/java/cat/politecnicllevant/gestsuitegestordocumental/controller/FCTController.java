@@ -23,10 +23,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -357,14 +355,26 @@ public class FCTController {
         }
 
         // Passam l'arxiu a dins una carpeta
-        String pathArxiu = this.tmpPath + "/arxiu-"+document.getIdDocument()+".pdf";
+        String pathArxiu = this.tmpPath + "/arxiu-fct-"+document.getIdDocument()+".pdf";
 
         OutputStream outputStream = new FileOutputStream(pathArxiu);
         os.writeTo(outputStream);
 
         java.io.File f = new java.io.File(pathArxiu);
 
-        ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal(), pathArxiu, bucketName);
+        //Upload to Core
+        String remotePath = "";
+        try {
+            byte[] fileContent = Files.readAllBytes(f.toPath());
+            FileUploadDto fileUploadDTO = new FileUploadDto(f.getName(), fileContent);
+            ResponseEntity<String> response = coreRestClient.handleFileUpload2(fileUploadDTO);
+            remotePath = response.getBody();
+        } catch (IOException e) {
+            // Handle the IOException
+            //System.out.println(e.getMessage());
+        }
+
+        ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal(), remotePath, bucketName);
         FitxerBucketDto fitxerBucket = fitxerBucketResponse.getBody();
 
         document.setIdFitxer(fitxerBucket.getIdfitxer());
