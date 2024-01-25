@@ -159,6 +159,11 @@ public class FCTController {
     }
 
 
+    @GetMapping("/documents/{id}")
+    public ResponseEntity<DocumentDto> getDocumentById(@PathVariable Long id) throws Exception {
+        DocumentDto document = documentService.getDocumentById(id);
+        return new ResponseEntity<>(document, HttpStatus.OK);
+    }
 
 
     @PostMapping("/documents/crear-document")
