@@ -3,15 +3,19 @@ package cat.politecnicllevant.gestsuitegestordocumental.service;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.DocumentSignatura;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentSignaturaRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import com.google.api.services.drive.model.File;
+import com.google.gson.JsonObject;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -120,6 +124,27 @@ public class DocumentService {
         }
 
         return document;
+    }
+
+    public String getURLBucket(Long idFitxerBucket) throws IOException {
+        ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.getFitxerBucketById(idFitxerBucket);
+        FitxerBucketDto fitxerBucket = fitxerBucketResponse.getBody();
+
+        if (fitxerBucket != null) {
+            JsonObject jsonFitxerBucket = new JsonObject();
+            jsonFitxerBucket.addProperty("idfitxer", fitxerBucket.getIdfitxer());
+            jsonFitxerBucket.addProperty("nom", fitxerBucket.getNom());
+            jsonFitxerBucket.addProperty("bucket", fitxerBucket.getBucket());
+            jsonFitxerBucket.addProperty("path", fitxerBucket.getPath());
+
+            ResponseEntity<String> urlResponse = coreRestClient.generateSignedURL(jsonFitxerBucket.toString());
+            String url = urlResponse.getBody();
+
+            //fitxerBucket.setUrl(url);
+            return url;
+        }
+
+        return null;
     }
 
 }

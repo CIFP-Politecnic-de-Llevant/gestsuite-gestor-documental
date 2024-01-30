@@ -53,6 +53,9 @@ public interface CoreRestClient {
     ResponseEntity<String> handleFileUpload2(@RequestBody FileUploadDto uploadfile) throws IOException;
 
     //GOOGLE STORAGE
+    @PostMapping(value = "/googlestorage/generate-signed-url")
+    ResponseEntity<String> generateSignedURL(@RequestBody String json) throws IOException;
+
     @PostMapping("/googlestorage/uploadobject")
     ResponseEntity<FitxerBucketDto> uploadObject(@RequestParam("objectName") String objectName, @RequestParam("filePath") String filePath, @RequestParam("bucket") String bucket) throws IOException, GeneralSecurityException;
 

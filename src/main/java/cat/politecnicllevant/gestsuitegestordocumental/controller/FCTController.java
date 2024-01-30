@@ -15,6 +15,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
+@Slf4j
 public class FCTController {
 
     private final CoreRestClient coreRestClient;
@@ -340,6 +342,24 @@ public class FCTController {
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 
+    @PostMapping("/document/get-url")
+    public ResponseEntity<String> getURL(@RequestBody String json) throws Exception {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        Long idDocument = jsonObject.get("idFile").getAsLong();
+
+        DocumentDto document = documentService.getDocumentById(idDocument);
+
+        Long idFitxer = document.getIdFitxer();
+        if(idFitxer!=null){
+            String url = documentService.getURLBucket(idFitxer);
+            if(url != null){
+                return new ResponseEntity<>(url, HttpStatus.OK);
+            }
+        }
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
     @PostMapping("/document/uploadFile")
     public ResponseEntity<Notificacio> uploadFile(@RequestParam("id") Long idDocument, HttpServletRequest request) throws Exception {
         DocumentDto document = documentService.getDocumentById(idDocument);
@@ -382,13 +402,24 @@ public class FCTController {
         ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal(), remotePath, bucketName);
         FitxerBucketDto fitxerBucket = fitxerBucketResponse.getBody();
 
-        document.setIdFitxer(fitxerBucket.getIdfitxer());
-        documentService.save(document);
+        //Save the file
+        ResponseEntity<FitxerBucketDto> fitxerBucketSavedResponse = coreRestClient.save(fitxerBucket);
+        FitxerBucketDto fitxerBucketSaved = fitxerBucketSavedResponse.getBody();
 
+        if(fitxerBucketSaved!=null && fitxerBucketSaved.getIdfitxer()!=null) {
+            document.setIdFitxer(fitxerBucketSaved.getIdfitxer());
+            documentService.save(document);
+
+            Notificacio notificacio = new Notificacio();
+            notificacio.setNotifyMessage("Arxiu pujat amb èxit.");
+            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+
+            return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        }
         Notificacio notificacio = new Notificacio();
-        notificacio.setNotifyMessage("Arxiu pujat amb èxit.");
+        notificacio.setNotifyMessage("Error pujant el fitxer."+bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal());
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
 
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
