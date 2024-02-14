@@ -93,15 +93,15 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 0 0 2 * * * = a les 2AM de cada dia
  */
     //@Scheduled(cron = "0 0 * * * *")
-    @Scheduled(fixedRate = 50000, initialDelay = 1000)
+    @Scheduled(fixedRate = 60*60*1000, initialDelay = 60*1000)
     public void sincronitzaDocumentsAutomatic() throws Exception {
         log.info("Sincronitzant documents...");
 
-        //final String path = "FCT";
-        final String path = "FCT JOAN";
+        final String path = "FCT";
+        //final String path = "FCT JOAN";
         final String email = "qualitat@politecnicllevant.cat";
-        //final String FOLDER_BASE = "Curs Actual/0206 FCT i FP Dual/Documentació FCT alumnes 23-24/Documentació en tràmit";
-        final String FOLDER_BASE = "FCT JOAN RESOLT";
+        final String FOLDER_BASE = "Curs Actual/0206 FCT i FP Dual/Documentació FCT alumnes 23-24/Documentació en tràmit";
+        //final String FOLDER_BASE = "FCT JOAN RESOLT";
         final String APP_SHAREDDRIVE_GESTORDOCUMENTAL="0ADWttZJyM1ByUk9PVA";
 
 

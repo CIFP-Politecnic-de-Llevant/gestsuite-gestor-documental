@@ -195,7 +195,8 @@ public class GoogleDriveService {
             permission.setType(permissionType.toString());
             permission.setRole(permissionRole.toString());
 
-            service.permissions().create(file.getId(),permission).setSupportsAllDrives(true).execute();
+            //Evitem notificar per correu
+            service.permissions().create(file.getId(),permission).setSupportsAllDrives(true).setSendNotificationEmail(false).execute();
 
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
