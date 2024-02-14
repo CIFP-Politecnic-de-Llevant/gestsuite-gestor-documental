@@ -21,6 +21,6 @@ public class TipusDocument {
     @Enumerated(EnumType.STRING)
     private TipusDocumentPropietari propietari;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Signatura> signatures;
 }

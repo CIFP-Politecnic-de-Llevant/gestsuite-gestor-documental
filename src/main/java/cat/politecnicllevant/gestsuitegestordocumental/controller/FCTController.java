@@ -112,7 +112,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         List<DocumentDto> documents = new ArrayList<>();
         for(File driveFile: driveFiles){
 
-            System.out.println(driveFile);
+            //System.out.println(driveFile);
 
             DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId());
 
@@ -138,6 +138,12 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             if(documentParts.length==2){
                 String cicle = documentParts[0];
                 String nomDocument = documentParts[1];
+
+                TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(nomDocument);
+
+                if(tipusDocumentDto==null){
+                    continue;
+                }
 
                 //Permisos
                 ResponseEntity<List<UsuariDto>> tutorsFCTResponse = coreRestClient.getTutorFCTByCodiGrup(cicle);
@@ -178,7 +184,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
                 //Desem el fitxer
                 JsonObject tipusFitxer = new JsonObject();
-                tipusFitxer.addProperty("id", document.getTipusDocument().getIdTipusDocument());
+                tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
 
                 JsonObject jsonFitxerDesat = new JsonObject();
                 jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
@@ -197,6 +203,13 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 String nom = documentParts[2];
                 String numExpedient = documentParts[3];
                 String nomDocument = documentParts[4];
+
+                TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(nomDocument);
+                UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
+
+                if(tipusDocumentDto==null || alumne==null){
+                    continue;
+                }
 
                 //Permisos
                 List<UsuariDto> tutorsFCT = this.coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
@@ -243,7 +256,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
                 //Desem el fitxer
                 JsonObject tipusFitxer = new JsonObject();
-                tipusFitxer.addProperty("id", document.getTipusDocument().getIdTipusDocument());
+                tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
 
 
                 JsonObject jsonFitxerDesat = new JsonObject();
@@ -253,7 +266,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 jsonFitxerDesat.addProperty("tipus", nomDocument);
                 jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
                 jsonFitxerDesat.add("tipusDocument", tipusFitxer);
-                jsonFitxerDesat.addProperty("idusuari", document.getIdUsuari());
+                jsonFitxerDesat.addProperty("idusuari", alumne.getIdusuari());
                 jsonFitxerDesat.addProperty("codiGrup", cicle);
 
                 this.createDocument(gson.toJson(jsonFitxerDesat));

@@ -1,6 +1,5 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Signatura;
 import lombok.Data;
 
 import java.util.Set;
