@@ -33,11 +33,21 @@ public class TipusDocumentService {
 
     public TipusDocumentDto getTipusDocumentByNom(String nom) {
         ModelMapper modelMapper = new ModelMapper();
-        TipusDocument tipusDocument = tipusDocumentRepository.findTipusDocumentByNom(nom);
+        //No podem fer findTipusDocumentByNom perquè el caràcter guió (-) no el cerca bé
+        //TipusDocument tipusDocument = tipusDocumentRepository.findTipusDocumentByNom(nom);
+        TipusDocument tipusDocument = tipusDocumentRepository.findAll()
+                .stream()
+                .filter(td->removeIllegalCharacters(td.getNom()).equals(removeIllegalCharacters(nom)))
+                .findFirst()
+                .orElse(null);
         if(tipusDocument!=null) {
             return modelMapper.map(tipusDocument, TipusDocumentDto.class);
         }
         return null;
+    }
+
+    private String removeIllegalCharacters(String nom) {
+        return nom.replaceAll("[^a-zA-Z0-9]", "");
     }
 
     public TipusDocumentDto getTipusDocumentById(Long id) {
