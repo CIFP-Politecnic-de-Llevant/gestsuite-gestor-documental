@@ -28,7 +28,7 @@ public interface CoreRestClient {
     ResponseEntity<UsuariDto> getUsuariByEmail(@PathVariable("id") String email) throws Exception;
 
     @GetMapping("/usuaris/profile-by-email/{id}/{token}")
-    ResponseEntity<UsuariDto> getUsuariByEmailSystem(@PathVariable("id") String email,@PathVariable(value = "token", required = false) String token) throws Exception;
+    ResponseEntity<UsuariDto> getUsuariByEmailSystem(@PathVariable("id") String email,@PathVariable(value = "token") String token) throws Exception;
 
     @GetMapping("/usuaris/findbynumexpedient/{numexpedient}")
     ResponseEntity<UsuariDto> getUsuariByNumExpedient(@PathVariable("numexpedient") String numExpedient);

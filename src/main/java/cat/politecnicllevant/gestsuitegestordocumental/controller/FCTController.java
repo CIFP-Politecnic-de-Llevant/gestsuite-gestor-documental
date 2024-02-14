@@ -93,12 +93,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 0 0 2 * * * = a les 2AM de cada dia
  */
     //@Scheduled(cron = "0 0 * * * *")
-    @Scheduled(fixedRate = 5000, initialDelay = 1000)
+    @Scheduled(fixedRate = 50000, initialDelay = 1000)
     public void sincronitzaDocumentsAutomatic() throws Exception {
-        System.out.println("Sincronitzant documents...");
-
-        String token = coreRestClient.getToken(publicPassword).getBody();
-        System.out.println("Tnim token: "+token);
+        log.info("Sincronitzant documents...");
 
         //final String path = "FCT";
         final String path = "FCT JOAN";
@@ -146,10 +143,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 }
 
                 //Permisos
-                ResponseEntity<List<UsuariDto>> tutorsFCTResponse = coreRestClient.getTutorFCTByCodiGrup(cicle);
-                tutorsFCTResponse.getHeaders().set("Authorization", "Bearer "+token);
-                List<UsuariDto> tutorsFCT = tutorsFCTResponse.getBody();
-                //List<UsuariDto> tutorsFCT = coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+                List<UsuariDto> tutorsFCT = coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
 
                 JsonObject jsonCarpetaRoot = new JsonObject();
                 jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
