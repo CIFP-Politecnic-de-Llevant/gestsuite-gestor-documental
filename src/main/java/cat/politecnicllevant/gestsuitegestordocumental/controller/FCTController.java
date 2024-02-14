@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,6 +62,9 @@ public class FCTController {
     @Value("${gc.storage.convalidacions.path-files}")
     private String bucketPathFiles;
 
+    @Value("${public.password}")
+    private String publicPassword;
+
     public FCTController(
             GoogleDriveService googleDriveService,
             CoreRestClient coreRestClient,
@@ -77,6 +81,184 @@ public class FCTController {
         this.signaturaService = signaturaService;
         this.documentSignaturaService = documentSignaturaService;
         this.gson = gson;
+    }
+
+
+
+
+
+    /*
+Second Minute Hour Day-of-Month
+second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
+0 0 2 * * * = a les 2AM de cada dia
+ */
+    //@Scheduled(cron = "0 0 * * * *")
+    @Scheduled(fixedRate = 5000, initialDelay = 1000)
+    public void sincronitzaDocumentsAutomatic() throws Exception {
+        System.out.println("Sincronitzant documents...");
+
+        String token = coreRestClient.getToken(publicPassword).getBody();
+        System.out.println("Tnim token: "+token);
+
+        //final String path = "FCT";
+        final String path = "FCT JOAN";
+        final String email = "qualitat@politecnicllevant.cat";
+        //final String FOLDER_BASE = "Curs Actual/0206 FCT i FP Dual/Documentació FCT alumnes 23-24/Documentació en tràmit";
+        final String FOLDER_BASE = "FCT JOAN RESOLT";
+        final String APP_SHAREDDRIVE_GESTORDOCUMENTAL="0ADWttZJyM1ByUk9PVA";
+
+
+        List<File> driveFiles = googleDriveService.getFilesInFolder(path,email);
+        List<DocumentDto> documents = new ArrayList<>();
+        for(File driveFile: driveFiles){
+
+            System.out.println(driveFile);
+
+            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId());
+
+            if(document == null){
+                document = documentService.getDocumentByGoogleDriveFile(driveFile);
+
+                documents.add(document);
+                //documentService.save(document);
+            }
+        }
+
+        List<DocumentDto> documentsNoTraspassats = documentService.findAll();
+
+        //Esborrem els documents trobats
+        for(DocumentDto documentDto: documentsNoTraspassats){
+            documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
+        }
+
+        //Traspassam els documents
+        for(DocumentDto document: documents){
+            String[] documentParts = document.getNomOriginal().split("_");
+
+            if(documentParts.length==2){
+                String cicle = documentParts[0];
+                String nomDocument = documentParts[1];
+
+                //Permisos
+                ResponseEntity<List<UsuariDto>> tutorsFCTResponse = coreRestClient.getTutorFCTByCodiGrup(cicle);
+                tutorsFCTResponse.getHeaders().set("Authorization", "Bearer "+token);
+                List<UsuariDto> tutorsFCT = tutorsFCTResponse.getBody();
+                //List<UsuariDto> tutorsFCT = coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+
+                JsonObject jsonCarpetaRoot = new JsonObject();
+                jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
+                jsonCarpetaRoot.addProperty("email", email);
+                jsonCarpetaRoot.addProperty("parentFolderId", APP_SHAREDDRIVE_GESTORDOCUMENTAL);
+
+                File carpetaRoot = this.createFolder(gson.toJson(jsonCarpetaRoot)).getBody();
+
+                JsonObject jsonCarpetaCicle = new JsonObject();
+                //jsonCarpetaRoot.addProperty("path", FOLDER_BASE);
+                jsonCarpetaCicle.addProperty("folderName", cicle);
+                jsonCarpetaCicle.addProperty("email", email);
+
+                JsonArray jsonEditorsCarpetaRoot = new JsonArray();
+                tutorsFCT.forEach(usuariDto -> {
+                    jsonEditorsCarpetaRoot.add(usuariDto.getGsuiteEmail());
+                });
+                jsonCarpetaCicle.add("editors", jsonEditorsCarpetaRoot);
+
+                jsonCarpetaCicle.addProperty("parentFolderId", carpetaRoot.getId());
+
+                File carpetaCicle = this.createFolder(gson.toJson(jsonCarpetaCicle)).getBody();
+
+                JsonObject jsonFitxer = new JsonObject();
+                jsonFitxer.addProperty("idFile", document.getIdGoogleDrive());
+                jsonFitxer.addProperty("email", email);
+                jsonFitxer.addProperty("filename", nomDocument);
+                jsonFitxer.addProperty("parentFolderId", carpetaCicle.getId());
+                jsonFitxer.addProperty("originalName", document.getNomOriginal());
+
+                File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
+
+                //Desem el fitxer
+                JsonObject tipusFitxer = new JsonObject();
+                tipusFitxer.addProperty("id", document.getTipusDocument().getIdTipusDocument());
+
+                JsonObject jsonFitxerDesat = new JsonObject();
+                jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
+                jsonFitxerDesat.addProperty("path", FOLDER_BASE+"/"+cicle+"/"+nomDocument);
+                jsonFitxerDesat.addProperty("email", email);
+                jsonFitxerDesat.addProperty("tipus", nomDocument);
+                jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                jsonFitxerDesat.add("tipusDocument", tipusFitxer);
+                jsonFitxerDesat.addProperty("codiGrup", cicle);
+
+                this.createDocument(gson.toJson(jsonFitxerDesat));
+
+            } else if(documentParts.length==5){
+                String cicle = documentParts[0];
+                String cognoms = documentParts[1];
+                String nom = documentParts[2];
+                String numExpedient = documentParts[3];
+                String nomDocument = documentParts[4];
+
+                //Permisos
+                List<UsuariDto> tutorsFCT = this.coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+
+                //Creem l'estructura de carpetes
+                JsonObject jsonCarpetaRoot = new JsonObject();
+                jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
+                jsonCarpetaRoot.addProperty("email", email);
+                jsonCarpetaRoot.addProperty("parentFolderId", APP_SHAREDDRIVE_GESTORDOCUMENTAL);
+
+                File carpetaRoot = this.createFolder(gson.toJson(jsonCarpetaRoot)).getBody();
+
+                JsonObject jsonCarpetaCicle = new JsonObject();
+                //jsonCarpetaRoot.addProperty("path", FOLDER_BASE);
+                jsonCarpetaCicle.addProperty("folderName", cicle);
+                jsonCarpetaCicle.addProperty("email", email);
+
+                JsonArray jsonEditorsCarpetaRoot = new JsonArray();
+                tutorsFCT.forEach(usuariDto -> {
+                    jsonEditorsCarpetaRoot.add(usuariDto.getGsuiteEmail());
+                });
+                jsonCarpetaCicle.add("editors", jsonEditorsCarpetaRoot);
+
+                jsonCarpetaCicle.addProperty("parentFolderId", carpetaRoot.getId());
+
+                File carpetaCicle = this.createFolder(gson.toJson(jsonCarpetaCicle)).getBody();
+
+                JsonObject jsonCarpetaAlumne = new JsonObject();
+                jsonCarpetaAlumne.addProperty("folderName", cognoms+" "+nom);
+                jsonCarpetaAlumne.addProperty("email", email);
+                jsonCarpetaAlumne.addProperty("parentFolderId", carpetaCicle.getId());
+
+                File carpetaAlumne = this.createFolder(gson.toJson(jsonCarpetaAlumne)).getBody();
+
+                //Fer còpia
+                JsonObject jsonFitxer = new JsonObject();
+                jsonFitxer.addProperty("idFile", document.getIdGoogleDrive());
+                jsonFitxer.addProperty("email", email);
+                jsonFitxer.addProperty("filename", cognoms+" "+nom+"_"+nomDocument);
+                jsonFitxer.addProperty("parentFolderId", carpetaAlumne.getId());
+                jsonFitxer.addProperty("originalName", document.getNomOriginal());
+
+                File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
+
+                //Desem el fitxer
+                JsonObject tipusFitxer = new JsonObject();
+                tipusFitxer.addProperty("id", document.getTipusDocument().getIdTipusDocument());
+
+
+                JsonObject jsonFitxerDesat = new JsonObject();
+                jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
+                jsonFitxerDesat.addProperty("path", FOLDER_BASE+"/"+cicle+"/"+cognoms+" "+nom+"/"+cognoms+" "+nom+"_"+nomDocument);
+                jsonFitxerDesat.addProperty("email", email);
+                jsonFitxerDesat.addProperty("tipus", nomDocument);
+                jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                jsonFitxerDesat.add("tipusDocument", tipusFitxer);
+                jsonFitxerDesat.addProperty("idusuari", document.getIdUsuari());
+                jsonFitxerDesat.addProperty("codiGrup", cicle);
+
+                this.createDocument(gson.toJson(jsonFitxerDesat));
+            }
+        }
     }
 
 
@@ -186,6 +368,8 @@ public class FCTController {
         if(jsonObject.get("usuari")!=null && !jsonObject.get("usuari").isJsonNull()) {
             JsonObject jsonObjectUsuari = jsonObject.get("usuari").getAsJsonObject();
             idUsuari = jsonObjectUsuari.get("id").getAsLong();
+        } else if(jsonObject.get("idusuari")!=null && !jsonObject.get("idusuari").isJsonNull()){
+            idUsuari = jsonObject.get("idusuari").getAsLong();
         }
 
 

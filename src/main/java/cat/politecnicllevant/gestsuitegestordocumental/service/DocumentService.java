@@ -9,6 +9,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentSignat
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import com.google.api.services.drive.model.File;
 import com.google.gson.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,16 +18,22 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class DocumentService {
 
     public final DocumentRepository documentRepository;
     public final DocumentSignaturaRepository documentSignaturaRepository;
 
     public final CoreRestClient coreRestClient;
+
+    @Value("${public.password}")
+    private String publicPassword;
 
     public DocumentService(
             DocumentRepository documentRepository,
@@ -120,7 +127,12 @@ public class DocumentService {
 
         if(driveFile.getOwners() != null && !driveFile.getOwners().isEmpty()) {
             document.setOwnerGoogleDrive(driveFile.getOwners().get(0).getDisplayName());
-            document.setIdUsuari(coreRestClient.getUsuariByEmail(driveFile.getOwners().get(0).getEmailAddress()).getBody().getIdusuari());
+            try {
+                document.setIdUsuari(coreRestClient.getUsuariByEmail(driveFile.getOwners().get(0).getEmailAddress()).getBody().getIdusuari());
+            } catch (Exception e) {
+                String token = coreRestClient.getToken(publicPassword).getBody();
+                document.setIdUsuari(coreRestClient.getUsuariByEmailSystem(driveFile.getOwners().get(0).getEmailAddress(),token).getBody().getIdusuari());
+            }
         }
 
         return document;

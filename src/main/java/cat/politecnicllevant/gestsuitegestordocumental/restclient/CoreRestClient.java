@@ -4,6 +4,9 @@ import cat.politecnicllevant.gestsuitegestordocumental.dto.FileUploadDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.GrupDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
+import feign.HeaderMap;
+import feign.Headers;
+import feign.Param;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(name = "core")
 public interface CoreRestClient {
@@ -23,6 +27,12 @@ public interface CoreRestClient {
     @GetMapping("/usuaris/profile-by-email/{id}")
     ResponseEntity<UsuariDto> getUsuariByEmail(@PathVariable("id") String email) throws Exception;
 
+    @GetMapping("/usuaris/profile-by-email/{id}/{token}")
+    ResponseEntity<UsuariDto> getUsuariByEmailSystem(@PathVariable("id") String email,@PathVariable(value = "token", required = false) String token) throws Exception;
+
+    //@GetMapping(value = "/usuaris/profile-by-email/{id}")
+    //ResponseEntity<UsuariDto> getUsuariByEmail(@PathVariable("id") String email,@PathVariable("token") String token) throws Exception;
+
     @GetMapping("/public/usuaris/profile/{id}")
     ResponseEntity<UsuariDto> getPublicProfile(@PathVariable("id") String idUsuari) throws Exception;
 
@@ -31,6 +41,12 @@ public interface CoreRestClient {
 
     @GetMapping("/usuaris/alumnes-by-codigrup/{cursgrup}")
     ResponseEntity<List<UsuariDto>> getAlumnesByCodiGrup(@PathVariable("cursgrup") String cursGrup);
+
+    @GetMapping("/usuaris/tutorfct-by-codigrup/{cursgrup}")
+    ResponseEntity<List<UsuariDto>> getTutorFCTByCodiGrup(@PathVariable("cursgrup") String cursGrup);
+
+    @PostMapping("/auth/admin/token")
+    ResponseEntity<String> getToken(@RequestBody String password);
 
     //GRUP
     @GetMapping("/grup/getById/{idgrup}")
