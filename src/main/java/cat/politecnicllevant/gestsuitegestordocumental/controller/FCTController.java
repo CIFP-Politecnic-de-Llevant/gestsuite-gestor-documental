@@ -65,6 +65,18 @@ public class FCTController {
     @Value("${public.password}")
     private String publicPassword;
 
+    @Value("${app.google.drive.user.path}")
+    private String userPath;
+
+    @Value("${app.google.drive.user.email}")
+    private String userEmail;
+
+    @Value("${app.google.drive.shared.path}")
+    private String sharedDrivePath;
+
+    @Value("${app.google.drive.shared.id}")
+    private String sharedDriveId;
+
     public FCTController(
             GoogleDriveService googleDriveService,
             CoreRestClient coreRestClient,
@@ -97,12 +109,10 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     public void sincronitzaDocumentsAutomatic() throws Exception {
         log.info("Sincronitzant documents...");
 
-        final String path = "FCT";
-        //final String path = "FCT JOAN";
-        final String email = "qualitat@politecnicllevant.cat";
-        final String FOLDER_BASE = "Curs Actual/0206 FCT i FP Dual/Documentació FCT alumnes 23-24/Documentació en tràmit";
-        //final String FOLDER_BASE = "FCT JOAN RESOLT";
-        final String APP_SHAREDDRIVE_GESTORDOCUMENTAL="0ADWttZJyM1ByUk9PVA";
+        final String path = userPath;
+        final String email = userEmail;
+        final String FOLDER_BASE = sharedDrivePath;
+        final String APP_SHAREDDRIVE_GESTORDOCUMENTAL=sharedDriveId;
 
 
         List<File> driveFiles = googleDriveService.getFilesInFolder(path,email);

@@ -36,7 +36,7 @@ public class GoogleDriveService {
     @Value("${gc.nomprojecte}")
     private String nomProjecte;
 
-    @Value("${app.shared-drive-id}")
+    @Value("${app.google.drive.shared.id}")
     private String sharedDriveId;
 
     public void prova() throws IOException, GeneralSecurityException {
