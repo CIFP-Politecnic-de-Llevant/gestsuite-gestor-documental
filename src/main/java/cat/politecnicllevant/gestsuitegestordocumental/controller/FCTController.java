@@ -62,9 +62,6 @@ public class FCTController {
     @Value("${gc.storage.convalidacions.path-files}")
     private String bucketPathFiles;
 
-    @Value("${public.password}")
-    private String publicPassword;
-
     @Value("${app.google.drive.user.path}")
     private String userPath;
 
