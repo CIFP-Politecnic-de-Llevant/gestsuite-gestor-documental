@@ -542,6 +542,22 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 
+    @PostMapping("/document/canviarEstatDocument")
+    public ResponseEntity<Notificacio> canviarEstatDocument(@RequestBody String json) throws Exception {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        Long idDocument = jsonObject.get("idDocument").getAsLong();
+        String estat = jsonObject.get("estat").getAsString();
+
+        DocumentDto document = documentService.getDocumentById(idDocument);
+        document.setEstat(DocumentEstatDto.valueOf(estat));
+        documentService.save(document);
+
+        Notificacio notificacio = new Notificacio();
+        notificacio.setNotifyMessage("Estat canviat correctament");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
     @PostMapping("/document/get-url")
     public ResponseEntity<String> getURL(@RequestBody String json) throws Exception {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
