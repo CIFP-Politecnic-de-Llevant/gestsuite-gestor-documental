@@ -44,6 +44,10 @@ public class Document {
     @Column(name = "grup_codi", nullable = true, length = 10)
     private String grupCodi;
 
+    @Column(name = "estat", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private DocumentEstat estat;
+
 
     //MS CORE
     @Column(name = "idusuari", nullable = true)
