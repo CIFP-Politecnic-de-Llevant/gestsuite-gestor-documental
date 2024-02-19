@@ -23,6 +23,9 @@ public class DocumentDto {
     private String modifiedTimeGoogleDrive;
     private String grupCodi;
 
+    //ESTAT
+    private DocumentEstatDto estat;
+
     //MS CORE
     private Long idUsuari;
     private Long idFitxer;

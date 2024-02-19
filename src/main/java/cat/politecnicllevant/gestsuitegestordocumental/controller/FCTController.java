@@ -122,6 +122,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
             if(document == null){
                 document = documentService.getDocumentByGoogleDriveFile(driveFile);
+                document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
 
                 documents.add(document);
                 //documentService.save(document);
@@ -421,6 +422,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         if(tipusDocumentDto!=null) {
             document.setTipusDocument(tipusDocumentDto);
         }
+        document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
         DocumentDto documentSaved = documentService.save(document);
 
         //Creem les signatures
