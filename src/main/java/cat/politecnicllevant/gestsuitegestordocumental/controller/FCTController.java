@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,17 +63,17 @@ public class FCTController {
     @Value("${gc.storage.convalidacions.path-files}")
     private String bucketPathFiles;
 
-    @Value("${app.google.drive.user.path}")
-    private String userPath;
-
     @Value("${app.google.drive.user.email}")
     private String userEmail;
 
-    @Value("${app.google.drive.shared.path}")
-    private String sharedDrivePath;
+    @Value("${app.environment}")
+    private String environment;
 
     @Value("${app.google.drive.shared.id}")
     private String sharedDriveId;
+
+    private String userPath;
+    private String sharedDrivePath;
 
     public FCTController(
             GoogleDriveService googleDriveService,
@@ -90,6 +91,17 @@ public class FCTController {
         this.signaturaService = signaturaService;
         this.documentSignaturaService = documentSignaturaService;
         this.gson = gson;
+    }
+
+    @PostConstruct
+    private void postConstruct() {
+        if(environment.equals("dev")){
+            userPath = "FCT JOAN";
+            sharedDrivePath = "FCT JOAN RESOLT àèèòñ";
+        } else {
+            userPath = "FCT";
+            sharedDrivePath = "Curs Actual/0206 FCT i FP Dual/Documentació FCT alumnes 23-24/Documentació en tràmit";
+        }
     }
 
 
@@ -276,6 +288,34 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
     }
 
+    @PostMapping("/documents/save")
+    public ResponseEntity<DocumentDto> saveDocument(@RequestBody String json) throws Exception {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+
+        Long idusuari = null;
+        if(jsonObject.get("idusuari")!=null && !jsonObject.get("idusuari").isJsonNull()){
+            idusuari = jsonObject.get("idusuari").getAsLong();
+        }
+        String curs = jsonObject.get("curs").getAsString();
+
+        JsonObject documentJson = jsonObject.get("document").getAsJsonObject();
+        DocumentDto document = gson.fromJson(documentJson, DocumentDto.class);
+
+        document.setIdUsuari(idusuari);
+        document.setGrupCodi(curs);
+
+        if(document.getEstat()==null){
+            document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
+        }
+        if(document.getPathGoogleDrive()==null){
+            document.setPathGoogleDrive("");
+        }
+        if(document.getIdGoogleDrive()==null){
+            document.setIdGoogleDrive("");
+        }
+        DocumentDto documentSaved = documentService.save(document);
+        return new ResponseEntity<>(documentSaved, HttpStatus.OK);
+    }
 
     @GetMapping("/autoritzats")
     public ResponseEntity<List<UsuariDto>> getAutoritzats() throws Exception {
