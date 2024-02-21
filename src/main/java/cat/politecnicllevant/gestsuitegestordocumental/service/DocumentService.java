@@ -97,8 +97,12 @@ public class DocumentService {
         ModelMapper modelMapper = new ModelMapper();
         Document document = modelMapper.map(documentDto,Document.class);
 
-        //Comprovem si el document ja existeix i si és així el sobreescrivim
-        documentRepository.findByNomOriginal(documentDto.getNomOriginal()).ifPresent(documentOriginal -> document.setIdDocument(documentOriginal.getIdDocument()));
+        //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
+        int i = 1;
+        while(documentRepository.findByNomOriginal(document.getNomOriginal()).isPresent()){
+            document.setNomOriginal(document.getNomOriginal()+"_"+i);
+            i++;
+        }
 
         Document documentSaved = documentRepository.save(document);
         return modelMapper.map(documentSaved,DocumentDto.class);

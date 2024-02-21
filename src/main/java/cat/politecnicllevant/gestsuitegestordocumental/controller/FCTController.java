@@ -288,7 +288,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
     }
 
-    @PostMapping("/documents/save")
+    @PostMapping("/documents/saveDocumentExtra")
     public ResponseEntity<DocumentDto> saveDocument(@RequestBody String json) throws Exception {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
 
@@ -297,6 +297,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             idusuari = jsonObject.get("idusuari").getAsLong();
         }
         String curs = jsonObject.get("curs").getAsString();
+        String tipusDocument = jsonObject.get("tipusDocument").getAsString();
 
         JsonObject documentJson = jsonObject.get("document").getAsJsonObject();
         DocumentDto document = gson.fromJson(documentJson, DocumentDto.class);
@@ -313,6 +314,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         if(document.getIdGoogleDrive()==null){
             document.setIdGoogleDrive("");
         }
+        TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipusDocument);
+        document.setTipusDocument(tipusDocumentDto);
+        
         DocumentDto documentSaved = documentService.save(document);
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }
@@ -461,6 +465,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipus);
         if(tipusDocumentDto!=null) {
             document.setTipusDocument(tipusDocumentDto);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
         DocumentDto documentSaved = documentService.save(document);
