@@ -284,6 +284,25 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 jsonFitxerDesat.addProperty("codiGrup", cicle);
 
                 this.createDocument(gson.toJson(jsonFitxerDesat));
+
+                //Si és un document d'empresa avisem al coordinador FCT
+                if(tipusDocumentDto.getNom().contains("Dades alumne empresa")){
+                    JsonObject jsonNotificacio = new JsonObject();
+                    jsonNotificacio.addProperty("assumpte", "Document d'empresa pujat a "+cicle+" per "+cognoms+" "+nom);
+                    jsonNotificacio.addProperty("missatge", "Document d'empresa pujat a "+cicle+" per "+cognoms+" "+nom+" amb el número d'expedient "+numExpedient);
+                    jsonNotificacio.addProperty("to", "ppulido@politecnicllevant.cat");
+
+                    coreRestClient.sendEmail(gson.toJson(jsonNotificacio));
+
+                    /** TODO - Avisar al coordinador/s FCT
+                    /*List<UsuariDto> coordinadorsFCT = this.coreRestClient.getCoordinadorFCT().getBody();
+                    if(coordinadosrFCT!=null){
+                        Notificacio notificacio = new Notificacio();
+                        notificacio.setNotifyMessage("S'ha pujat un document de dades d'empresa de l'alumne "+cognoms+" "+nom+" amb el número d'expedient "+numExpedient);
+                        notificacio.setNotifyType(NotificacioTipus.INFO);
+                        this.coreRestClient.sendNotification(notificacio, coordinadorFCT.getIdusuari());
+                    }*/
+                }
             }
         }
     }
@@ -316,7 +335,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
         TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipusDocument);
         document.setTipusDocument(tipusDocumentDto);
-        
+
         DocumentDto documentSaved = documentService.save(document);
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }

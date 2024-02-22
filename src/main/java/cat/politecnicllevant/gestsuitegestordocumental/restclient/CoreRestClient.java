@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
@@ -68,6 +69,7 @@ public interface CoreRestClient {
     @PostMapping("/public/fitxerbucket/uploadlocal2")
     ResponseEntity<String> handleFileUpload2(@RequestBody FileUploadDto uploadfile) throws IOException;
 
+
     //GOOGLE STORAGE
     @PostMapping(value = "/googlestorage/generate-signed-url")
     ResponseEntity<String> generateSignedURL(@RequestBody String json) throws IOException;
@@ -75,5 +77,11 @@ public interface CoreRestClient {
     @PostMapping("/googlestorage/uploadobject")
     ResponseEntity<FitxerBucketDto> uploadObject(@RequestParam("objectName") String objectName, @RequestParam("filePath") String filePath, @RequestParam("bucket") String bucket) throws IOException, GeneralSecurityException;
 
+    //GMAIL
+    @PostMapping(value="/gsuite/sendemailattachment-path")
+    void sendEmailAttachmentPath(@RequestParam("to") String to, @RequestParam("assumpte") String assumpte, @RequestParam("body") String bodyHTML, @RequestParam("path") String filepath) throws IOException, MessagingException, GeneralSecurityException;
+
+    @PostMapping("/gsuite/sendemail")
+    void sendEmail(@RequestBody String json) throws IOException, MessagingException, GeneralSecurityException;
 
 }
