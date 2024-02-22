@@ -287,6 +287,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
                 //Si és un document d'empresa avisem al coordinador FCT
                 if(tipusDocumentDto.getNom().contains("Dades alumne empresa")){
+                    /** TODO - Avisar al coordinador/s FCT **/
                     JsonObject jsonNotificacio = new JsonObject();
                     jsonNotificacio.addProperty("assumpte", "Document d'empresa pujat a "+cicle+" per "+cognoms+" "+nom);
                     jsonNotificacio.addProperty("missatge", "Document d'empresa pujat a "+cicle+" per "+cognoms+" "+nom+" amb el número d'expedient "+numExpedient);
@@ -294,7 +295,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
                     coreRestClient.sendEmail(gson.toJson(jsonNotificacio));
 
-                    /** TODO - Avisar al coordinador/s FCT
                     /*List<UsuariDto> coordinadorsFCT = this.coreRestClient.getCoordinadorFCT().getBody();
                     if(coordinadosrFCT!=null){
                         Notificacio notificacio = new Notificacio();
