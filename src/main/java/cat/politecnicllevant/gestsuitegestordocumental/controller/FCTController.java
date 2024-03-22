@@ -339,12 +339,12 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipusDocument);
         document.setTipusDocument(tipusDocumentDto);
 
-        //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
+        /*//Comprovem si el document ja existeix el nom, en posem  un altre d'únic
         int i = 1;
         while(documentService.findByNomOriginal(document.getNomOriginal()) != null){
             document.setNomOriginal(document.getNomOriginal()+"_"+i);
             i++;
-        }
+        }*/
 
         DocumentDto documentSaved = documentService.save(document);
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
