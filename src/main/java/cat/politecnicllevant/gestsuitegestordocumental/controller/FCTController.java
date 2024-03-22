@@ -672,6 +672,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String remotePath = "";
         try {
             byte[] fileContent = Files.readAllBytes(f.toPath());
+            System.out.println("Name: "+f.getName());
             FileUploadDto fileUploadDTO = new FileUploadDto(f.getName(), fileContent);
             ResponseEntity<String> response = coreRestClient.handleFileUpload2(fileUploadDTO);
             remotePath = response.getBody();
@@ -680,7 +681,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             //System.out.println(e.getMessage());
         }
 
-        ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal(), remotePath, bucketName);
+        ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal()+".pdf", remotePath, bucketName);
         FitxerBucketDto fitxerBucket = fitxerBucketResponse.getBody();
 
         //Save the file
