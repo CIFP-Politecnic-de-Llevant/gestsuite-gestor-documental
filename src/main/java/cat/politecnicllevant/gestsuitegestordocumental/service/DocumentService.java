@@ -97,15 +97,14 @@ public class DocumentService {
         ModelMapper modelMapper = new ModelMapper();
         Document document = modelMapper.map(documentDto,Document.class);
 
-        //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
-        int i = 1;
-        while(documentRepository.findByNomOriginal(document.getNomOriginal()).isPresent()){
-            document.setNomOriginal(document.getNomOriginal()+"_"+i);
-            i++;
-        }
-
         Document documentSaved = documentRepository.save(document);
         return modelMapper.map(documentSaved,DocumentDto.class);
+    }
+
+    public DocumentDto findByNomOriginal(String nomOriginal) {
+        ModelMapper modelMapper = new ModelMapper();
+        Document document = documentRepository.findByNomOriginal(nomOriginal).orElse(null);
+        return modelMapper.map(document,DocumentDto.class);
     }
 
     public DocumentDto getDocumentByGoogleDriveFile(File driveFile) throws Exception {

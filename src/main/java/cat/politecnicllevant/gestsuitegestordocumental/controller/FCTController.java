@@ -196,20 +196,23 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
                 File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
 
-                //Desem el fitxer
-                JsonObject tipusFitxer = new JsonObject();
-                tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
+                //Desem el fitxer NOMÉS si no existeix
+                DocumentDto documentSaved = documentService.getDocumentByOriginalName(document.getNomOriginal());
+                if(documentSaved == null) {
+                    JsonObject tipusFitxer = new JsonObject();
+                    tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
 
-                JsonObject jsonFitxerDesat = new JsonObject();
-                jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
-                jsonFitxerDesat.addProperty("path", FOLDER_BASE+"/"+cicle+"/"+nomDocument);
-                jsonFitxerDesat.addProperty("email", email);
-                jsonFitxerDesat.addProperty("tipus", nomDocument);
-                jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
-                jsonFitxerDesat.add("tipusDocument", tipusFitxer);
-                jsonFitxerDesat.addProperty("codiGrup", cicle);
+                    JsonObject jsonFitxerDesat = new JsonObject();
+                    jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
+                    jsonFitxerDesat.addProperty("path", FOLDER_BASE + "/" + cicle + "/" + nomDocument);
+                    jsonFitxerDesat.addProperty("email", email);
+                    jsonFitxerDesat.addProperty("tipus", nomDocument);
+                    jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                    jsonFitxerDesat.add("tipusDocument", tipusFitxer);
+                    jsonFitxerDesat.addProperty("codiGrup", cicle);
 
-                this.createDocument(gson.toJson(jsonFitxerDesat));
+                    this.createDocument(gson.toJson(jsonFitxerDesat));
+                }
 
             } else if(documentParts.length==5){
                 String cicle = documentParts[0];
@@ -335,6 +338,13 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
         TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipusDocument);
         document.setTipusDocument(tipusDocumentDto);
+
+        //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
+        int i = 1;
+        while(documentService.findByNomOriginal(document.getNomOriginal()) != null){
+            document.setNomOriginal(document.getNomOriginal()+"_"+i);
+            i++;
+        }
 
         DocumentDto documentSaved = documentService.save(document);
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
