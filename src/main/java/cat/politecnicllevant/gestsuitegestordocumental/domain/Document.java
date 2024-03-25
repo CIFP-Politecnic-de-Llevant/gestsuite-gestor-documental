@@ -48,6 +48,9 @@ public class Document {
     @Enumerated(EnumType.STRING)
     private DocumentEstat estat;
 
+    @Column(name = "visibilitat", nullable = false)
+    private Boolean visibilitat;
+
 
     //MS CORE
     @Column(name = "idusuari", nullable = true)

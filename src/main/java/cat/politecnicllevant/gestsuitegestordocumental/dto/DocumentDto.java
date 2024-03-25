@@ -23,6 +23,9 @@ public class DocumentDto {
     private String modifiedTimeGoogleDrive;
     private String grupCodi;
 
+    //VISIBILITAT
+    private Boolean visibilitat;
+
     //ESTAT
     private DocumentEstatDto estat;
 
