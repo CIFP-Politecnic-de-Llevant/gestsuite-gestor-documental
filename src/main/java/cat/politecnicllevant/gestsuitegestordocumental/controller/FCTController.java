@@ -524,7 +524,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             }
         }
 
-        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull()) {
+        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull() && !environment.equals("dev")) {
             JsonArray editors = jsonObject.get("editors").getAsJsonArray();
             for (JsonElement editor : editors) {
                 this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.FILE_ORGANIZER, editor.getAsString(), email);
@@ -566,7 +566,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             }
         }
 
-        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull()) {
+        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull() && !environment.equals("dev")) {
             JsonArray editors = jsonObject.get("editors").getAsJsonArray();
             for (JsonElement editor : editors) {
                 this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.FILE_ORGANIZER, editor.getAsString(), email);
