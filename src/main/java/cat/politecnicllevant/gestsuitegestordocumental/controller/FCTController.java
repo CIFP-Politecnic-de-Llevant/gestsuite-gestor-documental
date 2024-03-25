@@ -2,7 +2,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
@@ -22,8 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 
 import java.io.*;
@@ -501,6 +498,16 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
 
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
+    }
+
+    @PostMapping("/documents/eliminar-document")
+    public ResponseEntity<String> deleteDocument(@RequestBody String json) {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        String documentId = jsonObject.get("documentId").getAsString();
+        String email = jsonObject.get("email").getAsString();
+
+        googleDriveService.deleteFileById(documentId, email);
+        return new ResponseEntity<>("Eliminat", HttpStatus.OK);
     }
 
 
