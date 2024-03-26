@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -93,6 +94,7 @@ public class DocumentService {
         return modelMapper.map(document,DocumentDto.class);
     }
 
+    @Transactional
     public DocumentDto save(DocumentDto documentDto){
         ModelMapper modelMapper = new ModelMapper();
         Document document = modelMapper.map(documentDto,Document.class);
@@ -106,6 +108,11 @@ public class DocumentService {
 
         Document documentSaved = documentRepository.save(document);
         return modelMapper.map(documentSaved,DocumentDto.class);
+    }
+
+    @Transactional
+    public void deleteAllByIdUsuari(Long idusuari) {
+        documentRepository.deleteAllByIdUsuari(idusuari);
     }
 
     public DocumentDto getDocumentByGoogleDriveFile(File driveFile) throws Exception {
