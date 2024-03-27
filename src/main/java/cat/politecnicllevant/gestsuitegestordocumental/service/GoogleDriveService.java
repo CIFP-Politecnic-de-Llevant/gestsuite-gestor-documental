@@ -195,6 +195,24 @@ public class GoogleDriveService {
         return null;
     }
 
+    public void deleteFolder(String folderName, String user, String idParent) {
+        try {
+            String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+            HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
+
+            String folderId = getFolderIdByNameAndIdParent(service, folderName, idParent, this.sharedDriveId);
+
+            service.files().delete(folderId).setSupportsAllDrives(true).execute();
+        } catch (IOException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void assignPermission(File file,PermissionType permissionType, PermissionRole permissionRole, String email, String user){
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};

@@ -505,11 +505,11 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         JsonArray documentIds = jsonObject.get("documentIds").getAsJsonArray();
         String email = jsonObject.get("email").getAsString();
+        String folderName = jsonObject.get("folderName").getAsString();
+        String parentFolderId = jsonObject.get("parentFolderId").getAsString();
 
         for (JsonElement id : documentIds) {
-
             DocumentDto documentDto = this.documentService.getDocumentByIdGoogleDrive(id.getAsString());
-
 
             this.googleDriveService.deleteFileById(id.getAsString(), email);
             this.documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
@@ -518,9 +518,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         Long alumneId = this.documentService.getDocumentByIdGoogleDrive(documentIds.get(0)
                 .getAsString())
                 .getIdUsuari();
-
         this.documentService.deleteAllByIdUsuari(alumneId);
 
+        this.googleDriveService.deleteFolder(folderName, email, parentFolderId);
 
         return new ResponseEntity<>("Eliminat", HttpStatus.OK);
     }
