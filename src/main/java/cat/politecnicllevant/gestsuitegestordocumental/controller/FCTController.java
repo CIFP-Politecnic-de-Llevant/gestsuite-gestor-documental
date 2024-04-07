@@ -9,6 +9,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.*;
+import com.ctc.wstx.evt.WstxEventReader;
 import com.google.api.services.drive.model.File;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -17,6 +18,12 @@ import com.google.gson.JsonObject;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +32,11 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @Slf4j
@@ -713,5 +718,52 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
 
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PostMapping("/alumnes/saveFile")
+    public ResponseEntity<String> saveFile(@RequestParam("file") MultipartFile file) throws Exception {
+
+        try(InputStream inpSt = file.getInputStream()){
+            Workbook workbook = new HSSFWorkbook(inpSt);
+            Sheet sheet = workbook.getSheetAt(4);
+
+            List<AlumneDto> alumnes = new ArrayList<AlumneDto>();
+            List<String> headers = Arrays.asList("Llinatges i nom","Ensenyament","Estudis","Grup","Exp.",
+                    "Sexe","Edat","Data de naixement","Nacionalitat","País naixement","Província naixement",
+                    "DNI","Targeta sanitària","CIP","Adreça (Corresp.)","Municipi","Localitat","CP.","Tel. fix",
+                    "E-mail","Tutor/a","Tel. tutor/a","E-mail tutor/a","DNI tutor/a","Carrer i número","Nacionalitat pares o tutors");
+            List<String> headersAux = new ArrayList<>();
+            boolean isHeader = true;
+
+
+            // Iterar sobre las filas de la hoja
+            Iterator<Row> rowIterator = sheet.iterator();
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+
+                AlumneDto alumne = new AlumneDto();
+
+                // Iterar sobre las celdas de la fila actual
+                Iterator<Cell> cellIterator = row.cellIterator();
+                while (cellIterator.hasNext()) {
+
+                    Cell cell = cellIterator.next();
+                    System.out.println("2.while -> " + cell);
+                    if(isHeader){
+                        headersAux.add(String.valueOf(cell));
+                    }else {
+
+                    }
+                }
+                System.out.println(headersAux);
+                isHeader = false;
+                System.out.println(); // Salto de línea después de leer una fila completa
+            }
+            return new ResponseEntity<>("Guardat", HttpStatus.OK);
+        }catch (Exception e) {
+            // Manejar cualquier excepción que pueda ocurrir durante el procesamiento del archivo
+            return new ResponseEntity<>("Error al procesar el archivo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 }
