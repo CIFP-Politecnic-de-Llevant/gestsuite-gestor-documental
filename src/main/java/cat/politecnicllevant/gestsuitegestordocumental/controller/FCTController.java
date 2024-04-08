@@ -35,8 +35,13 @@ import jakarta.servlet.http.Part;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @Slf4j
@@ -719,13 +724,13 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
+/*
     @PostMapping("/alumnes/saveFile")
-    public ResponseEntity<String> saveFile(@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<String> saveFilePrimer(@RequestParam("file") MultipartFile file) throws Exception {
 
         try(InputStream inpSt = file.getInputStream()){
             Workbook workbook = new HSSFWorkbook(inpSt);
-            Sheet sheet = workbook.getSheetAt(4);
+            Sheet sheet = workbook.getSheetAt(0);
 
             List<AlumneDto> alumnes = new ArrayList<AlumneDto>();
             List<String> headers = Arrays.asList("Llinatges i nom","Ensenyament","Estudis","Grup","Exp.",
@@ -765,5 +770,204 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             return new ResponseEntity<>("Error al procesar el archivo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+    }
+
+ */
+    @PostMapping("/alumnes/saveFile")
+    public ResponseEntity<String> saveFile(@RequestParam("file") MultipartFile file) throws Exception {
+
+        try(InputStream inpSt = file.getInputStream()){
+            Workbook workbook = new HSSFWorkbook(inpSt);
+            Sheet sheet = workbook.getSheetAt(0);
+
+            List<AlumneDto> alumnes = new ArrayList<AlumneDto>();
+
+            Map<String, Method> setterStudent = getSettersStudent();
+
+
+            //Conseguir el headers del fitxer
+            Row headerRow = sheet.getRow(4);
+            List<String> headers = getHeaders(headerRow);
+
+            System.out.println("loc encabezado cogido -> " + headers);
+
+            Iterator<Row> rowIterator = sheet.iterator();
+            //Botas fins després dels headers(si estan sempre a la mateixa fila)
+            for (int i = 0; i < 4; i++) {
+                if (rowIterator.hasNext()) {
+                    rowIterator.next();
+                }
+            }
+
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                AlumneDto alumne = new AlumneDto();
+
+                Iterator<Cell> cellIterator = row.cellIterator();
+                int index = 0;
+
+                while (cellIterator.hasNext() && index < headers.size()) {
+
+                    Cell cell = cellIterator.next();
+                    //System.out.println("while -> " + cell);
+                    String cellValue = cell.getStringCellValue().trim();
+                    String header = headers.get(index);
+
+                    DateTimeFormatter formatoFechanacimineto = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+                    // Buscar el método setter correspondiente y establecer el valor del campo
+
+                    Method setter = setterStudent.get(header);
+                    if (setter != null) {
+                        try {
+                            if(header.equals("Data de naixement")) {
+                                LocalDate fechaNacimiento = LocalDate.parse(cellValue, formatoFechanacimineto);
+                                setter.invoke(alumne, fechaNacimiento);
+                            }else if(header.equals("Exp.") || header.equals("CP.")){
+                                setter.invoke(alumne,Long.parseLong(cellValue));
+                            }else if(header.equals("Llinatges i nom")){
+
+                                String[] partesNombre = cellValue.split(",\\s+");
+                                String[] apellidos = partesNombre[0].split("\\s+");
+                                String apellido1 = apellidos[0];
+                                String apellido2 = apellidos.length > 1 ? apellidos[1] : "";
+                                String nombre = partesNombre[1];
+
+
+                                setterStudent.get("cognom1").invoke(alumne, apellido1);
+                                setterStudent.get("cognom2").invoke(alumne, apellido2);
+                                setterStudent.get("Llinatges i nom").invoke(alumne, nombre);
+                            }else if(header.equals("Tel. fix")){
+
+                                String[] telefonos = cellValue.split("Tel");
+
+                                for (int i = 0; i < telefonos.length; i++) {
+
+                                    if(telefonos[i].contains("fix")){
+
+                                        System.out.println("Fix ->" + telefonos[i]);
+                                        String[] fix = cellValue.split(":\\s+");
+                                        System.out.println("Numero" + fix[1]);
+                                        setterStudent.get("Tel. fix").invoke(alumne, Long.parseLong(fix[1]));
+
+                                    }else if(telefonos[i].contains("mòbil")) {
+                                        System.out.println("Mobil ->" + telefonos[i]);
+                                        String[] mobil = cellValue.split(":\\s+");
+                                        System.out.println("Numero" + mobil[1]);
+                                        setterStudent.get("mobil").invoke(alumne, Long.parseLong(mobil[1]));
+
+                                    }
+                                }
+                            }else if(header.equals("Tutor/a")){
+                                Pattern patron = Pattern.compile("\\((.*?)\\)\\s(.*?),\\s((?:\\p{L}+\\s)?\\p{L}+)");
+
+                                Matcher matcher = patron.matcher(cellValue);
+
+                                System.out.println(cellValue);
+
+                                while (matcher.find()) {
+
+                                    String tipusTutor = matcher.group(1);
+                                    System.out.println("Tipus -> " + tipusTutor);
+
+                                    String nombreCompleto;
+
+                                    System.out.println("Match2 -> " + matcher.group(2));
+                                    System.out.println("Match3 -> " + matcher.group(3));
+
+                                    nombreCompleto = matcher.group(2) + ", " + matcher.group(3);
+
+                                    switch (tipusTutor) {
+                                        case "A" -> {
+                                            setterStudent.get("Tutor/a").invoke(alumne, nombreCompleto);
+                                            System.out.println("Alumne -> " + nombreCompleto);
+                                        }
+                                        case "P" -> {
+                                            setterStudent.get("pare").invoke(alumne, nombreCompleto);
+                                            System.out.println("Pare -> " + nombreCompleto);
+                                        }
+                                        case "M" -> {
+                                            setterStudent.get("mare").invoke(alumne, nombreCompleto);
+                                            System.out.println("Mare -> " + nombreCompleto);
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                setter.invoke(alumne, cellValue);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    index++;
+                }
+                System.out.println("Alumne -> " + alumne);
+                System.out.println(); // Salto de línea después de leer una fila completa
+            }
+            return new ResponseEntity<>("Guardat", HttpStatus.OK);
+        }catch (Exception e) {
+            // Manejar cualquier excepción que pueda ocurrir durante el procesamiento del archivo
+            return new ResponseEntity<>("Error al procesar el archivo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private static Map<String,Method> getSettersStudent() throws NoSuchMethodException {
+
+        Map<String, Method> setterStudent = new HashMap<>();
+        setterStudent.put("Llinatges i nom", AlumneDto.class.getMethod("setNom", String.class));
+        setterStudent.put("cognom1", AlumneDto.class.getMethod("setCognom1", String.class));
+        setterStudent.put("cognom2", AlumneDto.class.getMethod("setCognom2", String.class));
+        setterStudent.put("Ensenyament", AlumneDto.class.getMethod("setEnsenyament", String.class));
+        setterStudent.put("Estudis", AlumneDto.class.getMethod("setEstudis", String.class));
+        setterStudent.put("Grup", AlumneDto.class.getMethod("setGrup", String.class));
+        setterStudent.put("Exp.", AlumneDto.class.getMethod("setNumero_expedient", Long.class));
+        setterStudent.put("Sexe", AlumneDto.class.getMethod("setSexe", String.class));
+        setterStudent.put("Data de naixement", AlumneDto.class.getMethod("setData_naixament", LocalDate.class));
+        setterStudent.put("Nacionalitat", AlumneDto.class.getMethod("setNacionalitat", String.class));
+        setterStudent.put("País naixement", AlumneDto.class.getMethod("setPais_naixament", String.class));
+        setterStudent.put("Província naixement", AlumneDto.class.getMethod("setProvincia_naixament", String.class));
+        setterStudent.put("Localitat naixament", AlumneDto.class.getMethod("setLocalitat_naixament", String.class));
+        setterStudent.put("DNI", AlumneDto.class.getMethod("setDni", String.class));
+        setterStudent.put("Targeta sanitària", AlumneDto.class.getMethod("setTargeta_sanitaria", String.class));
+        setterStudent.put("CIP", AlumneDto.class.getMethod("setCIP", String.class));
+        setterStudent.put("Adreça (Corresp.)", AlumneDto.class.getMethod("setAdreça_completa", String.class));
+        setterStudent.put("Municipi", AlumneDto.class.getMethod("setMinucipi", String.class));
+        setterStudent.put("Localitat", AlumneDto.class.getMethod("setLocalitat", String.class));
+        setterStudent.put("CP.", AlumneDto.class.getMethod("setCP", Long.class));
+        setterStudent.put("mobil", AlumneDto.class.getMethod("setTelefon", Long.class));
+        setterStudent.put("Tel. fix", AlumneDto.class.getMethod("setTelefon_fix", Long.class));
+        setterStudent.put("E-mail", AlumneDto.class.getMethod("setEmail", String.class));
+        setterStudent.put("Tutor/a", AlumneDto.class.getMethod("setTutor", String.class));
+        setterStudent.put("pare", AlumneDto.class.getMethod("setPare", String.class));
+        setterStudent.put("mare", AlumneDto.class.getMethod("setMare", String.class));
+        setterStudent.put("Tel. tutor/a", AlumneDto.class.getMethod("setTelefon_tutor", Long.class));
+        //setterStudent.put("Tel. tutor/a", AlumneDto.class.getMethod("setTelefonPare", Long.class));
+        //setterStudent.put("Tel. tutor/a", AlumneDto.class.getMethod("setTelefonMare", Long.class));
+        setterStudent.put("E-mail tutor/a", AlumneDto.class.getMethod("setEmail_tutor", String.class));
+        //setterStudent.put("E-mail tutor/a", AlumneDto.class.getMethod("setEmailPare", String.class));
+        //setterStudent.put("E-mail tutor/a", AlumneDto.class.getMethod("setEmailMare", String.class));
+        setterStudent.put("DNI tutor/a", AlumneDto.class.getMethod("setDni_tutor", String.class));
+        //setterStudent.put("DNI tutor/a", AlumneDto.class.getMethod("setDniPare", String.class));
+        //setterStudent.put("DNI tutor/a", AlumneDto.class.getMethod("setDniMare", String.class));
+        setterStudent.put("Adreça pares o tutors (Corresp.)", AlumneDto.class.getMethod("setAdreça_tutor", String.class));
+        //setterStudent.put("Adreça pares o tutors (Corresp.)", AlumneDto.class.getMethod("setAdreçaPare", String.class));
+        //setterStudent.put("Adreça pares o tutors (Corresp.)", AlumneDto.class.getMethod("setAdreçaMare", String.class));
+        setterStudent.put("Nacionalitat pares o tutors", AlumneDto.class.getMethod("setNacionalitat_tutor", String.class));
+        //setterStudent.put("Nacionalitat pares o tutors", AlumneDto.class.getMethod("setNacionalitatPare", String.class));
+        //setterStudent.put("Nacionalitat pares o tutors", AlumneDto.class.getMethod("setNacionalitatMare", String.class));
+
+        return setterStudent;
+    }
+
+    private static List<String> getHeaders(Row headerRow) {
+        List<String> headers = new ArrayList<>();
+        if (headerRow != null) {
+            for (Cell cell : headerRow) {
+                String header = cell.getStringCellValue();
+                headers.add(header);
+            }
+        }
+        return headers;
     }
 }
