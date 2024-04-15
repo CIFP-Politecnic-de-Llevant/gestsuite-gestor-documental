@@ -59,6 +59,8 @@ public class FCTController {
 
     private final DocumentSignaturaService documentSignaturaService;
 
+    private final AlumneService alumneService;
+
     private final Gson gson;
 
     @Value("${app.allowed-users}")
@@ -92,6 +94,7 @@ public class FCTController {
             TipusDocumentService tipusDocumentService,
             SignaturaService signaturaService,
             DocumentSignaturaService documentSignaturaService,
+            AlumneService alumneService,
             Gson gson
     ) {
         this.googleDriveService = googleDriveService;
@@ -100,6 +103,7 @@ public class FCTController {
         this.tipusDocumentService = tipusDocumentService;
         this.signaturaService = signaturaService;
         this.documentSignaturaService = documentSignaturaService;
+        this.alumneService = alumneService;
         this.gson = gson;
     }
 
@@ -724,55 +728,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-/*
-    @PostMapping("/alumnes/saveFile")
-    public ResponseEntity<String> saveFilePrimer(@RequestParam("file") MultipartFile file) throws Exception {
 
-        try(InputStream inpSt = file.getInputStream()){
-            Workbook workbook = new HSSFWorkbook(inpSt);
-            Sheet sheet = workbook.getSheetAt(0);
-
-            List<AlumneDto> alumnes = new ArrayList<AlumneDto>();
-            List<String> headers = Arrays.asList("Llinatges i nom","Ensenyament","Estudis","Grup","Exp.",
-                    "Sexe","Edat","Data de naixement","Nacionalitat","País naixement","Província naixement",
-                    "DNI","Targeta sanitària","CIP","Adreça (Corresp.)","Municipi","Localitat","CP.","Tel. fix",
-                    "E-mail","Tutor/a","Tel. tutor/a","E-mail tutor/a","DNI tutor/a","Carrer i número","Nacionalitat pares o tutors");
-            List<String> headersAux = new ArrayList<>();
-            boolean isHeader = true;
-
-
-            // Iterar sobre las filas de la hoja
-            Iterator<Row> rowIterator = sheet.iterator();
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-
-                AlumneDto alumne = new AlumneDto();
-
-                // Iterar sobre las celdas de la fila actual
-                Iterator<Cell> cellIterator = row.cellIterator();
-                while (cellIterator.hasNext()) {
-
-                    Cell cell = cellIterator.next();
-                    System.out.println("2.while -> " + cell);
-                    if(isHeader){
-                        headersAux.add(String.valueOf(cell));
-                    }else {
-
-                    }
-                }
-                System.out.println(headersAux);
-                isHeader = false;
-                System.out.println(); // Salto de línea después de leer una fila completa
-            }
-            return new ResponseEntity<>("Guardat", HttpStatus.OK);
-        }catch (Exception e) {
-            // Manejar cualquier excepción que pueda ocurrir durante el procesamiento del archivo
-            return new ResponseEntity<>("Error al procesar el archivo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-    }
-
- */
     @PostMapping("/alumnes/saveFile")
     public ResponseEntity<String> saveFile(@RequestParam("file") MultipartFile file) throws Exception {
 
@@ -809,22 +765,24 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 while (cellIterator.hasNext() && index < headers.size()) {
 
                     Cell cell = cellIterator.next();
-                    //System.out.println("while -> " + cell);
                     String cellValue = cell.getStringCellValue().trim();
                     String header = headers.get(index);
 
                     DateTimeFormatter formatoFechanacimineto = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-                    // Buscar el método setter correspondiente y establecer el valor del campo
-
+                    // Cercar els setters corresponents i amb el nom de la capçalera
                     Method setter = setterStudent.get(header);
                     if (setter != null) {
                         try {
                             if(header.equals("Data de naixement")) {
                                 LocalDate fechaNacimiento = LocalDate.parse(cellValue, formatoFechanacimineto);
                                 setter.invoke(alumne, fechaNacimiento);
-                            }else if(header.equals("Exp.") || header.equals("CP.")){
+                            }else if(header.equals("Exp.")){
                                 setter.invoke(alumne,Long.parseLong(cellValue));
+                                UsuariDto user = coreRestClient.getUsuariByNumExpedient(cellValue).getBody();
+                                System.out.println("User -> " + user);
+                                alumne.setIdUsuari(Objects.requireNonNull(user).getIdusuari());
+
                             }else if(header.equals("Llinatges i nom")){
 
                                 String[] partesNombre = cellValue.split(",\\s+");
@@ -833,63 +791,34 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                                 String apellido2 = apellidos.length > 1 ? apellidos[1] : "";
                                 String nombre = partesNombre[1];
 
-
                                 setterStudent.get("cognom1").invoke(alumne, apellido1);
                                 setterStudent.get("cognom2").invoke(alumne, apellido2);
                                 setterStudent.get("Llinatges i nom").invoke(alumne, nombre);
+
                             }else if(header.equals("Tel. fix")){
 
                                 String[] telefonos = cellValue.split("Tel");
+
+                                for (String tel:telefonos) {
+
+                                    System.out.println("split tel ->" + tel);
+                                }
 
                                 for (int i = 0; i < telefonos.length; i++) {
 
                                     if(telefonos[i].contains("fix")){
 
                                         System.out.println("Fix ->" + telefonos[i]);
-                                        String[] fix = cellValue.split(":\\s+");
-                                        System.out.println("Numero" + fix[1]);
-                                        setterStudent.get("Tel. fix").invoke(alumne, Long.parseLong(fix[1]));
+                                        String[] fix = telefonos[i].split(":\\s+");
+                                        System.out.println("Numero F -> " + fix[1].trim());
+                                        setterStudent.get("Tel. fix").invoke(alumne, fix[1].trim());
 
                                     }else if(telefonos[i].contains("mòbil")) {
                                         System.out.println("Mobil ->" + telefonos[i]);
-                                        String[] mobil = cellValue.split(":\\s+");
-                                        System.out.println("Numero" + mobil[1]);
-                                        setterStudent.get("mobil").invoke(alumne, Long.parseLong(mobil[1]));
+                                        String[] mobil = telefonos[i].split(":\\s+");
+                                        System.out.println("Numero M ->" + mobil[1].trim());
+                                        setterStudent.get("mobil").invoke(alumne, mobil[1].trim());
 
-                                    }
-                                }
-                            }else if(header.equals("Tutor/a")){
-                                Pattern patron = Pattern.compile("\\((.*?)\\)\\s(.*?),\\s((?:\\p{L}+\\s)?\\p{L}+)");
-
-                                Matcher matcher = patron.matcher(cellValue);
-
-                                System.out.println(cellValue);
-
-                                while (matcher.find()) {
-
-                                    String tipusTutor = matcher.group(1);
-                                    System.out.println("Tipus -> " + tipusTutor);
-
-                                    String nombreCompleto;
-
-                                    System.out.println("Match2 -> " + matcher.group(2));
-                                    System.out.println("Match3 -> " + matcher.group(3));
-
-                                    nombreCompleto = matcher.group(2) + ", " + matcher.group(3);
-
-                                    switch (tipusTutor) {
-                                        case "A" -> {
-                                            setterStudent.get("Tutor/a").invoke(alumne, nombreCompleto);
-                                            System.out.println("Alumne -> " + nombreCompleto);
-                                        }
-                                        case "P" -> {
-                                            setterStudent.get("pare").invoke(alumne, nombreCompleto);
-                                            System.out.println("Pare -> " + nombreCompleto);
-                                        }
-                                        case "M" -> {
-                                            setterStudent.get("mare").invoke(alumne, nombreCompleto);
-                                            System.out.println("Mare -> " + nombreCompleto);
-                                        }
                                     }
                                 }
                             }
@@ -902,14 +831,38 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     }
                     index++;
                 }
+                alumneService.save(alumne);
                 System.out.println("Alumne -> " + alumne);
-                System.out.println(); // Salto de línea después de leer una fila completa
+                System.out.println();
             }
             return new ResponseEntity<>("Guardat", HttpStatus.OK);
         }catch (Exception e) {
-            // Manejar cualquier excepción que pueda ocurrir durante el procesamiento del archivo
-            return new ResponseEntity<>("Error al procesar el archivo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Error al procesar el fixer: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/alumnes/deleteStudent/{nExp}")
+    public ResponseEntity<Notificacio>deleteStudent(@PathVariable Long nExp){
+
+        boolean eliminado = alumneService.delete(nExp);
+        Notificacio notificacio = new Notificacio();
+
+        if(eliminado) {
+            notificacio.setNotifyMessage("Alumne eliminat correctament");
+            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+            return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        }else {
+            notificacio.setNotifyMessage("Aquest alumne no té número d'expedient");
+            notificacio.setNotifyType(NotificacioTipus.ERROR);
+            return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    @GetMapping("/alumnes/allStudents")
+    public ResponseEntity<List<AlumneDto>>findAllStudents(){
+
+        List<AlumneDto> alumnes = alumneService.findAll();
+        return new ResponseEntity<>(alumnes,HttpStatus.OK);
     }
 
     private static Map<String,Method> getSettersStudent() throws NoSuchMethodException {
@@ -921,41 +874,29 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         setterStudent.put("Ensenyament", AlumneDto.class.getMethod("setEnsenyament", String.class));
         setterStudent.put("Estudis", AlumneDto.class.getMethod("setEstudis", String.class));
         setterStudent.put("Grup", AlumneDto.class.getMethod("setGrup", String.class));
-        setterStudent.put("Exp.", AlumneDto.class.getMethod("setNumero_expedient", Long.class));
+        setterStudent.put("Exp.", AlumneDto.class.getMethod("setNumeroExpedient", Long.class));
         setterStudent.put("Sexe", AlumneDto.class.getMethod("setSexe", String.class));
-        setterStudent.put("Data de naixement", AlumneDto.class.getMethod("setData_naixament", LocalDate.class));
+        setterStudent.put("Data de naixement", AlumneDto.class.getMethod("setDataNaixement", LocalDate.class));
         setterStudent.put("Nacionalitat", AlumneDto.class.getMethod("setNacionalitat", String.class));
-        setterStudent.put("País naixement", AlumneDto.class.getMethod("setPais_naixament", String.class));
-        setterStudent.put("Província naixement", AlumneDto.class.getMethod("setProvincia_naixament", String.class));
-        setterStudent.put("Localitat naixament", AlumneDto.class.getMethod("setLocalitat_naixament", String.class));
+        setterStudent.put("País naixement", AlumneDto.class.getMethod("setPaisNaixement", String.class));
+        setterStudent.put("Província naixement", AlumneDto.class.getMethod("setProvinciaNaixement", String.class));
+        setterStudent.put("Localitat naixement", AlumneDto.class.getMethod("setLocalitatNaixement", String.class));
         setterStudent.put("DNI", AlumneDto.class.getMethod("setDni", String.class));
-        setterStudent.put("Targeta sanitària", AlumneDto.class.getMethod("setTargeta_sanitaria", String.class));
+        setterStudent.put("Targeta sanitària", AlumneDto.class.getMethod("setTargetaSanitaria", String.class));
         setterStudent.put("CIP", AlumneDto.class.getMethod("setCIP", String.class));
-        setterStudent.put("Adreça (Corresp.)", AlumneDto.class.getMethod("setAdreça_completa", String.class));
+        setterStudent.put("Adreça (Corresp.)", AlumneDto.class.getMethod("setAdreçaCompleta", String.class));
         setterStudent.put("Municipi", AlumneDto.class.getMethod("setMinucipi", String.class));
         setterStudent.put("Localitat", AlumneDto.class.getMethod("setLocalitat", String.class));
-        setterStudent.put("CP.", AlumneDto.class.getMethod("setCP", Long.class));
-        setterStudent.put("mobil", AlumneDto.class.getMethod("setTelefon", Long.class));
-        setterStudent.put("Tel. fix", AlumneDto.class.getMethod("setTelefon_fix", Long.class));
+        setterStudent.put("CP.", AlumneDto.class.getMethod("setCP", String.class));
+        setterStudent.put("mobil", AlumneDto.class.getMethod("setTelefon", String.class));
+        setterStudent.put("Tel. fix", AlumneDto.class.getMethod("setTelefonFix", String.class));
         setterStudent.put("E-mail", AlumneDto.class.getMethod("setEmail", String.class));
         setterStudent.put("Tutor/a", AlumneDto.class.getMethod("setTutor", String.class));
-        setterStudent.put("pare", AlumneDto.class.getMethod("setPare", String.class));
-        setterStudent.put("mare", AlumneDto.class.getMethod("setMare", String.class));
-        setterStudent.put("Tel. tutor/a", AlumneDto.class.getMethod("setTelefon_tutor", Long.class));
-        //setterStudent.put("Tel. tutor/a", AlumneDto.class.getMethod("setTelefonPare", Long.class));
-        //setterStudent.put("Tel. tutor/a", AlumneDto.class.getMethod("setTelefonMare", Long.class));
-        setterStudent.put("E-mail tutor/a", AlumneDto.class.getMethod("setEmail_tutor", String.class));
-        //setterStudent.put("E-mail tutor/a", AlumneDto.class.getMethod("setEmailPare", String.class));
-        //setterStudent.put("E-mail tutor/a", AlumneDto.class.getMethod("setEmailMare", String.class));
-        setterStudent.put("DNI tutor/a", AlumneDto.class.getMethod("setDni_tutor", String.class));
-        //setterStudent.put("DNI tutor/a", AlumneDto.class.getMethod("setDniPare", String.class));
-        //setterStudent.put("DNI tutor/a", AlumneDto.class.getMethod("setDniMare", String.class));
-        setterStudent.put("Adreça pares o tutors (Corresp.)", AlumneDto.class.getMethod("setAdreça_tutor", String.class));
-        //setterStudent.put("Adreça pares o tutors (Corresp.)", AlumneDto.class.getMethod("setAdreçaPare", String.class));
-        //setterStudent.put("Adreça pares o tutors (Corresp.)", AlumneDto.class.getMethod("setAdreçaMare", String.class));
-        setterStudent.put("Nacionalitat pares o tutors", AlumneDto.class.getMethod("setNacionalitat_tutor", String.class));
-        //setterStudent.put("Nacionalitat pares o tutors", AlumneDto.class.getMethod("setNacionalitatPare", String.class));
-        //setterStudent.put("Nacionalitat pares o tutors", AlumneDto.class.getMethod("setNacionalitatMare", String.class));
+        setterStudent.put("Tel. tutor/a", AlumneDto.class.getMethod("setTelefonTutor", String.class));
+        setterStudent.put("E-mail tutor/a", AlumneDto.class.getMethod("setEmailTutor", String.class));
+        setterStudent.put("DNI tutor/a", AlumneDto.class.getMethod("setDniTutor", String.class));
+        setterStudent.put("Adreça pares o tutors (Corresp.)", AlumneDto.class.getMethod("setAdreçaTutor", String.class));
+        setterStudent.put("Nacionalitat pares o tutors", AlumneDto.class.getMethod("setNacionalitatTutor", String.class));
 
         return setterStudent;
     }
