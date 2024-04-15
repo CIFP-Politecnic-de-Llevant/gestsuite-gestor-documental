@@ -501,7 +501,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     @PostMapping("/documents/eliminar-documents-alumne")
-    public ResponseEntity<String> deleteDocument(@RequestBody String json) {
+    public ResponseEntity<Notificacio> deleteDocument(@RequestBody String json) {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         JsonArray documentIds = jsonObject.get("documentIds").getAsJsonArray();
         String email = jsonObject.get("email").getAsString();
@@ -522,9 +522,27 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         this.googleDriveService.deleteFolder(folderName, email, parentFolderId);
 
-        return new ResponseEntity<>("Eliminat", HttpStatus.OK);
+        Notificacio notificacio = new Notificacio();
+        notificacio.setNotifyMessage("Documents eliminats");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 
+    @PostMapping("/get-carpeta")
+    public ResponseEntity<File> getFolder(@RequestBody String json) {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        String folderName = jsonObject.get("folderName").getAsString();
+        String email = jsonObject.get("email").getAsString();
+        String parentFolderId = "root";
+
+        if(jsonObject.get("parentFolderId")!=null && !jsonObject.get("parentFolderId").isJsonNull()) {
+            parentFolderId = jsonObject.get("parentFolderId").getAsString();
+        }
+
+        File folder = this.googleDriveService.getFolder(folderName, email, parentFolderId);
+        return new ResponseEntity<>(folder, HttpStatus.OK);
+    }
 
     @PostMapping("/crear-carpeta")
     public ResponseEntity<File> createFolder(@RequestBody String json){
