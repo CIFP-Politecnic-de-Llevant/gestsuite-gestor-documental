@@ -625,7 +625,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
 
     //Revisar per fer que es canvii sa visibilitat
-    @PostMapping("/document/canviarVisibilitatDocument")
+    @PostMapping("/document/canviar-visibilitat-document")
     public ResponseEntity<String> canviarVisibilitatDocument(@RequestBody String json) throws Exception {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         Long idDocument = jsonObject.get("idDocument").getAsLong();
