@@ -9,6 +9,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentReposi
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentSignaturaRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import com.google.api.services.drive.model.File;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -47,9 +48,17 @@ public class DocumentSignaturaService {
         return modelMapper.map(documentSignaturaRepository.findByDocumentAndSignatura(modelMapper.map(documentDto,Document.class),modelMapper.map(signaturaDto,Document.class)).orElse(null),DocumentSignaturaDto.class);
     }
 
+    @Transactional
     public DocumentSignaturaDto save(DocumentSignaturaDto documentSignaturaDto){
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(documentSignaturaRepository.save(modelMapper.map(documentSignaturaDto,DocumentSignatura.class)),DocumentSignaturaDto.class);
+    }
+
+    @Transactional
+    public void deleteSignaturaByDocumentIdDocument(DocumentDto documentDto) {
+        ModelMapper modelMapper = new ModelMapper();
+        Document document = modelMapper.map(documentDto, Document.class);
+        this.documentSignaturaRepository.deleteDocumentSignaturaByDocument(document);
     }
 
 }

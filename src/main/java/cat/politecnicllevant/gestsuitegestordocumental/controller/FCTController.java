@@ -2,7 +2,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
@@ -22,8 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 
 import java.io.*;
@@ -513,6 +510,49 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }
 
+    @PostMapping("/documents/eliminar-documents-alumne")
+    public ResponseEntity<Notificacio> deleteDocument(@RequestBody String json) {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        JsonArray documentIds = jsonObject.get("documentIds").getAsJsonArray();
+        String email = jsonObject.get("email").getAsString();
+        String folderName = jsonObject.get("folderName").getAsString();
+        String parentFolderId = jsonObject.get("parentFolderId").getAsString();
+
+        for (JsonElement id : documentIds) {
+            DocumentDto documentDto = this.documentService.getDocumentByIdGoogleDrive(id.getAsString());
+
+            this.googleDriveService.deleteFileById(id.getAsString(), email);
+            this.documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
+        }
+
+        Long alumneId = this.documentService.getDocumentByIdGoogleDrive(documentIds.get(0)
+                .getAsString())
+                .getIdUsuari();
+        this.documentService.deleteAllByIdUsuari(alumneId);
+
+        this.googleDriveService.deleteFolder(folderName, email, parentFolderId);
+
+        Notificacio notificacio = new Notificacio();
+        notificacio.setNotifyMessage("Documents eliminats");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
+    @PostMapping("/get-carpeta")
+    public ResponseEntity<File> getFolder(@RequestBody String json) {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        String folderName = jsonObject.get("folderName").getAsString();
+        String email = jsonObject.get("email").getAsString();
+        String parentFolderId = "root";
+
+        if(jsonObject.get("parentFolderId")!=null && !jsonObject.get("parentFolderId").isJsonNull()) {
+            parentFolderId = jsonObject.get("parentFolderId").getAsString();
+        }
+
+        File folder = this.googleDriveService.getFolder(folderName, email, parentFolderId);
+        return new ResponseEntity<>(folder, HttpStatus.OK);
+    }
 
     @PostMapping("/crear-carpeta")
     public ResponseEntity<File> createFolder(@RequestBody String json){
@@ -534,7 +574,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             }
         }
 
-        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull()) {
+        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull() && !environment.equals("dev")) {
             JsonArray editors = jsonObject.get("editors").getAsJsonArray();
             for (JsonElement editor : editors) {
                 this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.FILE_ORGANIZER, editor.getAsString(), email);
@@ -576,7 +616,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             }
         }
 
-        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull()) {
+        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull() && !environment.equals("dev")) {
             JsonArray editors = jsonObject.get("editors").getAsJsonArray();
             for (JsonElement editor : editors) {
                 this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.FILE_ORGANIZER, editor.getAsString(), email);
