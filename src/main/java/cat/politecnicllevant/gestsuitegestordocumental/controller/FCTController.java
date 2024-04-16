@@ -72,6 +72,13 @@ public class FCTController {
     private String userPath;
     private String sharedDrivePath;
 
+    // afegit per fer proves en development
+    @Value("${app.google.drive.user.path}")
+    private String envUserPath;
+
+    @Value("${app.google.drive.shared.path}")
+    private String envSharedDrivePath;
+
     public FCTController(
             GoogleDriveService googleDriveService,
             CoreRestClient coreRestClient,
@@ -115,10 +122,15 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     public void sincronitzaDocumentsAutomatic() throws Exception {
         log.info("Sincronitzant documents...");
 
-        final String path = userPath;
+        String path = userPath;
         final String email = userEmail;
-        final String FOLDER_BASE = sharedDrivePath;
+        String FOLDER_BASE = sharedDrivePath;
         final String APP_SHAREDDRIVE_GESTORDOCUMENTAL=sharedDriveId;
+
+        if (environment.equals("dev")) {
+            path = envUserPath;
+            FOLDER_BASE = envSharedDrivePath;
+        }
 
 
         List<File> driveFiles = googleDriveService.getFilesInFolder(path,email);
@@ -211,7 +223,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     this.createDocument(gson.toJson(jsonFitxerDesat));
                 }
 
-            } else if(documentParts.length==5){
+            }
+            else if(documentParts.length==5){
                 String cicle = documentParts[0];
                 String cognoms = documentParts[1];
                 String nom = documentParts[2];
