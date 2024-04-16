@@ -63,8 +63,8 @@ public @Data class Alumne {
     @Column(name = "CIP", nullable = true)
     private Long CIP;
 
-    @Column(name = "adreça_completa", nullable = true, length = 255)
-    private String adreçaCompleta;
+    @Column(name = "adreca_completa", nullable = true, length = 255)
+    private String adrecaCompleta;
 
     @Column(name = "municipi", nullable = true, length = 128)
     private String minucipi;
@@ -96,8 +96,8 @@ public @Data class Alumne {
     @Column(name = "dni_tutor", nullable = true, length = 128)
     private String dniTutor;
 
-    @Column(name = "adreça_tutor", nullable = true, length = 255)
-    private String adreçaTutor;
+    @Column(name = "adreca_tutor", nullable = true, length = 255)
+    private String adrecaTutor;
 
     @Column(name = "nacionalitat_tutor", nullable = true, length = 255)
     private String nacionalitatTutor;

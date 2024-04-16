@@ -729,7 +729,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PostMapping("/alumnes/saveFile")
+    @PostMapping("/alumnes/save-file")
     public ResponseEntity<String> saveFile(@RequestParam("file") MultipartFile file) throws Exception {
 
         try(InputStream inpSt = file.getInputStream()){
@@ -841,7 +841,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
     }
 
-    @GetMapping("/alumnes/deleteStudent/{nExp}")
+    @GetMapping("/alumnes/delete-student/{nExp}")
     public ResponseEntity<Notificacio>deleteStudent(@PathVariable Long nExp){
 
         boolean eliminado = alumneService.delete(nExp);
@@ -858,7 +858,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
     }
 
-    @GetMapping("/alumnes/allStudents")
+    @GetMapping("/alumnes/all-students")
     public ResponseEntity<List<AlumneDto>>findAllStudents(){
 
         List<AlumneDto> alumnes = alumneService.findAll();
@@ -884,7 +884,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         setterStudent.put("DNI", AlumneDto.class.getMethod("setDni", String.class));
         setterStudent.put("Targeta sanitària", AlumneDto.class.getMethod("setTargetaSanitaria", String.class));
         setterStudent.put("CIP", AlumneDto.class.getMethod("setCIP", String.class));
-        setterStudent.put("Adreça (Corresp.)", AlumneDto.class.getMethod("setAdreçaCompleta", String.class));
+        setterStudent.put("Adreça (Corresp.)", AlumneDto.class.getMethod("setAdrecaCompleta", String.class));
         setterStudent.put("Municipi", AlumneDto.class.getMethod("setMinucipi", String.class));
         setterStudent.put("Localitat", AlumneDto.class.getMethod("setLocalitat", String.class));
         setterStudent.put("CP.", AlumneDto.class.getMethod("setCP", String.class));
@@ -895,7 +895,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         setterStudent.put("Tel. tutor/a", AlumneDto.class.getMethod("setTelefonTutor", String.class));
         setterStudent.put("E-mail tutor/a", AlumneDto.class.getMethod("setEmailTutor", String.class));
         setterStudent.put("DNI tutor/a", AlumneDto.class.getMethod("setDniTutor", String.class));
-        setterStudent.put("Adreça pares o tutors (Corresp.)", AlumneDto.class.getMethod("setAdreçaTutor", String.class));
+        setterStudent.put("Adreça pares o tutors (Corresp.)", AlumneDto.class.getMethod("setAdrecaTutor", String.class));
         setterStudent.put("Nacionalitat pares o tutors", AlumneDto.class.getMethod("setNacionalitatTutor", String.class));
 
         return setterStudent;

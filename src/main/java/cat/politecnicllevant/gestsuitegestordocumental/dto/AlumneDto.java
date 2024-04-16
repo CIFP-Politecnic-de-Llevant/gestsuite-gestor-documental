@@ -22,7 +22,7 @@ public @Data class AlumneDto {
      private String dni;
      private String targetaSanitaria;
      private String CIP;
-     private String adreçaCompleta;
+     private String adrecaCompleta;
      private String minucipi;
      private String localitat;
      private String CP;
@@ -33,7 +33,7 @@ public @Data class AlumneDto {
      private String telefonTutor;
      private String emailTutor;
      private String dniTutor;
-     private String adreçaTutor;
+     private String adrecaTutor;
      private String nacionalitatTutor;
      private Long idUsuari;
 
