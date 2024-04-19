@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -729,8 +730,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PostMapping("/alumnes/save-file")
-    public ResponseEntity<String> saveFile(@RequestParam("file") MultipartFile file) throws Exception {
+    @PostMapping("/alumnes/get-students-from-file")
+    public ResponseEntity<List<AlumneDto>> getStudentsFromFile(@RequestParam("file") MultipartFile file) throws Exception {
 
         try(InputStream inpSt = file.getInputStream()){
             Workbook workbook = new HSSFWorkbook(inpSt);
@@ -740,12 +741,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
             Map<String, Method> setterStudent = getSettersStudent();
 
-
             //Conseguir el headers del fitxer
             Row headerRow = sheet.getRow(4);
             List<String> headers = getHeaders(headerRow);
-
-            System.out.println("loc encabezado cogido -> " + headers);
 
             Iterator<Row> rowIterator = sheet.iterator();
             //Botas fins després dels headers(si estan sempre a la mateixa fila)
@@ -780,7 +778,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                             }else if(header.equals("Exp.")){
                                 setter.invoke(alumne,Long.parseLong(cellValue));
                                 UsuariDto user = coreRestClient.getUsuariByNumExpedient(cellValue).getBody();
-                                System.out.println("User -> " + user);
                                 alumne.setIdUsuari(Objects.requireNonNull(user).getIdusuari());
 
                             }else if(header.equals("Llinatges i nom")){
@@ -799,24 +796,15 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
                                 String[] telefonos = cellValue.split("Tel");
 
-                                for (String tel:telefonos) {
-
-                                    System.out.println("split tel ->" + tel);
-                                }
-
                                 for (int i = 0; i < telefonos.length; i++) {
 
                                     if(telefonos[i].contains("fix")){
 
-                                        System.out.println("Fix ->" + telefonos[i]);
                                         String[] fix = telefonos[i].split(":\\s+");
-                                        System.out.println("Numero F -> " + fix[1].trim());
                                         setterStudent.get("Tel. fix").invoke(alumne, fix[1].trim());
 
                                     }else if(telefonos[i].contains("mòbil")) {
-                                        System.out.println("Mobil ->" + telefonos[i]);
                                         String[] mobil = telefonos[i].split(":\\s+");
-                                        System.out.println("Numero M ->" + mobil[1].trim());
                                         setterStudent.get("mobil").invoke(alumne, mobil[1].trim());
 
                                     }
@@ -831,18 +819,17 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     }
                     index++;
                 }
-                alumneService.save(alumne);
-                System.out.println("Alumne -> " + alumne);
-                System.out.println();
+
+                alumnes.add(alumne);
+                //alumneService.save(alumne);
+
             }
-            return new ResponseEntity<>("Guardat", HttpStatus.OK);
-        }catch (Exception e) {
-            return new ResponseEntity<>("Error al procesar el fixer: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(alumnes, HttpStatus.OK);
         }
     }
 
     @GetMapping("/alumnes/delete-student/{nExp}")
-    public ResponseEntity<Notificacio>deleteStudent(@PathVariable Long nExp){
+    public ResponseEntity<Notificacio> deleteStudent(@PathVariable Long nExp){
 
         boolean eliminado = alumneService.delete(nExp);
         Notificacio notificacio = new Notificacio();
@@ -856,6 +843,32 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             notificacio.setNotifyType(NotificacioTipus.ERROR);
             return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
         }
+    }
+
+    @PostMapping("/alumnes/update-student")
+    public ResponseEntity<Notificacio> updateStudent(@RequestBody AlumneDto alumne){
+
+        Notificacio notificacio = new Notificacio();
+
+        alumneService.save(alumne);
+
+        notificacio.setNotifyMessage("Alumne actualitzat");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+    @PostMapping("/alumnes/save-student")
+    public ResponseEntity<Notificacio> saveStudent(@RequestBody List<AlumneDto> alumnes){
+
+        Notificacio notificacio = new Notificacio();
+
+        for (AlumneDto alumne:alumnes) {
+
+            alumneService.save(alumne);
+        }
+
+        notificacio.setNotifyMessage("Alumne actualitzat");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 
     @GetMapping("/alumnes/all-students")
