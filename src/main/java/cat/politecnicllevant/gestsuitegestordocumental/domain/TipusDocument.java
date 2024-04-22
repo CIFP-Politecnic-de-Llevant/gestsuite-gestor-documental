@@ -17,6 +17,9 @@ public class TipusDocument {
     @Column(name = "nom", unique = true, nullable = false, length = 2048)
     private String nom;
 
+    @Column(name = "visibilitat_defecte", nullable = false)
+    private Boolean visibilitatDefecte;
+
     @Column(name = "propietari", nullable = false)
     @Enumerated(EnumType.STRING)
     private TipusDocumentPropietari propietari;

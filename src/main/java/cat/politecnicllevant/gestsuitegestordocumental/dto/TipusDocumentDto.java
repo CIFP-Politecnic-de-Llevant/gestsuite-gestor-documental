@@ -10,4 +10,5 @@ public class TipusDocumentDto {
         private String nom;
         private Set<SignaturaDto> signatures;
         private TipusDocumentPropietariDto propietari;
+        private Boolean visibilitatDefecte;
 }
