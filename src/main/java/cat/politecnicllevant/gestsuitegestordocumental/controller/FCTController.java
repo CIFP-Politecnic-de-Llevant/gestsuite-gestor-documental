@@ -686,6 +686,21 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 
+
+    //Revisar per fer que es canvii sa visibilitat
+    @PostMapping("/document/canviar-visibilitat-document")
+    public ResponseEntity<String> canviarVisibilitatDocument(@RequestBody String json) throws Exception {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        Long idDocument = jsonObject.get("idDocument").getAsLong();
+        boolean visibilitat = jsonObject.get("visibilitat").getAsBoolean();
+
+        DocumentDto document = documentService.getDocumentById(idDocument);
+        document.setVisibilitat(visibilitat);
+        documentService.save(document);
+
+        return new ResponseEntity<>("Canvi fet", HttpStatus.OK);
+    }
+
     @PostMapping("/document/get-url")
     public ResponseEntity<String> getURL(@RequestBody String json) throws Exception {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
