@@ -48,7 +48,7 @@ public class Document {
     @Enumerated(EnumType.STRING)
     private DocumentEstat estat;
 
-    @Column(name = "visibilitat", nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
+    @Column(name = "visibilitat", nullable = false)
     private Boolean visibilitat;
 
 
