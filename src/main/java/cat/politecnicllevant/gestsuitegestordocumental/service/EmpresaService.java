@@ -5,6 +5,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.dto.EmpresaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.EmpresaRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ public class EmpresaService {
         return modelMapper.map(empresaSaved,EmpresaDto.class);
     }
 
+    @Transactional
     public boolean delete(Long id){
 
         empresaRepository.deleteByIdEmpresa(id);
