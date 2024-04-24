@@ -348,6 +348,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
         TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipusDocument);
         document.setTipusDocument(tipusDocumentDto);
+        document.setVisibilitat(true);
 
         /*//Comprovem si el document ja existeix el nom, en posem  un altre d'únic
         int i = 1;
