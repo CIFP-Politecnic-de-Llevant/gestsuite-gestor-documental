@@ -24,6 +24,14 @@ public class EmpresaService {
         ModelMapper modelMapper = new ModelMapper();
         return empresaRepository.findAll().stream().map(e -> modelMapper.map(e,EmpresaDto.class)).collect(Collectors.toList());
     }
+
+    public EmpresaDto findCompany(Long id){
+
+        ModelMapper modelMapper =  new ModelMapper();
+        Empresa e = empresaRepository.findByIdEmpresa(id);
+
+        return modelMapper.map(e,EmpresaDto.class);
+    }
     public EmpresaDto save(EmpresaDto empresa){
 
         ModelMapper modelMapper =  new ModelMapper();

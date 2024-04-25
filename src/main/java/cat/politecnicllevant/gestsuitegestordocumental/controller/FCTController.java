@@ -798,6 +798,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(companies,HttpStatus.OK);
     }
 
+    @PostMapping("/empresa/company/{id}")
+    public ResponseEntity<EmpresaDto> getCompany(@PathVariable Long id){
+
+        EmpresaDto empresa = empresaService.findCompany(id);
+
+        return new ResponseEntity<>(empresa,HttpStatus.OK);
+    }
+
 
     //Acabar eliminar empres, perque abans d'eliminar una empresa hem d'eliminar els llocs de treball
     //!!!!
