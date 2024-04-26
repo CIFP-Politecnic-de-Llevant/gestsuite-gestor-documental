@@ -43,6 +43,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
@@ -730,6 +731,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+
+    //ALUMNE
     @PostMapping("/alumnes/get-students-from-file")
     public ResponseEntity<List<AlumneDto>> getStudentsFromFile(@RequestParam("file") MultipartFile file) throws Exception {
 
@@ -809,8 +812,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
                                     }
                                 }
-                            }
-                            else {
+                            }else {
                                 setter.invoke(alumne, cellValue);
                             }
                         } catch (Exception e) {
@@ -819,10 +821,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     }
                     index++;
                 }
-
                 alumnes.add(alumne);
-                //alumneService.save(alumne);
-
             }
             return new ResponseEntity<>(alumnes, HttpStatus.OK);
         }
@@ -849,7 +848,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     public ResponseEntity<Notificacio> updateStudent(@RequestBody AlumneDto alumne){
 
         Notificacio notificacio = new Notificacio();
-
+        UsuariDto user = coreRestClient.getUsuariByNumExpedient(String.valueOf(alumne.getNumeroExpedient())).getBody();
+        alumne.setIdUsuari(Objects.requireNonNull(user).getIdusuari());
         alumneService.save(alumne);
 
         notificacio.setNotifyMessage("Alumne actualitzat");
@@ -857,16 +857,18 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
     @PostMapping("/alumnes/save-student")
-    public ResponseEntity<Notificacio> saveStudent(@RequestBody List<AlumneDto> alumnes){
+    public ResponseEntity<Notificacio> saveStudent(@RequestBody AlumneDto[] alumnes){
 
         Notificacio notificacio = new Notificacio();
 
         for (AlumneDto alumne:alumnes) {
 
+            UsuariDto user = coreRestClient.getUsuariByNumExpedient(String.valueOf(alumne.getNumeroExpedient())).getBody();
+            alumne.setIdUsuari(Objects.requireNonNull(user).getIdusuari());
             alumneService.save(alumne);
         }
 
-        notificacio.setNotifyMessage("Alumne actualitzat");
+        notificacio.setNotifyMessage("Alumnes guardats i/o actualitzats");
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }

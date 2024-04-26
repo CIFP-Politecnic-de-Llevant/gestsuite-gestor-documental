@@ -32,14 +32,6 @@ public class AlumneService {
         return modelMapper.map(alumneSaved,AlumneDto.class);
     }
 
-    /*
-    public void delete(Long exp, String nom, String cognom1, String cognom2){
-
-        alumneRepository.deleteAlumneByNumeroExpedientAndNomAndCognom1AndCognom2(exp,nom,cognom1,cognom2);
-
-    }
-     */
-
     @Transactional
     public boolean delete(Long exp){
 

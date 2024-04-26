@@ -36,6 +36,4 @@ public @Data class AlumneDto {
      private String adrecaTutor;
      private String nacionalitatTutor;
      private Long idUsuari;
-
-
 }
