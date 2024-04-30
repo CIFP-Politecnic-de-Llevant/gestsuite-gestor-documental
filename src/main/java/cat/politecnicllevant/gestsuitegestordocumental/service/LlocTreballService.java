@@ -1,15 +1,15 @@
 package cat.politecnicllevant.gestsuitegestordocumental.service;
 
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Empresa;
+
 import cat.politecnicllevant.gestsuitegestordocumental.domain.LlocTreball;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.EmpresaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.LlocTreballDto;
-import cat.politecnicllevant.gestsuitegestordocumental.repository.EmpresaRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.LlocTreballRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,13 +34,20 @@ public class LlocTreballService {
 
         return modelMapper.map(llocTreballSaved,LlocTreballDto.class);
     }
+    public List<LlocTreballDto> finaAllWorkspabeByIdCompany(Long id){
 
+        ModelMapper modelMapper = new ModelMapper();
+        return llocTreballRepository.findAllByEmpresa_IdEmpresa(id).stream().map(ll -> modelMapper.map(ll, LlocTreballDto.class)).collect(Collectors.toList());
+    }
+
+    @Transactional
     public boolean deleteById(Long id){
 
         llocTreballRepository.deleteByIdLlocTreball(id);
 
         return !llocTreballRepository.existsById(id) ? true: false;
     }
+    @Transactional
     public boolean deleteByIdEmpresa(Long id){
 
         llocTreballRepository.deleteAllByEmpresa_IdEmpresa(id);

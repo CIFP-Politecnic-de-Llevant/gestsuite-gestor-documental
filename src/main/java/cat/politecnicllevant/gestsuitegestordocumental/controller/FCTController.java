@@ -789,6 +789,17 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
+    @PostMapping("/empresa/update-company")
+    public ResponseEntity<Notificacio> updateCompany(@RequestBody EmpresaDto empresa){
+
+        Notificacio notificacio = new Notificacio();
+
+        empresaService.save(empresa);
+
+        notificacio.setNotifyMessage("Empresa actualitzada");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
 
     @GetMapping("/empresa/all-companies")
     public ResponseEntity<List<EmpresaDto>> allCompanies(){
@@ -801,18 +812,18 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/empresa/company/{id}")
     public ResponseEntity<EmpresaDto> getCompany(@PathVariable Long id){
 
-        EmpresaDto empresa = empresaService.findCompany(id);
+        EmpresaDto empresa = empresaService.findCompanyById(id);
+
+        List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(id);
+        empresa.setLlocsTreball(llocsTreball);
 
         return new ResponseEntity<>(empresa,HttpStatus.OK);
     }
 
-
-    //Acabar eliminar empres, perque abans d'eliminar una empresa hem d'eliminar els llocs de treball
-    //!!!!
-    //!!!!
     @GetMapping("/empresa/delete-company/{id}")
     public ResponseEntity<Notificacio> deleteCompany(@PathVariable Long id){
 
+        llocTreballService.deleteByIdEmpresa(id);
         boolean eliminado = empresaService.delete(id);
         Notificacio notificacio = new Notificacio();
 
@@ -823,6 +834,49 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             return new ResponseEntity<>(notificacio, HttpStatus.OK);
         }else {
             notificacio.setNotifyMessage("Aquest empresa no s'ha pogut eliminar");
+            notificacio.setNotifyType(NotificacioTipus.ERROR);
+            return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    @PostMapping("/empresa/lloc-treball/save-workspace")
+    public ResponseEntity<Notificacio> saveWorkspace(@RequestBody LlocTreballDto llocTreball){
+
+        Notificacio notificacio = new Notificacio();
+
+        System.out.println(llocTreball);
+        llocTreballService.save(llocTreball);
+
+        notificacio.setNotifyMessage("Lloc de treball creat");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+    @PostMapping("/empresa/lloc-treball/update-workspace")
+    public ResponseEntity<Notificacio> updateWorkspace(@RequestBody LlocTreballDto llocTreball){
+
+        Notificacio notificacio = new Notificacio();
+
+        System.out.println(llocTreball);
+        llocTreballService.save(llocTreball);
+
+        notificacio.setNotifyMessage("Lloc de treball actualitzat");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
+    @GetMapping("/empresa/lloc-treball/delete/{id}")
+    public ResponseEntity<Notificacio> deleteWorkspace(@PathVariable Long id){
+
+        boolean eliminado = llocTreballService.deleteById(id);
+        Notificacio notificacio = new Notificacio();
+
+
+        if(eliminado) {
+            notificacio.setNotifyMessage("Lloc de treball eliminat correctament");
+            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+            return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        }else {
+            notificacio.setNotifyMessage("Aquest llod de treball no s'ha pogut eliminar");
             notificacio.setNotifyType(NotificacioTipus.ERROR);
             return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
         }

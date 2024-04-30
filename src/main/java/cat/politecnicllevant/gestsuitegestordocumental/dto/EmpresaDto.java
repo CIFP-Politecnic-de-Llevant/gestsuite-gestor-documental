@@ -3,7 +3,7 @@ package cat.politecnicllevant.gestsuitegestordocumental.dto;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.LlocTreball;
 import lombok.Data;
 
-import java.util.Set;
+import java.util.List;
 
 public @Data class EmpresaDto {
 
@@ -17,5 +17,5 @@ public @Data class EmpresaDto {
     private String poblacio;
     private String provincia;
     private String telefon;
-    private Set<LlocTreball> llocsTreball;
+    private List<LlocTreballDto> llocsTreball;
 }
