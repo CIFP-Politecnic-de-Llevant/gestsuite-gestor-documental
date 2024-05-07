@@ -46,6 +46,8 @@ public class FCTController {
 
     private final DocumentSignaturaService documentSignaturaService;
 
+    private final ProgramaFormatiuService programaFormatiuService;
+
     private final Gson gson;
 
     @Value("${app.allowed-users}")
@@ -86,6 +88,7 @@ public class FCTController {
             TipusDocumentService tipusDocumentService,
             SignaturaService signaturaService,
             DocumentSignaturaService documentSignaturaService,
+            ProgramaFormatiuService programaFormatiuService,
             Gson gson
     ) {
         this.googleDriveService = googleDriveService;
@@ -94,6 +97,7 @@ public class FCTController {
         this.tipusDocumentService = tipusDocumentService;
         this.signaturaService = signaturaService;
         this.documentSignaturaService = documentSignaturaService;
+        this.programaFormatiuService = programaFormatiuService;
         this.gson = gson;
     }
 
@@ -782,5 +786,44 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
 
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //PROGRAMA FORMATIU
+
+    @PostMapping("/programa-formacio/save-task")
+    public ResponseEntity<Notificacio> saveTask(@RequestBody ProgramaFormatiuDto programaFormatiuDto){
+
+        Notificacio notificacio = new Notificacio();
+        System.out.println(programaFormatiuDto);
+        programaFormatiuService.save(programaFormatiuDto);
+
+        if(programaFormatiuDto.getIdPFormatiu() == null){
+            notificacio.setNotifyMessage("Tasca guardada");
+            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+            return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        }else{
+            notificacio.setNotifyMessage("Tasca actualitzada");
+            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+            return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        }
+
+    }
+
+    @GetMapping("/programa-formacio/delete-task/{id}")
+    public ResponseEntity<Notificacio> deleteTask(@PathVariable Long id){
+
+        programaFormatiuService.deleteById(id);
+        Notificacio notificacio = new Notificacio();
+
+        notificacio.setNotifyMessage("Tasca eliminada");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
+    @GetMapping("/programa-formacio/all-PFormatius")
+    public ResponseEntity<List<ProgramaFormatiuDto>>findAllPFormatius(){
+
+        List<ProgramaFormatiuDto> pf = programaFormatiuService.findAll();
+        return new ResponseEntity<>(pf,HttpStatus.OK);
     }
 }
