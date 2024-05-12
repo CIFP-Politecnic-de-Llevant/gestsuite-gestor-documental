@@ -49,6 +49,9 @@ public interface CoreRestClient {
     @PostMapping("/auth/admin/token")
     ResponseEntity<String> getToken(@RequestBody String password);
 
+    //ALUMNE
+
+
     //GRUP
     @GetMapping("/grup/getById/{idgrup}")
     ResponseEntity<GrupDto> getById(@PathVariable("idgrup") Long idgrup);
@@ -68,7 +71,6 @@ public interface CoreRestClient {
 
     @PostMapping("/public/fitxerbucket/uploadlocal2")
     ResponseEntity<String> handleFileUpload2(@RequestBody FileUploadDto uploadfile) throws IOException;
-
 
     //GOOGLE STORAGE
     @PostMapping(value = "/googlestorage/generate-signed-url")
