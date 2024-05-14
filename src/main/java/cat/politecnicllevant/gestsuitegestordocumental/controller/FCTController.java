@@ -1032,6 +1032,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         List<EmpresaDto> companies = empresaService.findAll();
 
+        for (EmpresaDto company:companies){
+
+            List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(company.getIdEmpresa());
+
+            if(llocsTreball != null){
+                company.setLlocsTreball(llocsTreball);
+            }
+        }
         return new ResponseEntity<>(companies,HttpStatus.OK);
     }
 
@@ -1070,7 +1078,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         Notificacio notificacio = new Notificacio();
 
-        System.out.println(llocTreball);
         llocTreballService.save(llocTreball);
 
         notificacio.setNotifyMessage("Lloc de treball creat");
@@ -1106,6 +1113,19 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             notificacio.setNotifyType(NotificacioTipus.ERROR);
             return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
         }
+    }
 
+    //FORMULARI FCT
+
+    @PostMapping("/formulari/save-formulari")
+    public ResponseEntity<Notificacio> saveForm(@RequestBody DadesFormulariDto form){
+
+        Notificacio notificacio = new Notificacio();
+
+        System.out.println(form);
+
+        notificacio.setNotifyMessage("Formulari guardat correctament");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 }
