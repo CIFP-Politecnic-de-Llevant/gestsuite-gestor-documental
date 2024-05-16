@@ -2,13 +2,13 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.*;
+import cat.politecnicllevant.gestsuitegestordocumental.service.pdfbox.PdfService;
 import com.google.api.services.drive.model.File;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -22,15 +22,11 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -64,6 +60,8 @@ public class FCTController {
     private final AlumneService alumneService;
 
     private final Gson gson;
+
+    private final PdfService pdfService;
 
     @Value("${app.allowed-users}")
     private String[] autoritzats;
@@ -106,8 +104,8 @@ public class FCTController {
             AlumneService alumneService,
             EmpresaService empresaService,
             LlocTreballService llocTreballService,
-            Gson gson
-    ) {
+            Gson gson,
+            PdfService pdfService) {
         this.googleDriveService = googleDriveService;
         this.coreRestClient = coreRestClient;
         this.documentService = documentService;
@@ -118,6 +116,7 @@ public class FCTController {
         this.llocTreballService = llocTreballService;
         this.alumneService = alumneService;
         this.gson = gson;
+        this.pdfService = pdfService;
     }
 
     @PostConstruct
@@ -394,6 +393,21 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
         return new ResponseEntity<>(usuarisAutoritzats, HttpStatus.OK);
     }
+
+    @GetMapping("/grups-amb-documentsfct")
+    public ResponseEntity<List<GrupDto>> getGrupsAmbDocuments() {
+        List<String> grups = documentService.findAll().stream().map(DocumentDto::getGrupCodi).toList();
+        Set<String> codis = new HashSet<>(grups);
+
+        List<GrupDto> grupsNoDuplicats = new ArrayList<>();
+        for (String codi : codis) {
+            ResponseEntity<GrupDto> responseEntity = coreRestClient.getByCodigrup(codi);
+            grupsNoDuplicats.add(responseEntity.getBody());
+        }
+
+        return new ResponseEntity<>(grupsNoDuplicats, HttpStatus.OK);
+    }
+
 
     @PostMapping("/documents")
     public ResponseEntity<List<DocumentDto>> getDocumentsByPath(@RequestBody String json) throws Exception {

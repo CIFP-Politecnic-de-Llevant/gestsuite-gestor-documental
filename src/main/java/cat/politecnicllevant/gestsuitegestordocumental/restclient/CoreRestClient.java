@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @FeignClient(name = "core")
 public interface CoreRestClient {
@@ -55,6 +56,9 @@ public interface CoreRestClient {
     //GRUP
     @GetMapping("/grup/getById/{idgrup}")
     ResponseEntity<GrupDto> getById(@PathVariable("idgrup") Long idgrup);
+
+    @GetMapping("/grup/getByCodigrup/{codigrup}")
+    ResponseEntity<GrupDto> getByCodigrup(@PathVariable("codigrup") String codigrup);
 
     //FITXER BUCKET
     @GetMapping("/fitxerbucket/{id}")
