@@ -145,7 +145,7 @@ public class FCTController {
     0 0 2 * * * = a les 2AM de cada dia
      */
     //@Scheduled(cron = "0 0 * * * *")
-    @Scheduled(fixedRate = 60*60*1000, initialDelay = 60*1000)
+    //@Scheduled(fixedRate = 60*60*1000, initialDelay = 60*1000)
     public void sincronitzaDocumentsAutomatic() throws Exception {
         log.info("Sincronitzant documents...");
 
