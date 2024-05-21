@@ -1,9 +1,13 @@
-package cat.politecnicllevant.gestsuitegestordocumental.dto;
+package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-public @Data class DadesFormulariDto {
+@Document(collation = "DadesAlumnes")
+public @Data class DadesFormulari {
 
+    @Id
     private String Id;
     private String anyCurs;
     private String nomAlumne;

@@ -2,7 +2,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
@@ -22,15 +21,11 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,6 +57,8 @@ public class FCTController {
     private final LlocTreballService llocTreballService;
 
     private final AlumneService alumneService;
+
+    private final DadesFormulariService dadesFormulariService;
 
     private final Gson gson;
 
@@ -106,6 +103,7 @@ public class FCTController {
             AlumneService alumneService,
             EmpresaService empresaService,
             LlocTreballService llocTreballService,
+            DadesFormulariService dadesFormulariService,
             Gson gson
     ) {
         this.googleDriveService = googleDriveService;
@@ -117,6 +115,7 @@ public class FCTController {
         this.empresaService = empresaService;
         this.llocTreballService = llocTreballService;
         this.alumneService = alumneService;
+        this.dadesFormulariService = dadesFormulariService;
         this.gson = gson;
     }
 
@@ -1116,13 +1115,13 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     //FORMULARI FCT
-
     @PostMapping("/formulari/save-formulari")
     public ResponseEntity<Notificacio> saveForm(@RequestBody DadesFormulariDto form){
 
         Notificacio notificacio = new Notificacio();
-
-        System.out.println(form);
+        //Si no pos l'ID null el mongo no me le genera automàticament
+        form.setId(null);
+        dadesFormulariService.save(form);
 
         notificacio.setNotifyMessage("Formulari guardat correctament");
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
