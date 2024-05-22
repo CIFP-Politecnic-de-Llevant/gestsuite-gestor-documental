@@ -8,7 +8,6 @@ import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.*;
-import cat.politecnicllevant.gestsuitegestordocumental.service.pdfbox.PdfService;
 import com.google.api.services.drive.model.File;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -61,7 +60,6 @@ public class FCTController {
 
     private final Gson gson;
 
-    private final PdfService pdfService;
 
     @Value("${app.allowed-users}")
     private String[] autoritzats;
@@ -104,8 +102,7 @@ public class FCTController {
             AlumneService alumneService,
             EmpresaService empresaService,
             LlocTreballService llocTreballService,
-            Gson gson,
-            PdfService pdfService) {
+            Gson gson) {
         this.googleDriveService = googleDriveService;
         this.coreRestClient = coreRestClient;
         this.documentService = documentService;
@@ -116,7 +113,6 @@ public class FCTController {
         this.llocTreballService = llocTreballService;
         this.alumneService = alumneService;
         this.gson = gson;
-        this.pdfService = pdfService;
     }
 
     @PostConstruct
