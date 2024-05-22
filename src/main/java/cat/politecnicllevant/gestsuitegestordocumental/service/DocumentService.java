@@ -111,6 +111,11 @@ public class DocumentService {
     }
 
     @Transactional
+    public void deleteByIdDocument(Long idDocument) {
+        documentRepository.deleteByIdDocument(idDocument);
+    }
+
+    @Transactional
     public void deleteAllByIdUsuari(Long idusuari) {
         documentRepository.deleteAllByIdUsuari(idusuari);
     }
