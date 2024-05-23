@@ -2,7 +2,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
@@ -22,15 +21,11 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -400,6 +395,21 @@ public class FCTController {
         }
         return new ResponseEntity<>(usuarisAutoritzats, HttpStatus.OK);
     }
+
+    @GetMapping("/grups-amb-documentsfct")
+    public ResponseEntity<List<GrupDto>> getGrupsAmbDocuments() {
+        List<String> grups = documentService.findAll().stream().map(DocumentDto::getGrupCodi).toList();
+        Set<String> codis = new HashSet<>(grups);
+
+        List<GrupDto> grupsNoDuplicats = new ArrayList<>();
+        for (String codi : codis) {
+            ResponseEntity<GrupDto> responseEntity = coreRestClient.getByCodigrup(codi);
+            grupsNoDuplicats.add(responseEntity.getBody());
+        }
+
+        return new ResponseEntity<>(grupsNoDuplicats, HttpStatus.OK);
+    }
+
 
     @PostMapping("/documents")
     public ResponseEntity<List<DocumentDto>> getDocumentsByPath(@RequestBody String json) throws Exception {
