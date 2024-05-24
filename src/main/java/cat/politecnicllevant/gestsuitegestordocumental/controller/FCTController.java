@@ -581,8 +581,8 @@ public class FCTController {
         if (documentDto.getIdGoogleDrive() != null)
             googleDriveService.deleteFileById(documentDto.getIdGoogleDrive(), email);
 
-        if (documentDto.getIdDriveGoogleDrive() != null)
-            googleDriveService.deleteFileById(documentDto.getIdDriveGoogleDrive(), email);
+        if (documentDto.getIdGoogleSharedDrive() != null)
+            googleDriveService.deleteFileById(documentDto.getIdGoogleSharedDrive(), email);
 
         documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
         documentService.deleteByIdDocument(documentId);
