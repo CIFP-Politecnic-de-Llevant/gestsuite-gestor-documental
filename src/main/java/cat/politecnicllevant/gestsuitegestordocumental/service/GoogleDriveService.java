@@ -154,7 +154,7 @@ public class GoogleDriveService {
 
             Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
 
-            service.files().delete(id).execute();
+            service.files().delete(id).setSupportsAllDrives(true).execute();
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
         }

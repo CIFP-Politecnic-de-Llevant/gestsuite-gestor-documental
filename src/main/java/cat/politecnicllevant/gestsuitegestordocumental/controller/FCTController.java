@@ -568,8 +568,39 @@ public class FCTController {
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }
 
-    @PostMapping("/documents/eliminar-documents-alumne")
+    @PostMapping("/documents/eliminar-document")
     public ResponseEntity<Notificacio> deleteDocument(@RequestBody String json) {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        Long documentId = jsonObject.get("documentId").getAsLong();
+        String email = jsonObject.get("email").getAsString();
+        DocumentDto documentDto = documentService.getDocumentById(documentId);
+
+        if (jsonObject.get("fitxerId") != null) {
+            Long fitxerId = jsonObject.get("fitxerId").getAsLong();
+
+            ResponseEntity<FitxerBucketDto> responseEntity = coreRestClient.getFitxerBucketById(fitxerId);
+            FitxerBucketDto fitxerBucket = responseEntity.getBody();
+            coreRestClient.delete(fitxerBucket);
+        }
+
+        if (documentDto.getIdGoogleDrive() != null)
+            googleDriveService.deleteFileById(documentDto.getIdGoogleDrive(), email);
+
+        if (documentDto.getIdGoogleSharedDrive() != null)
+            googleDriveService.deleteFileById(documentDto.getIdGoogleSharedDrive(), email);
+
+        documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
+        documentService.deleteByIdDocument(documentId);
+
+        Notificacio notificacio = new Notificacio();
+        notificacio.setNotifyMessage("Document eliminat");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
+    @PostMapping("/documents/eliminar-documents-alumne")
+    public ResponseEntity<Notificacio> deleteDocumentsAlumne(@RequestBody String json) {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         JsonArray documentIds = jsonObject.get("documentIds").getAsJsonArray();
         String email = jsonObject.get("email").getAsString();
