@@ -1166,12 +1166,6 @@ public class FCTController {
         }
     }
 
-    //FORMULARI FCT
-    @PostMapping("/formulari/save-formulari")
-    public ResponseEntity<Notificacio> saveForm(@RequestBody DadesFormulariDto form){
-
-    }
-
     //PROGRAMA FORMATIU
 
     @PostMapping("/programa-formacio/save-task")
@@ -1209,13 +1203,5 @@ public class FCTController {
 
         List<ProgramaFormatiuDto> pf = programaFormatiuService.findAll();
         return new ResponseEntity<>(pf,HttpStatus.OK);
-        Notificacio notificacio = new Notificacio();
-        //Si no pos l'ID null el mongo no me le genera automàticament
-        form.setId(null);
-        dadesFormulariService.save(form);
-
-        notificacio.setNotifyMessage("Formulari guardat correctament");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 }
