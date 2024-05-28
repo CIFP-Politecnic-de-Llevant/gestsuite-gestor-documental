@@ -67,7 +67,7 @@ public @Data class Alumne {
     private String adrecaCompleta;
 
     @Column(name = "municipi", nullable = true, length = 128)
-    private String minucipi;
+    private String municipi;
 
     @Column(name = "localitat", nullable = true, length = 128)
     private String localitat;

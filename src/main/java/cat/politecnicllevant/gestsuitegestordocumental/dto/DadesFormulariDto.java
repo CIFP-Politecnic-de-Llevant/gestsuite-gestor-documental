@@ -1,5 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 public @Data class DadesFormulariDto {
@@ -10,6 +11,7 @@ public @Data class DadesFormulariDto {
     private String llinatgesAlumne;
     private String poblacio;
     private String dni;
+    @JsonProperty(value = "nExpedient")
     private String nExpedient;
     private Boolean menorEdat;
     private String edat;
@@ -54,7 +56,7 @@ public @Data class DadesFormulariDto {
     private String nacionalitatTutorEmpresa;
     private String municipiTutorEmpresa;
     private String carrecTutorEmpresa;
-    private String emailEmrpesa;
+    private String emailEmpresa;
     private String diaSeguimentCentreEducatiu;
     private String horaSeguimentCentreEducatiu;
     private String diaSeguimentResponsableFct;

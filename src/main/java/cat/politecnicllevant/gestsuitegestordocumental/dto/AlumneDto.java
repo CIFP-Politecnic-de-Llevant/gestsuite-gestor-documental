@@ -23,7 +23,7 @@ public @Data class AlumneDto {
      private String targetaSanitaria;
      private String CIP;
      private String adrecaCompleta;
-     private String minucipi;
+     private String municipi;
      private String localitat;
      private String CP;
      private String telefon;

@@ -58,7 +58,7 @@ public @Data class DadesFormulari {
     private String nacionalitatTutorEmpresa;
     private String municipiTutorEmpresa;
     private String carrecTutorEmpresa;
-    private String emailEmrpesa;
+    private String emailEmpresa;
     private String diaSeguimentCentreEducatiu;
     private String horaSeguimentCentreEducatiu;
     private String diaSeguimentResponsableFct;

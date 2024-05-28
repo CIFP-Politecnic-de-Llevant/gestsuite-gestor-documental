@@ -3,6 +3,7 @@ package cat.politecnicllevant.gestsuitegestordocumental.service;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.MimeType;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.DadesFormulariDto;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -12,17 +13,23 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.Permission;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class GoogleDriveService {
@@ -37,6 +44,9 @@ public class GoogleDriveService {
 
     @Value("${app.google.drive.shared.id}")
     private String sharedDriveId;
+
+    @Value("${app.google.drive.spreadsheet.shared.id}")
+    private String shareSpredaSheetId;
 
     public void prova() throws IOException, GeneralSecurityException {
         String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
@@ -349,4 +359,95 @@ public class GoogleDriveService {
         System.out.println("No hi ha resultat");
         return null;
     }
+
+    //SpreadSheet
+
+    public int getLastDataRow(String user) throws IOException, GeneralSecurityException {
+
+        String range = "A:Z";
+        String[] scopes = {SheetsScopes.SPREADSHEETS_READONLY};
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+        HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+        Sheets sheetsService = new Sheets.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer)
+                .setApplicationName(this.nomProjecte)
+                .build();
+
+        ValueRange response = sheetsService.spreadsheets().values()
+                .get(this.shareSpredaSheetId, range)
+                .execute();
+
+
+        List<List<Object>> values = response.getValues();
+        int lastRowIndex = values != null ? values.size() : 0;
+
+        if (lastRowIndex > 0) {
+            for (int i = lastRowIndex - 1; i >= 0; i--) {
+                List<Object> row = values.get(i);
+                if (row != null && !row.isEmpty()) {
+                    lastRowIndex = i + 1;
+                    break;
+                }
+            }
+        }
+        return lastRowIndex;
+    }
+
+    public void writeData(Map<String, Method> gettersDataForm, String user, DadesFormulariDto data) throws IOException, GeneralSecurityException, IllegalAccessException, InvocationTargetException {
+
+        int startRowIndex = getLastDataRow(user) + 1;
+        String range = "A" + startRowIndex + ":BZ";
+
+        String[] scopes = {SheetsScopes.SPREADSHEETS};
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+        HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+        Sheets sheetsService = new Sheets.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer)
+                .setApplicationName(this.nomProjecte)
+                .build();
+
+        List<List<Object>> valuesToWrite = new ArrayList<>();
+
+        //Escriure headers
+        if (startRowIndex == 1) {
+            List<Object> headerRow = new ArrayList<>();
+            for (String header : gettersDataForm.keySet()) {
+                headerRow.add(header);
+            }
+            valuesToWrite.add(headerRow);
+        }
+        //Escriure les dades
+        if (data != null) {
+            List<Object> dataRow = new ArrayList<>();
+            for (Map.Entry<String, Method> entry : gettersDataForm.entrySet()) {
+                Object value = entry.getValue().invoke(data);
+                String parseValue = value != null ? value.toString() : "";
+
+                //Aqui dona fallo, arreglar-lo
+                if(parseValue.equals("true")){
+                    System.out.println("entra = " + value);
+                    value = "Si";
+                } else if (parseValue.equals("false")) {
+                    value ="No";
+                    System.out.println("entra = " + value);
+                }
+                System.out.println("Datos en el for =  " + value);
+                dataRow.add(value != null ? value.toString() : "");
+            }
+            valuesToWrite.add(dataRow);
+        }
+
+        ValueRange requestBody = new ValueRange().setValues(valuesToWrite);
+
+        sheetsService.spreadsheets().values()
+                .update(this.shareSpredaSheetId, range, requestBody)
+                .setValueInputOption("USER_ENTERED")
+                .execute();
+    }
+
+
 }
