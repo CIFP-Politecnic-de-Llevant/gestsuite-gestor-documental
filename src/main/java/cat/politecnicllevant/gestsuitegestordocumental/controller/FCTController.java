@@ -1176,8 +1176,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     public ResponseEntity<Notificacio> saveForm(@RequestBody DadesFormulariDto form, @RequestParam String email) throws NoSuchMethodException, GeneralSecurityException, IOException, InvocationTargetException, IllegalAccessException {
 
         Notificacio notificacio = new Notificacio();
-        System.out.println(form);
-        System.out.println("expedient33 = " + form.getNExpedient());
         //Si no pos l'ID null el mongo no me le genera automàticament
         form.setId(null);
         dadesFormulariService.save(form);
@@ -1251,5 +1249,43 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return getterDataForm;
     }
 
+    //PROGRAMA FORMATIU
+
+    @PostMapping("/programa-formacio/save-task")
+    public ResponseEntity<Notificacio> saveTask(@RequestBody ProgramaFormatiuDto programaFormatiuDto){
+
+        Notificacio notificacio = new Notificacio();
+        System.out.println(programaFormatiuDto);
+        programaFormatiuService.save(programaFormatiuDto);
+
+        if(programaFormatiuDto.getIdPFormatiu() == null){
+            notificacio.setNotifyMessage("Tasca guardada");
+            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+            return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        }else{
+            notificacio.setNotifyMessage("Tasca actualitzada");
+            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+            return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        }
+
+    }
+
+    @GetMapping("/programa-formacio/delete-task/{id}")
+    public ResponseEntity<Notificacio> deleteTask(@PathVariable Long id){
+
+        programaFormatiuService.deleteById(id);
+        Notificacio notificacio = new Notificacio();
+
+        notificacio.setNotifyMessage("Tasca eliminada");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
+    @GetMapping("/programa-formacio/all-PFormatius")
+    public ResponseEntity<List<ProgramaFormatiuDto>>findAllPFormatius(){
+
+        List<ProgramaFormatiuDto> pf = programaFormatiuService.findAll();
+        return new ResponseEntity<>(pf,HttpStatus.OK);
+    }
 
 }
