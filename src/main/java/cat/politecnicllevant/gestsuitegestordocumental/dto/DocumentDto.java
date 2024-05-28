@@ -15,6 +15,7 @@ public class DocumentDto {
 
     //GOOGLE DRIVE
     private String idGoogleDrive;
+    private String idGoogleSharedDrive;
     private String idDriveGoogleDrive;
     private String pathGoogleDrive;
     private String ownerGoogleDrive;

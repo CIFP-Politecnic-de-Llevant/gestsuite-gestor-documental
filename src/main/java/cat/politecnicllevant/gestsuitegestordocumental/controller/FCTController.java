@@ -63,6 +63,8 @@ public class FCTController {
 
     private final AlumneService alumneService;
 
+    private final ProgramaFormatiuService programaFormatiuService;
+
     private final DadesFormulariService dadesFormulariService;
 
     private final Gson gson;
@@ -108,6 +110,7 @@ public class FCTController {
             AlumneService alumneService,
             EmpresaService empresaService,
             LlocTreballService llocTreballService,
+            ProgramaFormatiuService programaFormatiuService,
             DadesFormulariService dadesFormulariService,
             Gson gson
     ) {
@@ -120,6 +123,7 @@ public class FCTController {
         this.empresaService = empresaService;
         this.llocTreballService = llocTreballService;
         this.alumneService = alumneService;
+        this.programaFormatiuService = programaFormatiuService;
         this.dadesFormulariService = dadesFormulariService;
         this.gson = gson;
     }
@@ -375,13 +379,15 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
         TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipusDocument);
         document.setTipusDocument(tipusDocumentDto);
+        document.setVisibilitat(tipusDocumentDto.getVisibilitatDefecte());
 
-        /*//Comprovem si el document ja existeix el nom, en posem  un altre d'únic
+        document.setNomOriginal("CUSTOM_"+tipusDocumentDto.getNom()+"_"+curs+"_"+idusuari);
+        //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
         int i = 1;
         while(documentService.findByNomOriginal(document.getNomOriginal()) != null){
             document.setNomOriginal(document.getNomOriginal()+"_"+i);
             i++;
-        }*/
+        }
 
         DocumentDto documentSaved = documentService.save(document);
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
@@ -398,6 +404,21 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
         return new ResponseEntity<>(usuarisAutoritzats, HttpStatus.OK);
     }
+
+    @GetMapping("/grups-amb-documentsfct")
+    public ResponseEntity<List<GrupDto>> getGrupsAmbDocuments() {
+        List<String> grups = documentService.findAll().stream().map(DocumentDto::getGrupCodi).toList();
+        Set<String> codis = new HashSet<>(grups);
+
+        List<GrupDto> grupsNoDuplicats = new ArrayList<>();
+        for (String codi : codis) {
+            ResponseEntity<GrupDto> responseEntity = coreRestClient.getByCodigrup(codi);
+            grupsNoDuplicats.add(responseEntity.getBody());
+        }
+
+        return new ResponseEntity<>(grupsNoDuplicats, HttpStatus.OK);
+    }
+
 
     @PostMapping("/documents")
     public ResponseEntity<List<DocumentDto>> getDocumentsByPath(@RequestBody String json) throws Exception {
@@ -551,8 +572,39 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }
 
-    @PostMapping("/documents/eliminar-documents-alumne")
+    @PostMapping("/documents/eliminar-document")
     public ResponseEntity<Notificacio> deleteDocument(@RequestBody String json) {
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        Long documentId = jsonObject.get("documentId").getAsLong();
+        String email = jsonObject.get("email").getAsString();
+        DocumentDto documentDto = documentService.getDocumentById(documentId);
+
+        if (jsonObject.get("fitxerId") != null) {
+            Long fitxerId = jsonObject.get("fitxerId").getAsLong();
+
+            ResponseEntity<FitxerBucketDto> responseEntity = coreRestClient.getFitxerBucketById(fitxerId);
+            FitxerBucketDto fitxerBucket = responseEntity.getBody();
+            coreRestClient.delete(fitxerBucket);
+        }
+
+        if (documentDto.getIdGoogleDrive() != null)
+            googleDriveService.deleteFileById(documentDto.getIdGoogleDrive(), email);
+
+        if (documentDto.getIdGoogleSharedDrive() != null)
+            googleDriveService.deleteFileById(documentDto.getIdGoogleSharedDrive(), email);
+
+        documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
+        documentService.deleteByIdDocument(documentId);
+
+        Notificacio notificacio = new Notificacio();
+        notificacio.setNotifyMessage("Document eliminat");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
+    @PostMapping("/documents/eliminar-documents-alumne")
+    public ResponseEntity<Notificacio> deleteDocumentsAlumne(@RequestBody String json) {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         JsonArray documentIds = jsonObject.get("documentIds").getAsJsonArray();
         String email = jsonObject.get("email").getAsString();
@@ -979,7 +1031,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         setterStudent.put("Targeta sanitària", AlumneDto.class.getMethod("setTargetaSanitaria", String.class));
         setterStudent.put("CIP", AlumneDto.class.getMethod("setCIP", String.class));
         setterStudent.put("Adreça (Corresp.)", AlumneDto.class.getMethod("setAdrecaCompleta", String.class));
-        setterStudent.put("Municipi", AlumneDto.class.getMethod("setMunicipi", String.class));
+        setterStudent.put("Municipi", AlumneDto.class.getMethod("setMinucipi", String.class));
         setterStudent.put("Localitat", AlumneDto.class.getMethod("setLocalitat", String.class));
         setterStudent.put("CP.", AlumneDto.class.getMethod("setCP", String.class));
         setterStudent.put("mobil", AlumneDto.class.getMethod("setTelefon", String.class));

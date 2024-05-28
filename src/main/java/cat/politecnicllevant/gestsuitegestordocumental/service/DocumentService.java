@@ -95,17 +95,9 @@ public class DocumentService {
     }
 
     @Transactional
-    public DocumentDto save(DocumentDto documentDto){
+    public DocumentDto save(DocumentDto documentDto) {
         ModelMapper modelMapper = new ModelMapper();
         Document document = modelMapper.map(documentDto,Document.class);
-
-        /** TODO: COMPROVAR SI NO ES DUPLICA EL NOM DEL DOCUMENT **/
-        //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
-        int i = 1;
-        while(documentRepository.findByNomOriginal(document.getNomOriginal()).isPresent()){
-            document.setNomOriginal(document.getNomOriginal()+"_"+i);
-            i++;
-        }
 
         Document documentSaved = documentRepository.save(document);
         return modelMapper.map(documentSaved,DocumentDto.class);
@@ -114,7 +106,13 @@ public class DocumentService {
     public DocumentDto findByNomOriginal(String nomOriginal) {
         ModelMapper modelMapper = new ModelMapper();
         Document document = documentRepository.findByNomOriginal(nomOriginal).orElse(null);
+        if(document == null) return null;
         return modelMapper.map(document,DocumentDto.class);
+    }
+
+    @Transactional
+    public void deleteByIdDocument(Long idDocument) {
+        documentRepository.deleteByIdDocument(idDocument);
     }
 
     @Transactional

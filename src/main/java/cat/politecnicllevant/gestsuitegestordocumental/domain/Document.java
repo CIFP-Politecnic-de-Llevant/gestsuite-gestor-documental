@@ -23,6 +23,9 @@ public class Document {
     @Column(name = "id_google_drive", nullable = true, length = 128)
     private String idGoogleDrive;
 
+    @Column(name = "id_google_shared_drive", nullable = true, length = 128)
+    private String idGoogleSharedDrive;
+
     @Column(name = "iddrive_google_drive", nullable = true, length = 128)
     private String idDriveGoogleDrive;
 
