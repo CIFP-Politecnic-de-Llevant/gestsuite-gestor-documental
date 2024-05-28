@@ -2,7 +2,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
@@ -22,15 +21,11 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -64,6 +59,8 @@ public class FCTController {
     private final AlumneService alumneService;
 
     private final ProgramaFormatiuService programaFormatiuService;
+
+    private final DadesFormulariService dadesFormulariService;
 
     private final Gson gson;
 
@@ -109,6 +106,7 @@ public class FCTController {
             EmpresaService empresaService,
             LlocTreballService llocTreballService,
             ProgramaFormatiuService programaFormatiuService,
+            DadesFormulariService dadesFormulariService,
             Gson gson
     ) {
         this.googleDriveService = googleDriveService;
@@ -121,6 +119,7 @@ public class FCTController {
         this.llocTreballService = llocTreballService;
         this.alumneService = alumneService;
         this.programaFormatiuService = programaFormatiuService;
+        this.dadesFormulariService = dadesFormulariService;
         this.gson = gson;
     }
 
@@ -1084,6 +1083,14 @@ public class FCTController {
 
         List<EmpresaDto> companies = empresaService.findAll();
 
+        for (EmpresaDto company:companies){
+
+            List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(company.getIdEmpresa());
+
+            if(llocsTreball != null){
+                company.setLlocsTreball(llocsTreball);
+            }
+        }
         return new ResponseEntity<>(companies,HttpStatus.OK);
     }
 
@@ -1122,7 +1129,6 @@ public class FCTController {
 
         Notificacio notificacio = new Notificacio();
 
-        System.out.println(llocTreball);
         llocTreballService.save(llocTreball);
 
         notificacio.setNotifyMessage("Lloc de treball creat");
@@ -1158,6 +1164,11 @@ public class FCTController {
             notificacio.setNotifyType(NotificacioTipus.ERROR);
             return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
         }
+    }
+
+    //FORMULARI FCT
+    @PostMapping("/formulari/save-formulari")
+    public ResponseEntity<Notificacio> saveForm(@RequestBody DadesFormulariDto form){
 
     }
 
@@ -1198,5 +1209,13 @@ public class FCTController {
 
         List<ProgramaFormatiuDto> pf = programaFormatiuService.findAll();
         return new ResponseEntity<>(pf,HttpStatus.OK);
+        Notificacio notificacio = new Notificacio();
+        //Si no pos l'ID null el mongo no me le genera automàticament
+        form.setId(null);
+        dadesFormulariService.save(form);
+
+        notificacio.setNotifyMessage("Formulari guardat correctament");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 }
