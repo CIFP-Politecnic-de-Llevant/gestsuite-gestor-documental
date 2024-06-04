@@ -26,6 +26,12 @@ public class ProgramaFormatiuService {
         return programaFormatiuRepository.findAll().stream().map(pf->modelMapper.map(pf, ProgramaFormatiuDto.class)).collect(Collectors.toList());
     }
 
+    public List<ProgramaFormatiuDto> findAllById(long id){
+
+        ModelMapper modelMapper = new ModelMapper();
+        return programaFormatiuRepository.findAllByIdGrup(id).stream().map(pf->modelMapper.map(pf, ProgramaFormatiuDto.class)).collect(Collectors.toList());
+    }
+
     @Transactional
     public boolean deleteById (Long id){
 

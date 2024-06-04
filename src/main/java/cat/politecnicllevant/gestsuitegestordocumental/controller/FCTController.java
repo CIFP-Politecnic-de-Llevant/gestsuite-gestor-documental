@@ -30,13 +30,10 @@ import jakarta.servlet.http.Part;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -1230,11 +1227,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         getterDataForm.put("Població Centre de treball", DadesFormulariDto.class.getMethod("getPoblacioLlocTreball"));
         getterDataForm.put("Telèfon Centre de treball", DadesFormulariDto.class.getMethod("getTelefonLlocTreball"));
         getterDataForm.put("Activitat Centre de treball", DadesFormulariDto.class.getMethod("getActivitatLlocTreball"));
-        getterDataForm.put("Nom representant legal", DadesFormulariDto.class.getMethod("getNomRepresentantLegal"));
-        getterDataForm.put("Llinatges representant legal", DadesFormulariDto.class.getMethod("getLlinatgesRepresentantLegal"));
+        getterDataForm.put("Nom complet representant legal", DadesFormulariDto.class.getMethod("getNomCompletRepresentantLegal"));
         getterDataForm.put("NIF representant legal", DadesFormulariDto.class.getMethod("getNifRepresentantLegal"));
-        getterDataForm.put("Nom tutor empresa", DadesFormulariDto.class.getMethod("getNomTutorEmpresa"));
-        getterDataForm.put("Llinatges tutor empresa", DadesFormulariDto.class.getMethod("getLlinatgesTutorEmpresa"));
+        getterDataForm.put("Nom complet tutor empresa", DadesFormulariDto.class.getMethod("getNomCompletTutorEmpresa"));
         getterDataForm.put("NIF tutor empresa", DadesFormulariDto.class.getMethod("getNifTutorEmpresa"));
         getterDataForm.put("Nacionalitat tutor empresa", DadesFormulariDto.class.getMethod("getNacionalitatTutorEmpresa"));
         getterDataForm.put("Municipi tutor empresa", DadesFormulariDto.class.getMethod("getMunicipiTutorEmpresa"));
@@ -1285,6 +1280,12 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     public ResponseEntity<List<ProgramaFormatiuDto>>findAllPFormatius(){
 
         List<ProgramaFormatiuDto> pf = programaFormatiuService.findAll();
+        return new ResponseEntity<>(pf,HttpStatus.OK);
+    }
+    @GetMapping("/programa-formacio/all-PFormatiusById/{id}")
+    public ResponseEntity<List<ProgramaFormatiuDto>>findAllPFormatiusById(@PathVariable Long id){
+
+        List<ProgramaFormatiuDto> pf = programaFormatiuService.findAllById(id);
         return new ResponseEntity<>(pf,HttpStatus.OK);
     }
 
