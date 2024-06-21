@@ -49,11 +49,9 @@ public @Data class DadesFormulari {
     private String poblacioLlocTreball;
     private String telefonLlocTreball;
     private String activitatLlocTreball;
-    private String nomRepresentantLegal;
-    private String llinatgesRepresentantLegal;
+    private String nomCompletRepresentantLegal;
     private String nifRepresentantLegal;
-    private String nomTutorEmpresa;
-    private String llinatgesTutorEmpresa;
+    private String nomCompletTutorEmpresa;
     private String nifTutorEmpresa;
     private String nacionalitatTutorEmpresa;
     private String municipiTutorEmpresa;
