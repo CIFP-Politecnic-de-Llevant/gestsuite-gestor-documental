@@ -61,7 +61,7 @@ public @Data class Alumne {
     private String targetaSanitaria;
 
     @Column(name = "CIP", nullable = true)
-    private Long CIP;
+    private String CIP;
 
     @Column(name = "adreca_completa", nullable = true, length = 255)
     private String adrecaCompleta;
