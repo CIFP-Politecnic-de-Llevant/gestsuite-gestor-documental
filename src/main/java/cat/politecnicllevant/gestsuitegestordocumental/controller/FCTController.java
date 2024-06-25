@@ -1028,7 +1028,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         setterStudent.put("Targeta sanitària", AlumneDto.class.getMethod("setTargetaSanitaria", String.class));
         setterStudent.put("CIP", AlumneDto.class.getMethod("setCIP", String.class));
         setterStudent.put("Adreça (Corresp.)", AlumneDto.class.getMethod("setAdrecaCompleta", String.class));
-        setterStudent.put("Municipi", AlumneDto.class.getMethod("setMinucipi", String.class));
+        setterStudent.put("Municipi", AlumneDto.class.getMethod("setMunicipi", String.class));
         setterStudent.put("Localitat", AlumneDto.class.getMethod("setLocalitat", String.class));
         setterStudent.put("CP.", AlumneDto.class.getMethod("setCP", String.class));
         setterStudent.put("mobil", AlumneDto.class.getMethod("setTelefon", String.class));
