@@ -1000,16 +1000,16 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 AlumneDto alumneDB = alumneService.getByNumeroExpedient(alumne.getNumeroExpedient());
                 if(alumneDB == null){
                     alumneDB = new AlumneDto();
+                    alumneDB.setIdUsuari(user.getIdusuari());
                 }
 
-                alumneDB.setIdUsuari(user.getIdusuari());
                 alumneDB.setNumeroExpedient(user.getGestibExpedient());
                 alumneDB.setNom(user.getGestibNom());
                 alumneDB.setCognom1(user.getGestibCognom1());
                 alumneDB.setCognom2(user.getGestibCognom2());
                 alumneDB.setGrup(user.getGestibGrup());
 
-                alumneService.save(alumne);
+                alumneService.save(alumneDB);
             }
         }
 
