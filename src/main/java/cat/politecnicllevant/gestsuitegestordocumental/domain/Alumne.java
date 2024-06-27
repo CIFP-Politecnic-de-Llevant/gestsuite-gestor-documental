@@ -34,7 +34,7 @@ public @Data class Alumne {
     private String grup;
 
     @Column(name = "numero_expedient", nullable = true)
-    private Long numeroExpedient;
+    private String numeroExpedient;
 
     @Column(name = "sexe", nullable = true, length = 128)
     private String sexe;

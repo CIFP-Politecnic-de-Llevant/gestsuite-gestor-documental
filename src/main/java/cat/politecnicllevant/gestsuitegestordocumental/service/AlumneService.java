@@ -23,21 +23,32 @@ public class AlumneService {
         ModelMapper modelMapper = new ModelMapper();
         return alumneRepository.findAll().stream().map(a -> modelMapper.map(a,AlumneDto.class)).collect(Collectors.toList());
     }
-    public AlumneDto save(AlumneDto alumne){
 
+    public AlumneDto getById(Long id){
+        ModelMapper modelMapper = new ModelMapper();
+        return modelMapper.map(alumneRepository.findById(id).get(),AlumneDto.class);
+    }
+
+    public AlumneDto getByNumeroExpedient(String exp){
+        Alumne alumne = alumneRepository.findByNumeroExpedient(exp);
+        if(alumne != null) {
+            ModelMapper modelMapper = new ModelMapper();
+            return modelMapper.map(alumne, AlumneDto.class);
+        } else {
+            return null;
+        }
+    }
+
+    public void save(AlumneDto alumne){
         ModelMapper modelMapper = new ModelMapper();
         Alumne a = modelMapper.map(alumne,Alumne.class);
-        Alumne alumneSaved = alumneRepository.save(a);
-
-        return modelMapper.map(alumneSaved,AlumneDto.class);
+        alumneRepository.save(a);
     }
 
     @Transactional
-    public boolean delete(Long exp){
-
+    public boolean delete(String exp){
         alumneRepository.deleteAlumneByNumeroExpedient(exp);
-
-        return !alumneRepository.existsByNumeroExpedient(exp) ? true : false;
+        return !alumneRepository.existsByNumeroExpedient(exp);
     }
 
 

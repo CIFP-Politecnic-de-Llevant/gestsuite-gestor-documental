@@ -907,10 +907,11 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                                 LocalDate fechaNacimiento = LocalDate.parse(cellValue, formatoFechanacimineto);
                                 setter.invoke(alumne, fechaNacimiento);
                             }else if(header.equals("Exp.")){
-                                setter.invoke(alumne,Long.parseLong(cellValue));
+                                setter.invoke(alumne,cellValue);
                                 UsuariDto user = coreRestClient.getUsuariByNumExpedient(cellValue).getBody();
-                                alumne.setIdUsuari(Objects.requireNonNull(user).getIdusuari());
-
+                                if(user!=null) {
+                                    alumne.setIdUsuari(user.getIdusuari());
+                                }
                             }else if(header.equals("Llinatges i nom")){
 
                                 String[] partesNombre = cellValue.split(",\\s+");
@@ -949,14 +950,16 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     }
                     index++;
                 }
-                alumnes.add(alumne);
+                if(alumne.getIdUsuari()!=null) {
+                    alumnes.add(alumne);
+                }
             }
             return new ResponseEntity<>(alumnes, HttpStatus.OK);
         }
     }
 
     @GetMapping("/alumnes/delete-student/{nExp}")
-    public ResponseEntity<Notificacio> deleteStudent(@PathVariable Long nExp){
+    public ResponseEntity<Notificacio> deleteStudent(@PathVariable String nExp){
 
         boolean eliminado = alumneService.delete(nExp);
         Notificacio notificacio = new Notificacio();
@@ -991,9 +994,23 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         for (AlumneDto alumne:alumnes) {
 
-            UsuariDto user = coreRestClient.getUsuariByNumExpedient(String.valueOf(alumne.getNumeroExpedient())).getBody();
-            alumne.setIdUsuari(Objects.requireNonNull(user).getIdusuari());
-            alumneService.save(alumne);
+            UsuariDto user = coreRestClient.getUsuariByNumExpedient(alumne.getNumeroExpedient()).getBody();
+            if(user!=null) {
+
+                AlumneDto alumneDB = alumneService.getByNumeroExpedient(alumne.getNumeroExpedient());
+                if(alumneDB == null){
+                    alumneDB = new AlumneDto();
+                }
+
+                alumneDB.setIdUsuari(user.getIdusuari());
+                alumneDB.setNumeroExpedient(user.getGestibExpedient());
+                alumneDB.setNom(user.getGestibNom());
+                alumneDB.setCognom1(user.getGestibCognom1());
+                alumneDB.setCognom2(user.getGestibCognom2());
+                alumneDB.setGrup(user.getGestibGrup());
+
+                alumneService.save(alumne);
+            }
         }
 
         notificacio.setNotifyMessage("Alumnes guardats i/o actualitzats");
@@ -1017,7 +1034,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         setterStudent.put("Ensenyament", AlumneDto.class.getMethod("setEnsenyament", String.class));
         setterStudent.put("Estudis", AlumneDto.class.getMethod("setEstudis", String.class));
         setterStudent.put("Grup", AlumneDto.class.getMethod("setGrup", String.class));
-        setterStudent.put("Exp.", AlumneDto.class.getMethod("setNumeroExpedient", Long.class));
+        setterStudent.put("Exp.", AlumneDto.class.getMethod("setNumeroExpedient", String.class));
         setterStudent.put("Sexe", AlumneDto.class.getMethod("setSexe", String.class));
         setterStudent.put("Data de naixement", AlumneDto.class.getMethod("setDataNaixement", LocalDate.class));
         setterStudent.put("Nacionalitat", AlumneDto.class.getMethod("setNacionalitat", String.class));

@@ -9,7 +9,8 @@ import org.springframework.stereotype.Repository;
 public interface AlumneRepository extends JpaRepository<Alumne,Long> {
 
     //void deleteAlumneByNumeroExpedientAndNomAndCognom1AndCognom2(Long numero_expedient, String nom, String cognom1,String cognom2);
-    void deleteAlumneByNumeroExpedient(Long exp);
+    void deleteAlumneByNumeroExpedient(String exp);
 
-    boolean existsByNumeroExpedient(Long exp);
+    boolean existsByNumeroExpedient(String exp);
+    Alumne findByNumeroExpedient(String exp);
 }

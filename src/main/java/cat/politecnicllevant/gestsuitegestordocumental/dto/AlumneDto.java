@@ -12,7 +12,7 @@ public @Data class AlumneDto {
      private String ensenyament;
      private String estudis;
      private String grup;
-     private Long numeroExpedient;
+     private String numeroExpedient;
      private String sexe;
      private LocalDate dataNaixement;
      private String nacionalitat;
