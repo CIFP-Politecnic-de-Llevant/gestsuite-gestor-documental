@@ -1,12 +1,10 @@
 package cat.politecnicllevant.gestsuitegestordocumental.restclient;
 
+import cat.politecnicllevant.gestsuitegestordocumental.dto.CursAcademicDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.FileUploadDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.GrupDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
-import feign.HeaderMap;
-import feign.Headers;
-import feign.Param;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +14,6 @@ import javax.mail.MessagingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @FeignClient(name = "core")
 public interface CoreRestClient {
@@ -49,6 +45,13 @@ public interface CoreRestClient {
 
     @PostMapping("/auth/admin/token")
     ResponseEntity<String> getToken(@RequestBody String password);
+
+    //CURS ACADEMIC
+    @GetMapping("/cursAcademic/actual")
+    public ResponseEntity<CursAcademicDto> getActualCursAcademic();
+
+    @GetMapping("/cursAcademic/getById/{id}")
+    public ResponseEntity<CursAcademicDto> getCursAcademicById(@PathVariable("id") Long identificador);
 
     //ALUMNE
 
