@@ -20,18 +20,17 @@ public class ConvocatoriaService {
     }
 
     public List<ConvocatoriaDto> findAll(){
-
         ModelMapper modelMapper = new ModelMapper();
         return convocatoriaRepository.findAll().stream().map(e -> modelMapper.map(e,ConvocatoriaDto.class)).collect(Collectors.toList());
     }
 
     public ConvocatoriaDto findConvocatoriaById(Long id){
-
         ModelMapper modelMapper =  new ModelMapper();
         Convocatoria e = convocatoriaRepository.findById(id).orElse(null);
 
         return modelMapper.map(e,ConvocatoriaDto.class);
     }
+
     public ConvocatoriaDto save(ConvocatoriaDto empresa){
         ModelMapper modelMapper =  new ModelMapper();
 
