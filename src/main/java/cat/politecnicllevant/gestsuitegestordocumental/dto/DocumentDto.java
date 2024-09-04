@@ -1,5 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
+import cat.politecnicllevant.gestsuitegestordocumental.domain.Convocatoria;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.DocumentSignatura;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.TipusDocument;
 import jakarta.persistence.*;
@@ -36,6 +37,7 @@ public class DocumentDto {
 
     //FK
     private TipusDocumentDto tipusDocument;
+    private ConvocatoriaDto convocatoria;
     private Set<DocumentSignaturaDto> documentSignatures;
 
 }

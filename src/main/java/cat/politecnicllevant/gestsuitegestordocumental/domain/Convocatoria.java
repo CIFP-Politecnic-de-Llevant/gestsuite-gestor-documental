@@ -13,10 +13,19 @@ public @Data class Convocatoria {
     @Id
     @Column(name = "idConvocatoria")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idEmpresa;
+    private Long idConvocatoria;
 
-    @Column(name = "nom",nullable = true, length = 128)
+    @Column(name = "nom", nullable = true, length = 128)
     private String nom;
+
+    @Column(name = "path",nullable = false)
+    private String path;
+
+    @Column(name = "is_unitat_organitzativa")
+    private Boolean isUnitatOrganitzativa;
+
+    @Column(name = "actual")
+    private Boolean isActual;
 
     @Column(name = "curs_academic",nullable = true, length = 128)
     private Long idCursAcademic;

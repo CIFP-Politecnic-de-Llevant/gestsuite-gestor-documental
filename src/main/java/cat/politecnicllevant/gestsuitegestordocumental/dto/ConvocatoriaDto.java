@@ -1,9 +1,13 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
+import jakarta.persistence.Column;
 import lombok.Data;
 
 public @Data class ConvocatoriaDto {
-    private Long idEmpresa;
+    private Long idConvocatoria;
     private String nom;
+    private String path;
+    private Boolean isUnitatOrganitzativa;
+    private Boolean isActual;
     private Long idCursAcademic;
 }

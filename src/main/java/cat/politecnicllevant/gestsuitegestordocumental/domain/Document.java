@@ -71,6 +71,13 @@ public class Document {
     //@JsonBackReference
     private TipusDocument tipusDocument;
 
+    @ManyToOne
+    @JoinColumn(
+            name = "convocatoria_idconvocatoria",
+            nullable = true)
+    //@JsonBackReference
+    private Convocatoria convocatoria;
+
     @OneToMany(mappedBy="document", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
     private Set<DocumentSignatura> documentSignatures = new HashSet<>();
