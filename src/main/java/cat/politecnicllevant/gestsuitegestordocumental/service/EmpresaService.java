@@ -2,15 +2,12 @@ package cat.politecnicllevant.gestsuitegestordocumental.service;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Empresa;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.EmpresaDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.LlocTreballDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.EmpresaRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service

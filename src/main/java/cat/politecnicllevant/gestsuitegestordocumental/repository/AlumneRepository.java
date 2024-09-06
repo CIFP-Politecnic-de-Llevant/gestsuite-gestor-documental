@@ -1,7 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.repository;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Alumne;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.AlumneDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,12 +1,7 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Convocatoria;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.DocumentSignatura;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.TipusDocument;
-import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Data

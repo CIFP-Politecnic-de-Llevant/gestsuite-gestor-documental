@@ -7,10 +7,9 @@ import lombok.Data;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
 @Entity
 @Table(name = "pll_document")
-public class Document {
+public @Data class Document {
     @Id
     @Column(name = "iddocument")
     @GeneratedValue(strategy = GenerationType.IDENTITY)

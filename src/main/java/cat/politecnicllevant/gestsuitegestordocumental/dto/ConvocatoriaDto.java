@@ -1,6 +1,5 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
-import jakarta.persistence.Column;
 import lombok.Data;
 
 public @Data class ConvocatoriaDto {

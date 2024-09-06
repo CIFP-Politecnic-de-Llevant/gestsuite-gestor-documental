@@ -1,10 +1,7 @@
 package cat.politecnicllevant.gestsuitegestordocumental.service;
 
-import cat.politecnicllevant.gestsuitegestordocumental.domain.TipusDocument;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.SignaturaDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.TipusDocumentDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.SignaturaRepository;
-import cat.politecnicllevant.gestsuitegestordocumental.repository.TipusDocumentRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 

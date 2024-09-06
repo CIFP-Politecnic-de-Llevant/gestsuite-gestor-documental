@@ -1,8 +1,7 @@
 package cat.politecnicllevant.gestsuitegestordocumental.service;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.DocumentSignatura;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.DocumentDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentSignaturaRepository;
@@ -11,17 +10,13 @@ import com.google.api.services.drive.model.File;
 import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service

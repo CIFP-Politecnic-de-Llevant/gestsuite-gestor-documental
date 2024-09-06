@@ -3,6 +3,7 @@ package cat.politecnicllevant.gestsuitegestordocumental.domain;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
+
 import java.sql.Types;
 
 @Entity

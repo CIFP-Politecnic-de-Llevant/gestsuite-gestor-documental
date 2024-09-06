@@ -1,6 +1,5 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
-import cat.politecnicllevant.gestsuitegestordocumental.domain.LlocTreball;
 import lombok.Data;
 
 import java.util.List;
