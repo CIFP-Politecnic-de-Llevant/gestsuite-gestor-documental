@@ -31,6 +31,12 @@ public class ConvocatoriaService {
         return modelMapper.map(e,ConvocatoriaDto.class);
     }
 
+    public ConvocatoriaDto findConvocatoriaActual(){
+        ModelMapper modelMapper =  new ModelMapper();
+        Convocatoria e = convocatoriaRepository.findByIsActualTrue();
+        return modelMapper.map(e,ConvocatoriaDto.class);
+    }
+
     public ConvocatoriaDto save(ConvocatoriaDto empresa){
         ModelMapper modelMapper =  new ModelMapper();
 

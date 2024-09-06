@@ -1,6 +1,8 @@
 package cat.politecnicllevant.gestsuitegestordocumental.service;
 
+import cat.politecnicllevant.gestsuitegestordocumental.domain.Convocatoria;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.ConvocatoriaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.DocumentDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentRepository;
@@ -42,14 +44,18 @@ public class DocumentService {
     }
 
 
-    public List<DocumentDto> findAll(){
+    public List<DocumentDto> findAll(ConvocatoriaDto convocatoria) {
         ModelMapper modelMapper = new ModelMapper();
-        return documentRepository.findAll().stream().map(d->modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
+
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+
+        return documentRepository.findAllByConvocatoria(convocatoriaEntity).stream().map(d->modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
     }
 
-    public List<DocumentDto> findAllByGrupCodi(String grupCodi){
+    public List<DocumentDto> findAllByGrupCodi(String grupCodi, ConvocatoriaDto convocatoria) {
         ModelMapper modelMapper = new ModelMapper();
-        return documentRepository.findAllByGrupCodi(grupCodi).stream().map(d->modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+        return documentRepository.findAllByGrupCodiAndConvocatoria(grupCodi, convocatoriaEntity).stream().map(d->modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
     }
 
     public DocumentDto getDocumentById(Long id) {

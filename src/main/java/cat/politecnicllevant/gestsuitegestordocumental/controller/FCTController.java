@@ -2,6 +2,7 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
+import cat.politecnicllevant.gestsuitegestordocumental.domain.Convocatoria;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
@@ -65,6 +66,7 @@ public class FCTController {
     private final DadesFormulariService dadesFormulariService;
 
     private final Gson gson;
+    private final ConvocatoriaService convocatoriaService;
 
     @Value("${app.allowed-users}")
     private String[] autoritzats;
@@ -109,8 +111,8 @@ public class FCTController {
             LlocTreballService llocTreballService,
             ProgramaFormatiuService programaFormatiuService,
             DadesFormulariService dadesFormulariService,
-            Gson gson
-    ) {
+            Gson gson,
+            ConvocatoriaService convocatoriaService) {
         this.googleDriveService = googleDriveService;
         this.coreRestClient = coreRestClient;
         this.documentService = documentService;
@@ -123,6 +125,7 @@ public class FCTController {
         this.programaFormatiuService = programaFormatiuService;
         this.dadesFormulariService = dadesFormulariService;
         this.gson = gson;
+        this.convocatoriaService = convocatoriaService;
     }
 
     @PostConstruct
@@ -160,6 +163,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             FOLDER_BASE = envSharedDrivePath;
         }
 
+        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
 
         List<File> driveFiles = googleDriveService.getFilesInFolder(path,email);
         List<DocumentDto> documents = new ArrayList<>();
@@ -178,7 +182,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             }
         }
 
-        List<DocumentDto> documentsNoTraspassats = documentService.findAll();
+        List<DocumentDto> documentsNoTraspassats = documentService.findAll(convocatoria);
 
         //Esborrem els documents trobats
         for(DocumentDto documentDto: documentsNoTraspassats){
@@ -404,7 +408,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
     @GetMapping("/grups-amb-documentsfct")
     public ResponseEntity<List<GrupDto>> getGrupsAmbDocuments() {
-        List<String> grups = documentService.findAll().stream().map(DocumentDto::getGrupCodi).toList();
+        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
+        List<String> grups = documentService.findAll(convocatoria).stream().map(DocumentDto::getGrupCodi).toList();
         Set<String> codis = new HashSet<>(grups);
 
         List<GrupDto> grupsNoDuplicats = new ArrayList<>();
@@ -447,6 +452,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String path = jsonObject.get("path").getAsString();
         String email = jsonObject.get("email").getAsString();
 
+        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
+
         List<File> driveFiles = googleDriveService.getFilesInFolder(path,email);
         List<DocumentDto> documents = new ArrayList<>();
         for(File driveFile: driveFiles){
@@ -463,7 +470,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             }
         }
 
-        List<DocumentDto> documentsTraspassats = documentService.findAll();
+        List<DocumentDto> documentsTraspassats = documentService.findAll(convocatoria);
 
         //Esborrem els documents trobats
         for(DocumentDto documentDto: documentsTraspassats){
@@ -475,7 +482,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
     @GetMapping("/documents-grup/{grupCodi}")
     public ResponseEntity<List<DocumentDto>> getDocumentsByGrup(@PathVariable String grupCodi) throws Exception {
-        List<DocumentDto> documents = documentService.findAllByGrupCodi(grupCodi);
+        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
+
+        List<DocumentDto> documents = documentService.findAllByGrupCodi(grupCodi, convocatoria);
 
         for(DocumentDto documentDto: documents){
             List<DocumentSignaturaDto> documentSignaturaDtos = documentSignaturaService.findByDocument(documentDto);
