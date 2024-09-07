@@ -89,15 +89,10 @@ public class FCTController {
     @Value("${app.google.drive.shared.id}")
     private String sharedDriveId;
 
-    private String userPath;
-    private String sharedDrivePath;
-
-    // afegit per fer proves en development
-    @Value("${app.google.drive.user.path}")
-    private String envUserPath;
-
-    @Value("${app.google.drive.shared.path}")
-    private String envSharedDrivePath;
+    private String pathOrigen = "FCT_DEVELOPMENT";
+    private Boolean isUnitatOrganitzativaOrigen = false;
+    private String pathDesti = "FCT_DEVELOPMENT";
+    private Boolean isUnitatOrganitzativaDesti = true;
 
     public FCTController(
             GoogleDriveService googleDriveService,
@@ -130,15 +125,20 @@ public class FCTController {
 
     @PostConstruct
     private void postConstruct() {
-        if(environment.equals("dev")){
+        if(!environment.equals("dev")){
+            ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
+            pathOrigen = convocatoria.getPathOrigen();
+            pathDesti = convocatoria.getPathDesti();
+        }
+
+        /*if(environment.equals("dev")){
             userPath = "FCT JOAN";
             sharedDrivePath = "FCT JOAN RESOLT àèèòñ";
         } else {
             userPath = "FCT";
             sharedDrivePath = "Curs Actual/0206 FCT i FP Dual/Documentació FCT alumnes 23-24/Documentació en tràmit";
-        }
+        }*/
     }
-
 
 
 
@@ -153,15 +153,15 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     public void sincronitzaDocumentsAutomatic() throws Exception {
         log.info("Sincronitzant documents...");
 
-        String path = userPath;
+        String path = pathOrigen;
         final String email = userEmail;
-        String FOLDER_BASE = sharedDrivePath;
+        String FOLDER_BASE = pathDesti;
         final String APP_SHAREDDRIVE_GESTORDOCUMENTAL=sharedDriveId;
 
-        if (environment.equals("dev")) {
+        /*if (environment.equals("dev")) {
             path = envUserPath;
             FOLDER_BASE = envSharedDrivePath;
-        }
+        }*/
 
         ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
 

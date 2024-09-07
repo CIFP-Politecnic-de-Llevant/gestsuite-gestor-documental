@@ -15,11 +15,18 @@ public @Data class Convocatoria {
     @Column(name = "nom", nullable = true, length = 128)
     private String nom;
 
-    @Column(name = "path",nullable = false)
-    private String path;
+    @Column(name = "path_origen",nullable = false)
+    private String pathOrigen;
 
-    @Column(name = "is_unitat_organitzativa")
-    private Boolean isUnitatOrganitzativa;
+    @Column(name = "is_unitat_organitzativa_origen",nullable = false)
+    private Boolean isUnitatOrganitzativaOrigen;
+
+    @Column(name = "path_desti",nullable = false)
+    private String pathDesti;
+
+    @Column(name = "is_unitat_organitzativa_desti",nullable = false)
+    private Boolean isUnitatOrganitzativaDesti;
+
 
     @Column(name = "actual")
     private Boolean isActual;

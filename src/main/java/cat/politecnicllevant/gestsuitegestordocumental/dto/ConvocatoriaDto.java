@@ -5,8 +5,10 @@ import lombok.Data;
 public @Data class ConvocatoriaDto {
     private Long idConvocatoria;
     private String nom;
-    private String path;
-    private Boolean isUnitatOrganitzativa;
+    private String pathOrigen;
+    private Boolean isUnitatOrganitzativaOrigen;
+    private String pathDesti;
+    private Boolean isUnitatOrganitzativaDesti;
     private Boolean isActual;
     private Long idCursAcademic;
 }
