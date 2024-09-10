@@ -127,10 +127,8 @@ public class FCTController {
     private void postConstruct() {
         if(!environment.equals("dev")){
             ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
-            //pathOrigen = convocatoria.getPathOrigen();
-            //pathDesti = convocatoria.getPathDesti();
-            pathOrigen = "FCT JOAN";
-            pathDesti = "FCT JOAN RESOLT àèèòñ";
+            pathOrigen = convocatoria.getPathOrigen();
+            pathDesti = convocatoria.getPathDesti();
         }
 
         /*if(environment.equals("dev")){
