@@ -127,8 +127,10 @@ public class FCTController {
     private void postConstruct() {
         if(!environment.equals("dev")){
             ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
-            pathOrigen = convocatoria.getPathOrigen();
-            pathDesti = convocatoria.getPathDesti();
+            //pathOrigen = convocatoria.getPathOrigen();
+            //pathDesti = convocatoria.getPathDesti();
+            pathOrigen = "FCT JOAN";
+            pathDesti = "FCT JOAN RESOLT àèèòñ";
         }
 
         /*if(environment.equals("dev")){
@@ -406,9 +408,21 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(usuarisAutoritzats, HttpStatus.OK);
     }
 
+    @GetMapping("/convocatories")
+    public ResponseEntity<List<ConvocatoriaDto>> findAllConvocatories() throws Exception {
+        List<ConvocatoriaDto> convocatories = convocatoriaService.findAll();
+
+        return new ResponseEntity<>(convocatories, HttpStatus.OK);
+    }
+
     @GetMapping("/grups-amb-documentsfct")
-    public ResponseEntity<List<GrupDto>> getGrupsAmbDocuments() {
-        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
+    public ResponseEntity<List<GrupDto>> getGrupsAmbDocuments(@RequestParam(required = false) Long idConvocatoria) {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
         List<String> grups = documentService.findAll(convocatoria).stream().map(DocumentDto::getGrupCodi).toList();
         Set<String> codis = new HashSet<>(grups);
 
@@ -481,8 +495,13 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     @GetMapping("/documents-grup/{grupCodi}")
-    public ResponseEntity<List<DocumentDto>> getDocumentsByGrup(@PathVariable String grupCodi) throws Exception {
-        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
+    public ResponseEntity<List<DocumentDto>> getDocumentsByGrup(@PathVariable String grupCodi, @RequestParam(required = false) Long idConvocatoria) throws Exception {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
 
         List<DocumentDto> documents = documentService.findAllByGrupCodi(grupCodi, convocatoria);
 
