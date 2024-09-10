@@ -5,6 +5,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.ConvocatoriaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.DocumentDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
+import cat.politecnicllevant.gestsuitegestordocumental.repository.ConvocatoriaRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentSignaturaRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
@@ -27,6 +28,7 @@ public class DocumentService {
 
     public final DocumentRepository documentRepository;
     public final DocumentSignaturaRepository documentSignaturaRepository;
+    public final ConvocatoriaRepository convocatoriaRepository;
 
     public final CoreRestClient coreRestClient;
 
@@ -35,11 +37,12 @@ public class DocumentService {
 
     public DocumentService(
             DocumentRepository documentRepository,
-            DocumentSignaturaRepository documentSignaturaRepository,
+            DocumentSignaturaRepository documentSignaturaRepository, ConvocatoriaRepository convocatoriaRepository,
             CoreRestClient coreRestClient
     ) {
         this.documentRepository = documentRepository;
         this.documentSignaturaRepository = documentSignaturaRepository;
+        this.convocatoriaRepository = convocatoriaRepository;
         this.coreRestClient = coreRestClient;
     }
 
@@ -99,6 +102,13 @@ public class DocumentService {
     public DocumentDto save(DocumentDto documentDto) {
         ModelMapper modelMapper = new ModelMapper();
         Document document = modelMapper.map(documentDto,Document.class);
+
+        if(document.getConvocatoria()==null || document.getConvocatoria().getIdConvocatoria()==null) {
+            Convocatoria convocatoria = convocatoriaRepository.findByIsActualTrue();
+            if(convocatoria!=null) {
+                document.setConvocatoria(convocatoria);
+            }
+        }
 
         Document documentSaved = documentRepository.save(document);
         return modelMapper.map(documentSaved,DocumentDto.class);
