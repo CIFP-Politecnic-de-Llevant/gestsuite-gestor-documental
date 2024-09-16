@@ -238,7 +238,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
 
                 //Desem el fitxer NOMÉS si no existeix
-                DocumentDto documentSaved = documentService.getDocumentByOriginalName(document.getNomOriginal());
+                DocumentDto documentSaved = documentService.getDocumentByOriginalName(document.getNomOriginal(),convocatoria);
                 if(documentSaved == null) {
                     JsonObject tipusFitxer = new JsonObject();
                     tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
@@ -364,6 +364,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String tipusDocument = jsonObject.get("tipusDocument").getAsString();
 
         JsonObject documentJson = jsonObject.get("document").getAsJsonObject();
+
+        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
+
         DocumentDto document = gson.fromJson(documentJson, DocumentDto.class);
 
         document.setIdUsuari(idusuari);
@@ -385,7 +388,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         document.setNomOriginal("CUSTOM_"+tipusDocumentDto.getNom()+"_"+curs+"_"+idusuari);
         //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
         int i = 1;
-        while(documentService.findByNomOriginal(document.getNomOriginal()) != null){
+        while(documentService.findByNomOriginal(document.getNomOriginal(), convocatoria) != null){
             document.setNomOriginal(document.getNomOriginal()+"_"+i);
             i++;
         }
@@ -543,8 +546,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
 
         File file = googleDriveService.getFileById(idFile,emailUser);
+        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
 
-        DocumentDto document = documentService.getDocumentByOriginalName(originalName);
+        DocumentDto document = documentService.getDocumentByOriginalName(originalName,convocatoria);
 
         if(document == null){
             document = new DocumentDto();
@@ -716,7 +720,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         //Comprovem si ja existeix
         System.out.println("nom original: "+originalName);
-        boolean existDocumentByOriginalName = this.documentService.existDocumentByOriginalName(originalName);
+        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
+        boolean existDocumentByOriginalName = this.documentService.existDocumentByOriginalName(originalName, convocatoria);
 
         if(existDocumentByOriginalName){
             return new ResponseEntity<>(null, HttpStatus.OK);

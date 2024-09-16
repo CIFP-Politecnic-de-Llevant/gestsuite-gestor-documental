@@ -13,7 +13,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findAllByConvocatoria(Convocatoria convocatoria);
     Optional<Document> findByIdDriveGoogleDrive(String idDrive);
     Optional<Document> findByIdGoogleDrive(String id);
-    Optional<Document> findByNomOriginal(String nom);
+    Optional<Document> findByNomOriginalAndConvocatoria(String nom, Convocatoria convocatoria);
     List<Document> findAllByGrupCodiAndConvocatoria(String grupCodi, Convocatoria convocatoria);
     void deleteByIdDocument(Long idDocument);
     void deleteAllByIdUsuari(Long idusuari);

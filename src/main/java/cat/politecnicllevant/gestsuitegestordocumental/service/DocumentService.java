@@ -67,16 +67,18 @@ public class DocumentService {
         return modelMapper.map(document,DocumentDto.class);
     }
 
-    public DocumentDto getDocumentByOriginalName(String nom) {
+    public DocumentDto getDocumentByOriginalName(String nom, ConvocatoriaDto convocatoria) {
         ModelMapper modelMapper = new ModelMapper();
-        Document document = documentRepository.findByNomOriginal(nom).orElse(null);
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+        Document document = documentRepository.findByNomOriginalAndConvocatoria(nom, convocatoriaEntity).orElse(null);
         if(document == null) return null;
         return modelMapper.map(document,DocumentDto.class);
     }
 
-    public boolean existDocumentByOriginalName(String nom) {
+    public boolean existDocumentByOriginalName(String nom, ConvocatoriaDto convocatoria) {
         ModelMapper modelMapper = new ModelMapper();
-        Document document = documentRepository.findByNomOriginal(nom).orElse(null);
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+        Document document = documentRepository.findByNomOriginalAndConvocatoria(nom,convocatoriaEntity).orElse(null);
         return document != null;
     }
 
@@ -114,9 +116,10 @@ public class DocumentService {
         return modelMapper.map(documentSaved,DocumentDto.class);
     }
 
-    public DocumentDto findByNomOriginal(String nomOriginal) {
+    public DocumentDto findByNomOriginal(String nomOriginal, ConvocatoriaDto convocatoria) {
         ModelMapper modelMapper = new ModelMapper();
-        Document document = documentRepository.findByNomOriginal(nomOriginal).orElse(null);
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+        Document document = documentRepository.findByNomOriginalAndConvocatoria(nomOriginal,convocatoriaEntity).orElse(null);
         if(document == null) return null;
         return modelMapper.map(document,DocumentDto.class);
     }
