@@ -11,10 +11,11 @@ import java.util.Optional;
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findAllByConvocatoria(Convocatoria convocatoria);
-    Optional<Document> findByIdDriveGoogleDrive(String idDrive);
-    Optional<Document> findByIdGoogleDrive(String id);
+    Optional<Document> findByIdDriveGoogleDriveAndConvocatoria(String idDrive, Convocatoria convocatoria);
+    Optional<Document> findByIdGoogleDriveAndConvocatoria(String id, Convocatoria convocatoria);
     Optional<Document> findByNomOriginalAndConvocatoria(String nom, Convocatoria convocatoria);
+    Optional<Document> findByIdDocumentAndConvocatoria(Long id, Convocatoria convocatoria);
     List<Document> findAllByGrupCodiAndConvocatoria(String grupCodi, Convocatoria convocatoria);
-    void deleteByIdDocument(Long idDocument);
-    void deleteAllByIdUsuari(Long idusuari);
+    void deleteByIdDocumentAndConvocatoria(Long idDocument, Convocatoria convocatoria);
+    void deleteAllByIdUsuariAndConvocatoria(Long idusuari, Convocatoria convocatoria);
 }

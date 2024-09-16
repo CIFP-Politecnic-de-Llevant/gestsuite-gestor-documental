@@ -61,9 +61,10 @@ public class DocumentService {
         return documentRepository.findAllByGrupCodiAndConvocatoria(grupCodi, convocatoriaEntity).stream().map(d->modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
     }
 
-    public DocumentDto getDocumentById(Long id) {
+    public DocumentDto getDocumentById(Long id,ConvocatoriaDto convocatoria) {
         ModelMapper modelMapper = new ModelMapper();
-        Document document = documentRepository.findById(id).orElse(null);
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+        Document document = documentRepository.findByIdDocumentAndConvocatoria(id,convocatoriaEntity).orElse(null);
         return modelMapper.map(document,DocumentDto.class);
     }
 
@@ -82,18 +83,20 @@ public class DocumentService {
         return document != null;
     }
 
-    public DocumentDto getDocumentByIdDriveGoogleDrive(String idDrive) {
+    public DocumentDto getDocumentByIdDriveGoogleDrive(String idDrive,ConvocatoriaDto convocatoria) {
         ModelMapper modelMapper = new ModelMapper();
-        Document document =  documentRepository.findByIdDriveGoogleDrive(idDrive).orElse(null);
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+        Document document =  documentRepository.findByIdDriveGoogleDriveAndConvocatoria(idDrive,convocatoriaEntity).orElse(null);
 
         if(document == null) return null;
 
         return modelMapper.map(document,DocumentDto.class);
     }
 
-    public DocumentDto getDocumentByIdGoogleDrive(String id) {
+    public DocumentDto getDocumentByIdGoogleDrive(String id,ConvocatoriaDto convocatoria) {
         ModelMapper modelMapper = new ModelMapper();
-        Document document =  documentRepository.findByIdGoogleDrive(id).orElse(null);
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+        Document document =  documentRepository.findByIdGoogleDriveAndConvocatoria(id,convocatoriaEntity).orElse(null);
 
         if(document == null) return null;
 
@@ -101,16 +104,12 @@ public class DocumentService {
     }
 
     @Transactional
-    public DocumentDto save(DocumentDto documentDto) {
+    public DocumentDto save(DocumentDto documentDto,ConvocatoriaDto convocatoria) {
         ModelMapper modelMapper = new ModelMapper();
-        Document document = modelMapper.map(documentDto,Document.class);
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
 
-        if(document.getConvocatoria()==null || document.getConvocatoria().getIdConvocatoria()==null) {
-            Convocatoria convocatoria = convocatoriaRepository.findByIsActualTrue();
-            if(convocatoria!=null) {
-                document.setConvocatoria(convocatoria);
-            }
-        }
+        Document document = modelMapper.map(documentDto,Document.class);
+        document.setConvocatoria(convocatoriaEntity);
 
         Document documentSaved = documentRepository.save(document);
         return modelMapper.map(documentSaved,DocumentDto.class);
@@ -125,16 +124,20 @@ public class DocumentService {
     }
 
     @Transactional
-    public void deleteByIdDocument(Long idDocument) {
-        documentRepository.deleteByIdDocument(idDocument);
+    public void deleteByIdDocument(Long idDocument, ConvocatoriaDto convocatoria) {
+        ModelMapper modelMapper = new ModelMapper();
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+        documentRepository.deleteByIdDocumentAndConvocatoria(idDocument,convocatoriaEntity);
     }
 
     @Transactional
-    public void deleteAllByIdUsuari(Long idusuari) {
-        documentRepository.deleteAllByIdUsuari(idusuari);
+    public void deleteAllByIdUsuari(Long idusuari, ConvocatoriaDto convocatoria) {
+        ModelMapper modelMapper = new ModelMapper();
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+        documentRepository.deleteAllByIdUsuariAndConvocatoria(idusuari,convocatoriaEntity);
     }
 
-    public DocumentDto getDocumentByGoogleDriveFile(File driveFile) throws Exception {
+    public DocumentDto getDocumentByGoogleDriveFile(File driveFile,ConvocatoriaDto convocatoria) throws Exception {
         DocumentDto document = new DocumentDto();
 
         document.setIdGoogleDrive(driveFile.getId());
@@ -164,6 +167,8 @@ public class DocumentService {
                 document.setIdUsuari(coreRestClient.getUsuariByEmailSystem(driveFile.getOwners().get(0).getEmailAddress(),token).getBody().getIdusuari());
             }
         }
+
+        document.setConvocatoria(convocatoria);
 
         return document;
     }

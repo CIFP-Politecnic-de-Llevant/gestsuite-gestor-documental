@@ -171,10 +171,10 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
             //System.out.println(driveFile);
 
-            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId());
+            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(),convocatoria);
 
             if(document == null){
-                document = documentService.getDocumentByGoogleDriveFile(driveFile);
+                document = documentService.getDocumentByGoogleDriveFile(driveFile,convocatoria);
                 document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
 
                 documents.add(document);
@@ -393,7 +393,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             i++;
         }
 
-        DocumentDto documentSaved = documentService.save(document);
+        DocumentDto documentSaved = documentService.save(document,convocatoria);
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }
 
@@ -438,7 +438,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
 
     @PostMapping("/documents")
-    public ResponseEntity<List<DocumentDto>> getDocumentsByPath(@RequestBody String json) throws Exception {
+    public ResponseEntity<List<DocumentDto>> getDocumentsByPath(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String path = jsonObject.get("path").getAsString();
         String email = jsonObject.get("email").getAsString();
@@ -449,10 +456,10 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
             System.out.println(driveFile);
 
-            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId());
+            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(),convocatoria);
 
             if(document == null){
-                document = documentService.getDocumentByGoogleDriveFile(driveFile);
+                document = documentService.getDocumentByGoogleDriveFile(driveFile,convocatoria);
 
                 documents.add(document);
                 //documentService.save(document);
@@ -475,10 +482,10 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
             System.out.println(driveFile);
 
-            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId());
+            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(),convocatoria);
 
             if(document == null){
-                document = documentService.getDocumentByGoogleDriveFile(driveFile);
+                document = documentService.getDocumentByGoogleDriveFile(driveFile,convocatoria);
 
                 documents.add(document);
                 //documentService.save(document);
@@ -516,8 +523,15 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
 
     @GetMapping("/documents/{id}")
-    public ResponseEntity<DocumentDto> getDocumentById(@PathVariable Long id) throws Exception {
-        DocumentDto document = documentService.getDocumentById(id);
+    public ResponseEntity<DocumentDto> getDocumentById(@PathVariable Long id, @RequestParam(required = false) Long idConvocatoria) throws Exception {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+
+        DocumentDto document = documentService.getDocumentById(id,convocatoria);
         return new ResponseEntity<>(document, HttpStatus.OK);
     }
 
@@ -584,7 +598,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
-        DocumentDto documentSaved = documentService.save(document);
+        DocumentDto documentSaved = documentService.save(document,convocatoria);
 
         //Creem les signatures
         Set<SignaturaDto> signatures = documentSaved.getTipusDocument().getSignatures();
@@ -600,11 +614,18 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     @PostMapping("/documents/eliminar-document")
-    public ResponseEntity<Notificacio> deleteDocument(@RequestBody String json) {
+    public ResponseEntity<Notificacio> deleteDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         Long documentId = jsonObject.get("documentId").getAsLong();
         String email = jsonObject.get("email").getAsString();
-        DocumentDto documentDto = documentService.getDocumentById(documentId);
+        DocumentDto documentDto = documentService.getDocumentById(documentId,convocatoria);
 
         if (jsonObject.get("fitxerId") != null) {
             Long fitxerId = jsonObject.get("fitxerId").getAsLong();
@@ -621,7 +642,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             googleDriveService.deleteFileById(documentDto.getIdGoogleSharedDrive(), email);
 
         documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
-        documentService.deleteByIdDocument(documentId);
+        documentService.deleteByIdDocument(documentId,convocatoria);
 
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Document eliminat");
@@ -631,7 +652,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     @PostMapping("/documents/eliminar-documents-alumne")
-    public ResponseEntity<Notificacio> deleteDocumentsAlumne(@RequestBody String json) {
+    public ResponseEntity<Notificacio> deleteDocumentsAlumne(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         JsonArray documentIds = jsonObject.get("documentIds").getAsJsonArray();
         String email = jsonObject.get("email").getAsString();
@@ -639,16 +667,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String parentFolderId = jsonObject.get("parentFolderId").getAsString();
 
         for (JsonElement id : documentIds) {
-            DocumentDto documentDto = this.documentService.getDocumentByIdGoogleDrive(id.getAsString());
+            DocumentDto documentDto = this.documentService.getDocumentByIdGoogleDrive(id.getAsString(),convocatoria);
 
             this.googleDriveService.deleteFileById(id.getAsString(), email);
             this.documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
         }
 
-        Long alumneId = this.documentService.getDocumentByIdGoogleDrive(documentIds.get(0)
-                .getAsString())
-                .getIdUsuari();
-        this.documentService.deleteAllByIdUsuari(alumneId);
+        Long alumneId = this.documentService.getDocumentByIdGoogleDrive(documentIds.get(0).getAsString(),convocatoria).getIdUsuari();
+        this.documentService.deleteAllByIdUsuari(alumneId,convocatoria);
 
         this.googleDriveService.deleteFolder(folderName, email, parentFolderId);
 
@@ -762,13 +788,20 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     @PostMapping("/document/signar")
-    public ResponseEntity<Notificacio> signarDocument(@RequestBody String json) throws Exception {
+    public ResponseEntity<Notificacio> signarDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         Long idDocument = jsonObject.get("idDocument").getAsLong();
         Long idSignatura = jsonObject.get("idSignatura").getAsLong();
         boolean signat = jsonObject.get("signat").getAsBoolean();
 
-        DocumentDto document = documentService.getDocumentById(idDocument);
+        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
         SignaturaDto signatura = signaturaService.getSignaturaById(idSignatura);
         documentSignaturaService.signarDocument(document,signatura,signat);
 
@@ -779,14 +812,21 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     @PostMapping("/document/canviarEstatDocument")
-    public ResponseEntity<Notificacio> canviarEstatDocument(@RequestBody String json) throws Exception {
+    public ResponseEntity<Notificacio> canviarEstatDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         Long idDocument = jsonObject.get("idDocument").getAsLong();
         String estat = jsonObject.get("estat").getAsString();
 
-        DocumentDto document = documentService.getDocumentById(idDocument);
+        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
         document.setEstat(DocumentEstatDto.valueOf(estat));
-        documentService.save(document);
+        documentService.save(document,convocatoria);
 
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Estat canviat correctament");
@@ -796,24 +836,38 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
 
     @PostMapping("/document/canviar-visibilitat-document")
-    public ResponseEntity<String> canviarVisibilitatDocument(@RequestBody String json) throws Exception {
+    public ResponseEntity<String> canviarVisibilitatDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         Long idDocument = jsonObject.get("idDocument").getAsLong();
         boolean visibilitat = jsonObject.get("visibilitat").getAsBoolean();
 
-        DocumentDto document = documentService.getDocumentById(idDocument);
+        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
         document.setVisibilitat(visibilitat);
-        documentService.save(document);
+        documentService.save(document,convocatoria);
 
         return new ResponseEntity<>("Canvi fet", HttpStatus.OK);
     }
 
     @PostMapping("/document/get-url")
-    public ResponseEntity<String> getURL(@RequestBody String json) throws Exception {
+    public ResponseEntity<String> getURL(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         Long idDocument = jsonObject.get("idFile").getAsLong();
 
-        DocumentDto document = documentService.getDocumentById(idDocument);
+        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
 
         Long idFitxer = document.getIdFitxer();
         if(idFitxer!=null){
@@ -827,8 +881,15 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     @PostMapping("/document/uploadFile")
-    public ResponseEntity<Notificacio> uploadFile(@RequestParam("id") Long idDocument, HttpServletRequest request) throws Exception {
-        DocumentDto document = documentService.getDocumentById(idDocument);
+    public ResponseEntity<Notificacio> uploadFile(@RequestParam("id") Long idDocument, @RequestParam(required = false) Long idConvocatoria, HttpServletRequest request) throws Exception {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+
+        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
         Part filePart = request.getPart("arxiu");
 
         InputStream is = filePart.getInputStream();
@@ -875,7 +936,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         if(fitxerBucketSaved!=null && fitxerBucketSaved.getIdfitxer()!=null) {
             document.setIdFitxer(fitxerBucketSaved.getIdfitxer());
-            documentService.save(document);
+            documentService.save(document,convocatoria);
 
             Notificacio notificacio = new Notificacio();
             notificacio.setNotifyMessage("Arxiu pujat amb èxit.");
