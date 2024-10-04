@@ -26,6 +26,9 @@ public class DocumentDto {
     //ESTAT
     private DocumentEstatDto estat;
 
+    //OBSERVACIONS
+    private String observacions;
+
     //MS CORE
     private Long idUsuari;
     private Long idFitxer;

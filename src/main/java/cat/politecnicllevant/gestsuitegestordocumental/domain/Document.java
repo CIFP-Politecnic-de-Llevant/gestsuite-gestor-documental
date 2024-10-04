@@ -50,6 +50,9 @@ public @Data class Document {
     @Enumerated(EnumType.STRING)
     private DocumentEstat estat;
 
+    @Column(name = "observacions",nullable = true)
+    private String observacions;
+
     @Column(name = "visibilitat", nullable = false)
     private Boolean visibilitat;
 

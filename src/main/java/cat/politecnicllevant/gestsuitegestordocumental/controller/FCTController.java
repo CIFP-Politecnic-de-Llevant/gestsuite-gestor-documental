@@ -834,6 +834,29 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 
+    @PostMapping("/document/canviarObservacionsDocument")
+    public ResponseEntity<Notificacio> canviarObservacionsDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
+        ConvocatoriaDto convocatoria;
+        if(idConvocatoria!=null){
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        Long idDocument = jsonObject.get("idDocument").getAsLong();
+        String observacions = jsonObject.get("observacions").getAsString();
+
+        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
+        document.setObservacions(observacions);
+        documentService.save(document,convocatoria);
+
+        Notificacio notificacio = new Notificacio();
+        notificacio.setNotifyMessage("Observacions desades correctament");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
 
     @PostMapping("/document/canviar-visibilitat-document")
     public ResponseEntity<String> canviarVisibilitatDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
