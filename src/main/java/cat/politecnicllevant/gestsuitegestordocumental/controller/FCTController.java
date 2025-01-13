@@ -429,8 +429,12 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         List<GrupDto> grupsNoDuplicats = new ArrayList<>();
         for (String codi : codis) {
-            ResponseEntity<GrupDto> responseEntity = coreRestClient.getByCodigrup(codi);
-            grupsNoDuplicats.add(responseEntity.getBody());
+            try {
+                ResponseEntity<GrupDto> responseEntity = coreRestClient.getByCodigrup(codi);
+                grupsNoDuplicats.add(responseEntity.getBody());
+            } catch (Exception e) {
+                log.error("El codi de grup " + codi + " no existeix", e);
+            }
         }
 
         return new ResponseEntity<>(grupsNoDuplicats, HttpStatus.OK);
