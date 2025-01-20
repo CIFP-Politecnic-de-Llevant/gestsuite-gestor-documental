@@ -2,10 +2,8 @@ package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Entity
 @Table(name = "pll_dades_formulari")
@@ -14,7 +12,7 @@ public @Data class DadesFormulari {
     @Id
     @Column( name = "idDadesFormulari")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     @Column(name = "any_curs", nullable = true, length = 128)
     private String anyCurs;
