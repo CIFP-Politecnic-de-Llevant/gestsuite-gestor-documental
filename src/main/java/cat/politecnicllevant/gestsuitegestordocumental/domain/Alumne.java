@@ -105,4 +105,7 @@ public @Data class Alumne {
     @Column(name = "idUsuari", nullable = true)
     private Long idUsuari;
 
+    @Column(name = "isFCT", nullable = false)
+    private Boolean isFCT;
+
 }
