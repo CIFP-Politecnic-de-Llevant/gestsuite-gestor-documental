@@ -1305,7 +1305,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     //FORMULARI FCT
-    @GetMapping("/formulari/formularis")
+    @GetMapping("/formulari/llistat")
     public ResponseEntity<List<DadesFormulariDto>> getFormularis(){
         List<DadesFormulariDto> formularis = dadesFormulariService.findAll();
         return new ResponseEntity<>(formularis,HttpStatus.OK);
