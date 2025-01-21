@@ -1120,6 +1120,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 if(alumneDB == null){
                     alumneDB = new AlumneDto();
                     alumneDB.setIdUsuari(user.getIdusuari());
+                    alumneDB.setIsFCT(false);
                 }
 
                 alumneDB.setNumeroExpedient(user.getGestibExpedient());
@@ -1127,6 +1128,31 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 alumneDB.setCognom1(user.getGestibCognom1());
                 alumneDB.setCognom2(user.getGestibCognom2());
                 alumneDB.setGrup(user.getGestibGrup());
+
+                alumneDB.setCIP(alumne.getCIP());
+                alumneDB.setCP(alumne.getCP());
+                alumneDB.setAdrecaCompleta(alumne.getAdrecaCompleta());
+                alumneDB.setLocalitat(alumne.getLocalitat());
+                alumneDB.setMunicipi(alumne.getMunicipi());
+                alumneDB.setTelefon(alumne.getTelefon());
+                alumneDB.setTelefonFix(alumne.getTelefonFix());
+                alumneDB.setEmail(alumne.getEmail());
+                alumneDB.setSexe(alumne.getSexe());
+                alumneDB.setDataNaixement(alumne.getDataNaixement());
+                alumneDB.setNacionalitat(alumne.getNacionalitat());
+                alumneDB.setPaisNaixement(alumne.getPaisNaixement());
+                alumneDB.setProvinciaNaixement(alumne.getProvinciaNaixement());
+                alumneDB.setLocalitatNaixement(alumne.getLocalitatNaixement());
+                alumneDB.setDni(alumne.getDni());
+                alumneDB.setTargetaSanitaria(alumne.getTargetaSanitaria());
+                alumneDB.setTutor(alumne.getTutor());
+                alumneDB.setTelefonTutor(alumne.getTelefonTutor());
+                alumneDB.setEmailTutor(alumne.getEmailTutor());
+                alumneDB.setDniTutor(alumne.getDniTutor());
+                alumneDB.setAdrecaTutor(alumne.getAdrecaTutor());
+                alumneDB.setNacionalitatTutor(alumne.getNacionalitatTutor());
+                alumneDB.setEnsenyament(alumne.getEnsenyament());
+                alumneDB.setEstudis(alumne.getEstudis());
 
                 alumneService.save(alumneDB);
             }
