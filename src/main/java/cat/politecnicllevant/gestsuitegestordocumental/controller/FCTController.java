@@ -1343,7 +1343,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         if(form.getEdat()==null || form.getEdat().isEmpty()){
             form.setEdat("0");
         }
-        
+
         dadesFormulariService.save(form);
         googleDriveService.writeData(getGettersDataForm(),email,form);
 
