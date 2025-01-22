@@ -1340,10 +1340,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/formulari/save-formulari")
     public ResponseEntity<Notificacio> saveForm(@RequestBody DadesFormulariDto form, @RequestParam String email) throws NoSuchMethodException, GeneralSecurityException, IOException, InvocationTargetException, IllegalAccessException {
 
-        Notificacio notificacio = new Notificacio();
+        if(form.getEdat()==null || form.getEdat().isEmpty()){
+            form.setEdat("0");
+        }
+        
         dadesFormulariService.save(form);
         googleDriveService.writeData(getGettersDataForm(),email,form);
 
+        Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Formulari guardat correctament");
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
