@@ -3,6 +3,8 @@ package cat.politecnicllevant.gestsuitegestordocumental.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 public @Data class DadesFormulariDto {
 
     private String Id;
@@ -23,9 +25,9 @@ public @Data class DadesFormulariDto {
     private String horesDiaries;
     private String km;
     private String periode;
-    private String dataInici;
-    private String dataFi;
-    private String dataAcabament;
+    private LocalDate dataInici;
+    private LocalDate dataFi;
+    private LocalDate dataAcabament;
     private String tipusJornada;
     private String horari;
     private String nomTutor;
