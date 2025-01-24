@@ -107,5 +107,4 @@ public @Data class Alumne {
 
     @Column(name = "isFCT", nullable = false)
     private Boolean isFCT;
-
 }

@@ -172,4 +172,7 @@ public @Data class DadesFormulari {
 
     @Column(name = "flexibilitzacio_fct", nullable = true)
     private Boolean flexibilitzacioModulFct;
+
+    @Column(name = "curs_academic",nullable = true, length = 128)
+    private Long idCursAcademic;
 }
