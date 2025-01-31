@@ -1151,8 +1151,20 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 alumneDB.setDniTutor(alumne.getDniTutor());
                 alumneDB.setAdrecaTutor(alumne.getAdrecaTutor());
                 alumneDB.setNacionalitatTutor(alumne.getNacionalitatTutor());
-                alumneDB.setEnsenyament(alumne.getEnsenyament());
-                alumneDB.setEstudis(alumne.getEstudis());
+
+                String ensenyament = alumne.getEnsenyament();
+                if(ensenyament.equals("GS")){
+                    ensenyament = "CF Grau Superior";
+                } else if(ensenyament.equals("GM")) {
+                    ensenyament = "CF Grau Mitjà";
+                } else if(ensenyament.equals("FPGB")) {
+                    ensenyament = "FP Bàsica";
+                }
+                alumneDB.setEnsenyament(ensenyament);
+
+                GrupDto grupDto = coreRestClient.getByGestibIdentificador(alumneDB.getGrup()).getBody();
+                CursDto cursDto = coreRestClient.getCursByCodiGestib(grupDto.getGestibCurs()).getBody();
+                alumneDB.setEstudis(cursDto.getGestibNom()+grupDto.getGestibNom());
 
                 alumneService.save(alumneDB);
             }

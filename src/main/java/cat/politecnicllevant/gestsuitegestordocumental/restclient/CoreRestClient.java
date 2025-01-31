@@ -1,9 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.restclient;
 
-import cat.politecnicllevant.gestsuitegestordocumental.dto.CursAcademicDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.FileUploadDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.GrupDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -56,12 +53,19 @@ public interface CoreRestClient {
     //ALUMNE
 
 
+    //CURS
+    @GetMapping("/curs/getByCodiGestib/{id}")
+    ResponseEntity<CursDto> getCursByCodiGestib(@PathVariable("id") String identificador);
+
     //GRUP
     @GetMapping("/grup/getById/{idgrup}")
     ResponseEntity<GrupDto> getById(@PathVariable("idgrup") Long idgrup);
 
     @GetMapping("/grup/getByCodigrup/{codigrup}")
     ResponseEntity<GrupDto> getByCodigrup(@PathVariable("codigrup") String codigrup);
+
+    @GetMapping("/grup/getByGestibIdentificador/{idgrup}")
+    public ResponseEntity<GrupDto> getByGestibIdentificador(@PathVariable("idgrup") String idgrup);
 
     //FITXER BUCKET
     @GetMapping("/fitxerbucket/{id}")
