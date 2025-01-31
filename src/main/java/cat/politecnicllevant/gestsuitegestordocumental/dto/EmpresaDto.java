@@ -12,7 +12,7 @@ public @Data class EmpresaDto {
     private String nom;
     private String cif;
     private String adreca;
-    private Long codiPostal;
+    private String codiPostal;
     private String poblacio;
     private String provincia;
     private String telefon;
