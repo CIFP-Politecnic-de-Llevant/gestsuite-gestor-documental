@@ -56,6 +56,9 @@ public @Data class Document {
     @Column(name = "visibilitat", nullable = false)
     private Boolean visibilitat;
 
+    @Column(name = "traspassat", nullable = false)
+    private Boolean traspassat;
+
 
     //MS CORE
     @Column(name = "idusuari", nullable = true)

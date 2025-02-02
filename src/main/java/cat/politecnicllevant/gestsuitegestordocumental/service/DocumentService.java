@@ -55,6 +55,14 @@ public class DocumentService {
         return documentRepository.findAllByConvocatoria(convocatoriaEntity).stream().map(d->modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
     }
 
+    public List<DocumentDto> findAllDocumentsBucketNoTraspassats(ConvocatoriaDto convocatoria) {
+        ModelMapper modelMapper = new ModelMapper();
+
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);
+
+        return documentRepository.findAllByIdFitxerIsNotNullAndTraspassatIsFalseAndConvocatoria(convocatoriaEntity).stream().map(d->modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
+    }
+
     public List<DocumentDto> findAllByGrupCodi(String grupCodi, ConvocatoriaDto convocatoria) {
         ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria,Convocatoria.class);

@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URLConnection;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -393,6 +394,34 @@ public class GoogleDriveService {
             }
         }
         return lastRowIndex;
+    }
+
+    public void uploadFile(String path, String user, java.io.File file) {
+        try {
+            String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+            HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
+
+            File fileMetadata = new File();
+            fileMetadata.setName(file.getName());
+            fileMetadata.setParents(Collections.singletonList(path));
+            String mimeType= URLConnection.guessContentTypeFromName(file.getName());
+
+            fileMetadata.setMimeType(mimeType);
+
+            java.io.File filePath = new java.io.File(file.getAbsolutePath());
+            com.google.api.client.http.FileContent mediaContent = new com.google.api.client.http.FileContent(mimeType, filePath);
+
+            service.files().create(fileMetadata, mediaContent)
+                    .setSupportsAllDrives(true)
+                    .execute();
+        } catch (IOException | GeneralSecurityException e) {
+            e.printStackTrace();
+        }
     }
 
     public void writeData(Map<String, Method> gettersDataForm, String user, DadesFormulariDto data) throws IOException, GeneralSecurityException, IllegalAccessException, InvocationTargetException {

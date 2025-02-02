@@ -33,7 +33,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -350,6 +353,31 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 }
             }
         }
+
+        //Traspassar documents pujats
+        List<DocumentDto> documentsBucketNoTraspassats = documentService.findAllDocumentsBucketNoTraspassats(convocatoria);
+        for(DocumentDto doc: documentsBucketNoTraspassats){
+            System.out.println("Doc no traspassat" + doc.getNomOriginal());
+            ResponseEntity<FitxerBucketDto> responseEntity = coreRestClient.getFitxerBucketById(doc.getIdFitxer());
+            FitxerBucketDto fitxerBucket = responseEntity.getBody();
+
+            JsonObject jsonFitxerBucket = new JsonObject();
+            jsonFitxerBucket.addProperty("idfitxer", fitxerBucket.getIdfitxer());
+            jsonFitxerBucket.addProperty("nom", fitxerBucket.getNom());
+            jsonFitxerBucket.addProperty("bucket", fitxerBucket.getBucket());
+            jsonFitxerBucket.addProperty("path", fitxerBucket.getPath());
+
+            ResponseEntity<String> urlResponse = coreRestClient.generateSignedURL(jsonFitxerBucket.toString());
+            String url = urlResponse.getBody();
+
+            //Get file from URL
+            InputStream in = new URL(url).openStream();
+            Files.copy(in, Paths.get("/externalfiles/"+fitxerBucket.getNom()), StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println("Fitxer copiat a /externalfiles/"+fitxerBucket.getNom());
+        }
+
+
     }
 
     @PostMapping("/documents/saveDocumentExtra")
@@ -384,6 +412,10 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipusDocument);
         document.setTipusDocument(tipusDocumentDto);
         document.setVisibilitat(tipusDocumentDto.getVisibilitatDefecte());
+
+        if(document.getTraspassat() == null) {
+            document.setTraspassat(false);
+        }
 
         document.setNomOriginal("CUSTOM_"+tipusDocumentDto.getNom()+"_"+curs+"_"+idusuari);
         //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
@@ -598,6 +630,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         if(tipusDocumentDto!=null) {
             document.setTipusDocument(tipusDocumentDto);
             document.setVisibilitat(tipusDocumentDto.getVisibilitatDefecte());
+            document.setTraspassat(false);
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
