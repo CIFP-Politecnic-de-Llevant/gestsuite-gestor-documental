@@ -357,24 +357,28 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         //Traspassar documents pujats
         List<DocumentDto> documentsBucketNoTraspassats = documentService.findAllDocumentsBucketNoTraspassats(convocatoria);
         for(DocumentDto doc: documentsBucketNoTraspassats){
-            System.out.println("Doc no traspassat" + doc.getNomOriginal());
-            ResponseEntity<FitxerBucketDto> responseEntity = coreRestClient.getFitxerBucketById(doc.getIdFitxer());
-            FitxerBucketDto fitxerBucket = responseEntity.getBody();
+            try {
+                System.out.println("Doc no traspassat" + doc.getNomOriginal());
+                ResponseEntity<FitxerBucketDto> responseEntity = coreRestClient.getFitxerBucketById(doc.getIdFitxer());
+                FitxerBucketDto fitxerBucket = responseEntity.getBody();
 
-            JsonObject jsonFitxerBucket = new JsonObject();
-            jsonFitxerBucket.addProperty("idfitxer", fitxerBucket.getIdfitxer());
-            jsonFitxerBucket.addProperty("nom", fitxerBucket.getNom());
-            jsonFitxerBucket.addProperty("bucket", fitxerBucket.getBucket());
-            jsonFitxerBucket.addProperty("path", fitxerBucket.getPath());
+                JsonObject jsonFitxerBucket = new JsonObject();
+                jsonFitxerBucket.addProperty("idfitxer", fitxerBucket.getIdfitxer());
+                jsonFitxerBucket.addProperty("nom", fitxerBucket.getNom());
+                jsonFitxerBucket.addProperty("bucket", fitxerBucket.getBucket());
+                jsonFitxerBucket.addProperty("path", fitxerBucket.getPath());
 
-            ResponseEntity<String> urlResponse = coreRestClient.generateSignedURL(jsonFitxerBucket.toString());
-            String url = urlResponse.getBody();
+                ResponseEntity<String> urlResponse = coreRestClient.generateSignedURL(jsonFitxerBucket.toString());
+                String url = urlResponse.getBody();
 
-            //Get file from URL
-            InputStream in = new URL(url).openStream();
-            Files.copy(in, Paths.get("/externalfiles/"+fitxerBucket.getNom()), StandardCopyOption.REPLACE_EXISTING);
+                //Get file from URL
+                InputStream in = new URL(url).openStream();
+                Files.copy(in, Paths.get("/externalfiles/" + fitxerBucket.getNom()), StandardCopyOption.REPLACE_EXISTING);
 
-            System.out.println("Fitxer copiat a /externalfiles/"+fitxerBucket.getNom());
+                System.out.println("Fitxer copiat a /externalfiles/" + fitxerBucket.getNom());
+            } catch (Exception e){
+                log.error("Error traspassant fitxer de bucket de "+doc.getNomOriginal());
+            }
         }
 
 
