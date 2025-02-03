@@ -396,11 +396,18 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 }
 
                 //Crear carpetes si no existeixen
+                File parent = googleDriveService.getFolder(basePathGoogleDrive,"qualitat@politecnicllevant.cat","root");
+                if(parent==null){
+                    log.error("No s'ha trobat la carpeta base "+basePathGoogleDrive);
+                } else {
+                    log.info("Carpeta base trobada: "+basePathGoogleDrive);
+                }
                 for(int i=1;i<pathDocWithBase.length;i++){
-                    File folder = googleDriveService.getFolder(pathDocWithBase[i],"qualitat@politecnicllevant.cat",pathDocWithBase[i-1]);
+                    File folder = googleDriveService.getFolder(pathDocWithBase[i],"qualitat@politecnicllevant.cat",parent.getId());
                     if(folder==null){
-                        folder = googleDriveService.createFolder(pathDocWithBase[i],"qualitat@politecnicllevant.cat",pathDocWithBase[i-1]);
+                        folder = googleDriveService.createFolder(pathDocWithBase[i],"qualitat@politecnicllevant.cat",parent.getId());
                     }
+                    parent = googleDriveService.getFolder(pathDocWithBase[i],"qualitat@politecnicllevant.cat",parent.getId());
                 }
 
 
