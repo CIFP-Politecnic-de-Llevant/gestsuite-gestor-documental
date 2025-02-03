@@ -93,6 +93,9 @@ public class FCTController {
     @Value("${app.google.drive.shared.id}")
     private String sharedDriveId;
 
+    @Value("${app.google.drive.user.pathdocdefinitiva}")
+    private String userPathDocDefinitiva;
+
     private String pathOrigen = "FCT_DEVELOPMENT";
     private Boolean isUnitatOrganitzativaOrigen = false;
     private String pathDesti = "FCT_DEVELOPMENT";
@@ -385,7 +388,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 Files.copy(in, Paths.get("/tmp/"+nomFitxerCleaned), StandardCopyOption.REPLACE_EXISTING);
                 log.info("Fitxer copiat a /tmp/"+nomFitxerCleaned);
 
-                String basePathGoogleDrive = "FCT JOAN";
+                String basePathGoogleDrive = userPathDocDefinitiva;
                 ConvocatoriaDto convocatoriaDocument = convocatoriaService.findConvocatoriaById(doc.getConvocatoria().getIdConvocatoria());
 
 
