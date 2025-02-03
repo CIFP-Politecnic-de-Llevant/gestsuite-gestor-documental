@@ -355,10 +355,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
 
         //Traspassar documents pujats
+        log.info("Traspassant documents pujats...");
         List<DocumentDto> documentsBucketNoTraspassats = documentService.findAllDocumentsBucketNoTraspassats(convocatoria);
         for(DocumentDto doc: documentsBucketNoTraspassats){
             try {
-                System.out.println("Doc no traspassat" + doc.getNomOriginal());
+                if(!doc.getEstat().equals(DocumentEstatDto.ACCEPTAT)){
+                    continue;
+                }
+                System.out.println("Doc no traspassat: " + doc.getNomOriginal());
                 ResponseEntity<FitxerBucketDto> responseEntity = coreRestClient.getFitxerBucketById(doc.getIdFitxer());
                 FitxerBucketDto fitxerBucket = responseEntity.getBody();
 
@@ -371,13 +375,40 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 ResponseEntity<String> urlResponse = coreRestClient.generateSignedURL(jsonFitxerBucket.toString());
                 String url = urlResponse.getBody();
 
+                //Split / and get last part
+                String[] parts = fitxerBucket.getNom().split("/");
+                String nomFitxerCleaned = parts[parts.length-1];
+
                 //Get file from URL
                 InputStream in = new URL(url).openStream();
-                Files.copy(in, Paths.get("/externalfiles/" + fitxerBucket.getNom()), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(in, Paths.get("/tmp/"+nomFitxerCleaned), StandardCopyOption.REPLACE_EXISTING);
+                log.info("Fitxer copiat a /tmp/"+nomFitxerCleaned);
 
-                System.out.println("Fitxer copiat a /externalfiles/" + fitxerBucket.getNom());
+                String basePathGoogleDrive = "FCT JOAN";
+
+                String[] pathDoc = doc.getPathGoogleDrive().split("/");
+                //Insertar base al principi
+                String[] pathDocWithBase = new String[pathDoc.length+2];
+                pathDocWithBase[0] = basePathGoogleDrive;
+                pathDocWithBase[1] = doc.getConvocatoria().getNom();
+                for(int i=0;i<pathDoc.length;i++){
+                    pathDocWithBase[i+1] = pathDoc[i];
+                }
+
+                //Crear carpetes si no existeixen
+                for(int i=1;i<pathDocWithBase.length;i++){
+                    File folder = googleDriveService.getFolder(pathDocWithBase[i],"qualitat@politecnicllevant.cat",pathDocWithBase[i-1]);
+                    if(folder==null){
+                        folder = googleDriveService.createFolder(pathDocWithBase[i],"qualitat@politecnicllevant.cat",pathDocWithBase[i-1]);
+                    }
+                }
+
+
+                //Get file from folder
+                //java.io.File fileToUpload = new java.io.File("/tmp/"+nomFitxerCleaned);
+                //googleDriveService.uploadFile("FCT JOAN","qualitat@politecnicllevant.cat",fileToUpload);
             } catch (Exception e){
-                log.error("Error traspassant fitxer de bucket de "+doc.getNomOriginal());
+                log.error("Error traspassant fitxer de bucket de "+doc.getNomOriginal(),e);
             }
         }
 
