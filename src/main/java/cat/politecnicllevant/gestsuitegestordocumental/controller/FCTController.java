@@ -3,6 +3,7 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Convocatoria;
+import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
@@ -385,15 +386,50 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 log.info("Fitxer copiat a /tmp/"+nomFitxerCleaned);
 
                 String basePathGoogleDrive = "FCT JOAN";
+                ConvocatoriaDto convocatoriaDocument = convocatoriaService.findConvocatoriaById(doc.getConvocatoria().getIdConvocatoria());
 
-                String[] pathDoc = doc.getPathGoogleDrive().split("/");
-                //Insertar base al principi
-                String[] pathDocWithBase = new String[pathDoc.length+2];
-                pathDocWithBase[0] = basePathGoogleDrive;
-                pathDocWithBase[1] = doc.getConvocatoria().getNom();
-                for(int i=0;i<pathDoc.length;i++){
-                    pathDocWithBase[i+1] = pathDoc[i];
+
+                String[] pathDoc = doc.getNomOriginal().split("_");
+
+                String nomFitxer = nomFitxerCleaned;
+                List<String> pathDocList = new ArrayList<String>();
+                if(pathDoc.length==5){
+                    String numExpedient = pathDoc[3];
+                    UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
+
+                    nomFitxer = pathDoc[4]; //Nom fitxer original
+
+                    pathDocList.add(basePathGoogleDrive); // Base
+                    pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                    pathDocList.add(pathDoc[0]); // Curs + Grup. IFC33B
+                    pathDocList.add(alumne.getGestibCognom1()+" " +alumne.getGestibCognom2()+", " +alumne.getGestibNom()); //Cognoms + Nom
+                } else if(pathDoc.length==2){
+                    nomFitxer = pathDoc[1];//Nom fitxer original
+
+                    pathDocList.add(basePathGoogleDrive); // Base
+                    pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                    pathDocList.add(pathDoc[0]); // Curs + Grup. IFC33B
+
+                } else if(pathDoc.length==4 && pathDoc[0].equals("CUSTOM") && pathDoc[1].equals("Altra documentació grup")){
+                    nomFitxer = pathDoc[3]; //Nom fitxer original
+
+                    pathDocList.add(basePathGoogleDrive); // Base
+                    pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                    pathDocList.add(pathDoc[2]); //Curs + Grup. IFC33B
+                } else if(pathDoc.length==4 && pathDoc[0].equals("CUSTOM") && pathDoc[1].equals("Annex 4")){
+                    nomFitxer = pathDoc[3]; //Nom fitxer original
+                    String numExpedient = pathDoc[3];
+                    UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
+
+                    pathDocList.add(basePathGoogleDrive); // Base
+                    pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                    pathDocList.add(pathDoc[2]); //Curs + Grup. IFC33B
+                    pathDocList.add(alumne.getGestibCognom1()+" " +alumne.getGestibCognom2()+", " +alumne.getGestibNom()); //Cognoms + Nom
+                } else {
+                    log.error("No s'ha pogut traspassar el fitxer "+nomFitxerCleaned);
+                    continue;
                 }
+
 
                 //Crear carpetes si no existeixen
                 File parent = googleDriveService.getFolder(basePathGoogleDrive,"qualitat@politecnicllevant.cat","root");
@@ -402,18 +438,29 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 } else {
                     log.info("Carpeta base trobada: "+basePathGoogleDrive);
                 }
-                for(int i=1;i<pathDocWithBase.length;i++){
-                    File folder = googleDriveService.getFolder(pathDocWithBase[i],"qualitat@politecnicllevant.cat",parent.getId());
-                    if(folder==null){
-                        folder = googleDriveService.createFolder(pathDocWithBase[i],"qualitat@politecnicllevant.cat",parent.getId());
+                for(int i=1;i<pathDocList.size();i++){
+                    if(parent != null && parent.getId() != null) {
+                        log.info("Cercant la carpeta " + pathDocList.get(i));
+                        File folder = googleDriveService.getFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
+                        if (folder == null) {
+                            folder = googleDriveService.createFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
+                        }
+
+                        if(pathDocList.size()-1==i) {
+                            //Get file from folder
+                            java.io.File fileToUpload = new java.io.File("/tmp/" + nomFitxerCleaned);
+                            googleDriveService.uploadFile(folder.getId(), "qualitat@politecnicllevant.cat", fileToUpload, nomFitxer);
+
+                            doc.setTraspassat(true);
+                            documentService.save(doc, convocatoriaDocument);
+                        }
+
+                        parent = googleDriveService.getFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
                     }
-                    parent = googleDriveService.getFolder(pathDocWithBase[i],"qualitat@politecnicllevant.cat",parent.getId());
                 }
 
 
-                //Get file from folder
-                //java.io.File fileToUpload = new java.io.File("/tmp/"+nomFitxerCleaned);
-                //googleDriveService.uploadFile("FCT JOAN","qualitat@politecnicllevant.cat",fileToUpload);
+
             } catch (Exception e){
                 log.error("Error traspassant fitxer de bucket de "+doc.getNomOriginal(),e);
             }

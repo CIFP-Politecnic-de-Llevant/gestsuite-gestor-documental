@@ -18,6 +18,7 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class GoogleDriveService {
     @Value("${gc.keyfile}")
@@ -183,9 +185,13 @@ public class GoogleDriveService {
 
             String idFolder = getFolderIdByNameAndIdParent(service, folderName, idParent,this.sharedDriveId);
 
+            if(idFolder==null){
+                return null;
+            }
             return service.files().get(idFolder).setSupportsAllDrives(true).execute();
         } catch (IOException | GeneralSecurityException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            log.error("Error al obtenir la carpeta", e);
         }
         return null;
     }
@@ -396,7 +402,7 @@ public class GoogleDriveService {
         return lastRowIndex;
     }
 
-    public void uploadFile(String path, String user, java.io.File file) {
+    public void uploadFile(String pathParent, String user, java.io.File file, String fileName) {
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
@@ -407,8 +413,9 @@ public class GoogleDriveService {
             Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
 
             File fileMetadata = new File();
-            fileMetadata.setName(file.getName());
-            fileMetadata.setParents(Collections.singletonList(path));
+            //fileMetadata.setName(file.getName());
+            fileMetadata.setName(fileName);
+            fileMetadata.setParents(Collections.singletonList(pathParent));
             String mimeType= URLConnection.guessContentTypeFromName(file.getName());
 
             fileMetadata.setMimeType(mimeType);
