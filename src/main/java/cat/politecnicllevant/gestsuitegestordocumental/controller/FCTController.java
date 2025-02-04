@@ -401,6 +401,11 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                         String numExpedient = pathDoc[3];
                         UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
 
+                        if(alumne==null){
+                            log.error("No s'ha pogut traspassar el fitxer " + nomFitxerCleaned);
+                            continue;
+                        }
+
                         nomFitxer = pathDoc[4]; //Nom fitxer original
 
                         pathDocList.add(basePathGoogleDrive); // Base
@@ -424,6 +429,11 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                         nomFitxer = pathDoc[3]; //Nom fitxer original
                         String numExpedient = pathDoc[3];
                         UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
+
+                        if(alumne==null){
+                            log.error("No s'ha pogut traspassar el fitxer " + nomFitxerCleaned);
+                            continue;
+                        }
 
                         pathDocList.add(basePathGoogleDrive); // Base
                         pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
