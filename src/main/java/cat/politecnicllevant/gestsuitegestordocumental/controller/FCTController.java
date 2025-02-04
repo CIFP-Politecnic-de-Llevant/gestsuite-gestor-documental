@@ -358,114 +358,115 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             }
         }
 
-        //Traspassar documents pujats
-        log.info("Traspassant documents pujats...");
-        List<DocumentDto> documentsBucketNoTraspassats = documentService.findAllDocumentsBucketNoTraspassats(convocatoria);
-        for(DocumentDto doc: documentsBucketNoTraspassats){
-            try {
-                if(!doc.getEstat().equals(DocumentEstatDto.ACCEPTAT)){
-                    continue;
-                }
-                System.out.println("Doc no traspassat: " + doc.getNomOriginal());
-                ResponseEntity<FitxerBucketDto> responseEntity = coreRestClient.getFitxerBucketById(doc.getIdFitxer());
-                FitxerBucketDto fitxerBucket = responseEntity.getBody();
-
-                JsonObject jsonFitxerBucket = new JsonObject();
-                jsonFitxerBucket.addProperty("idfitxer", fitxerBucket.getIdfitxer());
-                jsonFitxerBucket.addProperty("nom", fitxerBucket.getNom());
-                jsonFitxerBucket.addProperty("bucket", fitxerBucket.getBucket());
-                jsonFitxerBucket.addProperty("path", fitxerBucket.getPath());
-
-                ResponseEntity<String> urlResponse = coreRestClient.generateSignedURL(jsonFitxerBucket.toString());
-                String url = urlResponse.getBody();
-
-                //Split / and get last part
-                String[] parts = fitxerBucket.getNom().split("/");
-                String nomFitxerCleaned = parts[parts.length-1];
-
-                //Get file from URL
-                InputStream in = new URL(url).openStream();
-                Files.copy(in, Paths.get("/tmp/"+nomFitxerCleaned), StandardCopyOption.REPLACE_EXISTING);
-                log.info("Fitxer copiat a /tmp/"+nomFitxerCleaned);
-
-                String basePathGoogleDrive = userPathDocDefinitiva;
-                ConvocatoriaDto convocatoriaDocument = convocatoriaService.findConvocatoriaById(doc.getConvocatoria().getIdConvocatoria());
-
-
-                String[] pathDoc = doc.getNomOriginal().split("_");
-
-                String nomFitxer = nomFitxerCleaned;
-                List<String> pathDocList = new ArrayList<String>();
-                if(pathDoc.length==5){
-                    String numExpedient = pathDoc[3];
-                    UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
-
-                    nomFitxer = pathDoc[4]; //Nom fitxer original
-
-                    pathDocList.add(basePathGoogleDrive); // Base
-                    pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
-                    pathDocList.add(pathDoc[0]); // Curs + Grup. IFC33B
-                    pathDocList.add(alumne.getGestibCognom1()+" " +alumne.getGestibCognom2()+", " +alumne.getGestibNom()); //Cognoms + Nom
-                } else if(pathDoc.length==2){
-                    nomFitxer = pathDoc[1];//Nom fitxer original
-
-                    pathDocList.add(basePathGoogleDrive); // Base
-                    pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
-                    pathDocList.add(pathDoc[0]); // Curs + Grup. IFC33B
-
-                } else if(pathDoc.length==4 && pathDoc[0].equals("CUSTOM") && pathDoc[1].equals("Altra documentació grup")){
-                    nomFitxer = pathDoc[3]; //Nom fitxer original
-
-                    pathDocList.add(basePathGoogleDrive); // Base
-                    pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
-                    pathDocList.add(pathDoc[2]); //Curs + Grup. IFC33B
-                } else if(pathDoc.length==4 && pathDoc[0].equals("CUSTOM") && pathDoc[1].equals("Annex 4")){
-                    nomFitxer = pathDoc[3]; //Nom fitxer original
-                    String numExpedient = pathDoc[3];
-                    UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
-
-                    pathDocList.add(basePathGoogleDrive); // Base
-                    pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
-                    pathDocList.add(pathDoc[2]); //Curs + Grup. IFC33B
-                    pathDocList.add(alumne.getGestibCognom1()+" " +alumne.getGestibCognom2()+", " +alumne.getGestibNom()); //Cognoms + Nom
-                } else {
-                    log.error("No s'ha pogut traspassar el fitxer "+nomFitxerCleaned);
-                    continue;
-                }
-
-
-                //Crear carpetes si no existeixen
-                File parent = googleDriveService.getFolder(basePathGoogleDrive,"qualitat@politecnicllevant.cat","root");
-                if(parent==null){
-                    log.error("No s'ha trobat la carpeta base "+basePathGoogleDrive);
-                } else {
-                    log.info("Carpeta base trobada: "+basePathGoogleDrive);
-                }
-                for(int i=1;i<pathDocList.size();i++){
-                    if(parent != null && parent.getId() != null) {
-                        log.info("Cercant la carpeta " + pathDocList.get(i));
-                        File folder = googleDriveService.getFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
-                        if (folder == null) {
-                            folder = googleDriveService.createFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
-                        }
-
-                        if(pathDocList.size()-1==i) {
-                            //Get file from folder
-                            java.io.File fileToUpload = new java.io.File("/tmp/" + nomFitxerCleaned);
-                            googleDriveService.uploadFile(folder.getId(), "qualitat@politecnicllevant.cat", fileToUpload, nomFitxer);
-
-                            doc.setTraspassat(true);
-                            documentService.save(doc, convocatoriaDocument);
-                        }
-
-                        parent = googleDriveService.getFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
+        //Traspassar documents del bucket
+        log.info("Traspassant documents del bucket...");
+        List<ConvocatoriaDto> convocatories = convocatoriaService.findAll();
+        for(ConvocatoriaDto convocatoriaDto: convocatories){
+            List<DocumentDto> documentsBucketNoTraspassats = documentService.findAllDocumentsBucketNoTraspassats(convocatoriaDto);
+            for(DocumentDto doc: documentsBucketNoTraspassats) {
+                try {
+                    if (!doc.getEstat().equals(DocumentEstatDto.ACCEPTAT)) {
+                        continue;
                     }
+                    System.out.println("Doc no traspassat: " + doc.getNomOriginal());
+                    ResponseEntity<FitxerBucketDto> responseEntity = coreRestClient.getFitxerBucketById(doc.getIdFitxer());
+                    FitxerBucketDto fitxerBucket = responseEntity.getBody();
+
+                    JsonObject jsonFitxerBucket = new JsonObject();
+                    jsonFitxerBucket.addProperty("idfitxer", fitxerBucket.getIdfitxer());
+                    jsonFitxerBucket.addProperty("nom", fitxerBucket.getNom());
+                    jsonFitxerBucket.addProperty("bucket", fitxerBucket.getBucket());
+                    jsonFitxerBucket.addProperty("path", fitxerBucket.getPath());
+
+                    ResponseEntity<String> urlResponse = coreRestClient.generateSignedURL(jsonFitxerBucket.toString());
+                    String url = urlResponse.getBody();
+
+                    //Split / and get last part
+                    String[] parts = fitxerBucket.getNom().split("/");
+                    String nomFitxerCleaned = parts[parts.length - 1];
+
+                    //Get file from URL
+                    InputStream in = new URL(url).openStream();
+                    Files.copy(in, Paths.get("/tmp/" + nomFitxerCleaned), StandardCopyOption.REPLACE_EXISTING);
+                    log.info("Fitxer copiat a /tmp/" + nomFitxerCleaned);
+
+                    String basePathGoogleDrive = userPathDocDefinitiva;
+                    ConvocatoriaDto convocatoriaDocument = convocatoriaService.findConvocatoriaById(doc.getConvocatoria().getIdConvocatoria());
+
+                    String[] pathDoc = doc.getNomOriginal().split("_");
+
+                    String nomFitxer = nomFitxerCleaned;
+                    List<String> pathDocList = new ArrayList<String>();
+                    if (pathDoc.length == 5) {
+                        String numExpedient = pathDoc[3];
+                        UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
+
+                        nomFitxer = pathDoc[4]; //Nom fitxer original
+
+                        pathDocList.add(basePathGoogleDrive); // Base
+                        pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                        pathDocList.add(pathDoc[0]); // Curs + Grup. IFC33B
+                        pathDocList.add(alumne.getGestibCognom1() + " " + alumne.getGestibCognom2() + ", " + alumne.getGestibNom()); //Cognoms + Nom
+                    } else if (pathDoc.length == 2) {
+                        nomFitxer = pathDoc[1];//Nom fitxer original
+
+                        pathDocList.add(basePathGoogleDrive); // Base
+                        pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                        pathDocList.add(pathDoc[0]); // Curs + Grup. IFC33B
+
+                    } else if (pathDoc.length == 4 && pathDoc[0].equals("CUSTOM") && pathDoc[1].equals("Altra documentació grup")) {
+                        nomFitxer = pathDoc[3]; //Nom fitxer original
+
+                        pathDocList.add(basePathGoogleDrive); // Base
+                        pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                        pathDocList.add(pathDoc[2]); //Curs + Grup. IFC33B
+                    } else if (pathDoc.length == 4 && pathDoc[0].equals("CUSTOM") && pathDoc[1].equals("Annex 4")) {
+                        nomFitxer = pathDoc[3]; //Nom fitxer original
+                        String numExpedient = pathDoc[3];
+                        UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
+
+                        pathDocList.add(basePathGoogleDrive); // Base
+                        pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                        pathDocList.add(pathDoc[2]); //Curs + Grup. IFC33B
+                        pathDocList.add(alumne.getGestibCognom1() + " " + alumne.getGestibCognom2() + ", " + alumne.getGestibNom()); //Cognoms + Nom
+                    } else {
+                        log.error("No s'ha pogut traspassar el fitxer " + nomFitxerCleaned);
+                        continue;
+                    }
+
+
+                    //Crear carpetes si no existeixen
+                    File parent = googleDriveService.getFolder(basePathGoogleDrive, "qualitat@politecnicllevant.cat", "root");
+                    if (parent == null) {
+                        log.error("No s'ha trobat la carpeta base " + basePathGoogleDrive);
+                    } else {
+                        log.info("Carpeta base trobada: " + basePathGoogleDrive);
+                    }
+                    for (int i = 1; i < pathDocList.size(); i++) {
+                        if (parent != null && parent.getId() != null) {
+                            log.info("Cercant la carpeta " + pathDocList.get(i));
+                            File folder = googleDriveService.getFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
+                            if (folder == null) {
+                                folder = googleDriveService.createFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
+                            }
+
+                            if (pathDocList.size() - 1 == i) {
+                                //Get file from folder
+                                java.io.File fileToUpload = new java.io.File("/tmp/" + nomFitxerCleaned);
+                                googleDriveService.uploadFile(folder.getId(), "qualitat@politecnicllevant.cat", fileToUpload, nomFitxer);
+
+                                doc.setTraspassat(true);
+                                documentService.save(doc, convocatoriaDocument);
+                            }
+
+                            parent = googleDriveService.getFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
+                        }
+                    }
+
+
+                } catch (Exception e) {
+                    log.error("Error traspassant fitxer de bucket de " + doc.getNomOriginal(), e);
                 }
-
-
-
-            } catch (Exception e){
-                log.error("Error traspassant fitxer de bucket de "+doc.getNomOriginal(),e);
             }
         }
 
