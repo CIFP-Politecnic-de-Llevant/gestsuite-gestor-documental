@@ -14,7 +14,7 @@ public @Data class DadesFormulariDto {
     private String poblacio;
     private String dni;
     //@JsonProperty(value = "nExpedient")
-    private String nExpedient;
+    private String numeroExpedient;
     private Boolean menorEdat;
     private String edat;
     private String estudis;

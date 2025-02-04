@@ -479,8 +479,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 }
             }
         }
-
-
     }
 
     @PostMapping("/documents/saveDocumentExtra")
@@ -1510,7 +1508,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         getterDataForm.put("Llinatges alumne", DadesFormulariDto.class.getMethod("getLlinatgesAlumne"));
         getterDataForm.put("Població Alumne", DadesFormulariDto.class.getMethod("getPoblacio"));
         getterDataForm.put("DNI", DadesFormulariDto.class.getMethod("getDni"));
-        getterDataForm.put("Nombre expedient", DadesFormulariDto.class.getMethod("getNExpedient"));
+        getterDataForm.put("Exp.", DadesFormulariDto.class.getMethod("getNumeroExpedient"));
         getterDataForm.put("Es menor d'edat en el moment de començar la FCT", DadesFormulariDto.class.getMethod("getMenorEdat"));
         getterDataForm.put("Edat de l'alumne", DadesFormulariDto.class.getMethod("getEdat"));
         getterDataForm.put("Estudis", DadesFormulariDto.class.getMethod("getEstudis"));
@@ -1541,7 +1539,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         getterDataForm.put("Telèfon", DadesFormulariDto.class.getMethod("getTelefonEmpresa"));
         getterDataForm.put("Nom Centre de treball", DadesFormulariDto.class.getMethod("getNomLlocTreball"));
         getterDataForm.put("Adreça Centre de treball", DadesFormulariDto.class.getMethod("getAdrecaLlocTreball"));
-        getterDataForm.put("Còdig postal Centre de treball", DadesFormulariDto.class.getMethod("getCpLlocTreball"));
+        getterDataForm.put("Còdi postal Centre de treball", DadesFormulariDto.class.getMethod("getCpLlocTreball"));
         getterDataForm.put("Població Centre de treball", DadesFormulariDto.class.getMethod("getPoblacioLlocTreball"));
         getterDataForm.put("Telèfon Centre de treball", DadesFormulariDto.class.getMethod("getTelefonLlocTreball"));
         getterDataForm.put("Activitat Centre de treball", DadesFormulariDto.class.getMethod("getActivitatLlocTreball"));
