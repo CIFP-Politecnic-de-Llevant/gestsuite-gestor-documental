@@ -369,11 +369,11 @@ public class GoogleDriveService {
 
     //SpreadSheet
 
-    public int getLastDataRow(String user) throws IOException, GeneralSecurityException {
+    public int getLastDataRow() throws IOException, GeneralSecurityException {
 
         String range = "A:Z";
         String[] scopes = {SheetsScopes.SPREADSHEETS_READONLY};
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
         HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
 
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -431,13 +431,13 @@ public class GoogleDriveService {
         }
     }
 
-    public void writeData(Map<String, Method> gettersDataForm, String user, DadesFormulariDto data) throws IOException, GeneralSecurityException, IllegalAccessException, InvocationTargetException {
+    public void writeData(Map<String, String> gettersDataForm) throws IOException, GeneralSecurityException, IllegalAccessException, InvocationTargetException {
 
-        int startRowIndex = getLastDataRow(user) + 1;
+        int startRowIndex = getLastDataRow() + 1;
         String range = "A" + startRowIndex + ":BZ";
 
         String[] scopes = {SheetsScopes.SPREADSHEETS};
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
         HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
 
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -450,32 +450,26 @@ public class GoogleDriveService {
 
         //Escriure headers
         if (startRowIndex == 1) {
-            List<Object> headerRow = new ArrayList<>();
-            for (String header : gettersDataForm.keySet()) {
-                headerRow.add(header);
-            }
+            List<Object> headerRow = new ArrayList<>(gettersDataForm.keySet());
             valuesToWrite.add(headerRow);
         }
         //Escriure les dades
-        if (data != null) {
-            List<Object> dataRow = new ArrayList<>();
-            for (Map.Entry<String, Method> entry : gettersDataForm.entrySet()) {
-                Object value = entry.getValue().invoke(data);
-                String parseValue = value != null ? value.toString() : "";
+        List<Object> dataRow = new ArrayList<>();
+        for (Map.Entry<String, String> entry : gettersDataForm.entrySet()) {
+            String value = entry.getValue();
 
-                //Aqui dona fallo, arreglar-lo
-                if(parseValue.equals("true")){
-                    System.out.println("entra = " + value);
-                    value = "Si";
-                } else if (parseValue.equals("false")) {
-                    value ="No";
-                    System.out.println("entra = " + value);
-                }
-                System.out.println("Datos en el for =  " + value);
-                dataRow.add(value != null ? value.toString() : "");
+            //Aqui dona fallo, arreglar-lo
+            if(value.equals("true")){
+                System.out.println("entra = " + value);
+                value = "Si";
+            } else if (value.equals("false")) {
+                value ="No";
+                System.out.println("entra = " + value);
             }
-            valuesToWrite.add(dataRow);
+            System.out.println("Datos en el for =  " + value);
+            dataRow.add(value);
         }
+        valuesToWrite.add(dataRow);
 
         ValueRange requestBody = new ValueRange().setValues(valuesToWrite);
 

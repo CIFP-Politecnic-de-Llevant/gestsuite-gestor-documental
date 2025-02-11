@@ -40,6 +40,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -1491,7 +1492,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         form.setIdCursAcademic(cursAcademic.getIdcursAcademic());
 
         dadesFormulariService.save(form);
-        googleDriveService.writeData(getGettersDataForm(),email,form);
+        googleDriveService.writeData(getGettersDataForm(form, email));
 
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Formulari guardat correctament");
@@ -1500,62 +1501,73 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
 
-    private static Map<String,Method> getGettersDataForm() throws NoSuchMethodException {
+    private static Map<String,String> getGettersDataForm(DadesFormulariDto form, String email) throws NoSuchMethodException {
+        DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        Map<String, Method> getterDataForm = new LinkedHashMap<>();
-        getterDataForm.put("Curs Escolar", DadesFormulariDto.class.getMethod("getAnyCurs"));
-        getterDataForm.put("Nom alumne", DadesFormulariDto.class.getMethod("getNomAlumne"));
-        getterDataForm.put("Llinatges alumne", DadesFormulariDto.class.getMethod("getLlinatgesAlumne"));
-        getterDataForm.put("Població Alumne", DadesFormulariDto.class.getMethod("getPoblacio"));
-        getterDataForm.put("DNI", DadesFormulariDto.class.getMethod("getDni"));
-        getterDataForm.put("Exp.", DadesFormulariDto.class.getMethod("getNumeroExpedient"));
-        getterDataForm.put("Es menor d'edat en el moment de començar la FCT", DadesFormulariDto.class.getMethod("getMenorEdat"));
-        getterDataForm.put("Edat de l'alumne", DadesFormulariDto.class.getMethod("getEdat"));
-        getterDataForm.put("Estudis", DadesFormulariDto.class.getMethod("getEstudis"));
-        getterDataForm.put("Cicle Formatiu", DadesFormulariDto.class.getMethod("getCicleFormatiu"));
-        getterDataForm.put("Grup", DadesFormulariDto.class.getMethod("getGrup"));
-        getterDataForm.put("Durada del cicle", DadesFormulariDto.class.getMethod("getDuradaCicle"));
-        getterDataForm.put("Número d'hores totals proposades per FCT", DadesFormulariDto.class.getMethod("getTotalHoresProposadesFct"));
-        getterDataForm.put("Número d'hores diàries", DadesFormulariDto.class.getMethod("getHoresDiaries"));
-        getterDataForm.put("Km centre treball-població alumne", DadesFormulariDto.class.getMethod("getKm"));
-        getterDataForm.put("Període", DadesFormulariDto.class.getMethod("getPeriode"));
-        getterDataForm.put("Data inicial", DadesFormulariDto.class.getMethod("getDataInici"));
-        getterDataForm.put("Data final", DadesFormulariDto.class.getMethod("getDataFi"));
-        getterDataForm.put("Data màxima acabament", DadesFormulariDto.class.getMethod("getDataAcabament"));
-        getterDataForm.put("Tipus de jornada", DadesFormulariDto.class.getMethod("getTipusJornada"));
-        getterDataForm.put("Horari", DadesFormulariDto.class.getMethod("getHorari"));
-        getterDataForm.put("Nom tutor", DadesFormulariDto.class.getMethod("getNomTutor"));
-        getterDataForm.put("Llinatges tutor", DadesFormulariDto.class.getMethod("getLlinatgesTutor"));
-        getterDataForm.put("Telèfon mòbil", DadesFormulariDto.class.getMethod("getTelefonTutor"));
-        getterDataForm.put("Empresa nova", DadesFormulariDto.class.getMethod("getEmpresaNova"));
-        getterDataForm.put("És una empresa de l'Administració Pública", DadesFormulariDto.class.getMethod("getEmpresaAdministracioPublica"));
-        getterDataForm.put("Número de conveni", DadesFormulariDto.class.getMethod("getNumeroConveni"));
-        getterDataForm.put("Número d'annex", DadesFormulariDto.class.getMethod("getNumeroAnnex"));
-        getterDataForm.put("Nom de l'empresa", DadesFormulariDto.class.getMethod("getNomEmpresa"));
-        getterDataForm.put("CIF", DadesFormulariDto.class.getMethod("getCif"));
-        getterDataForm.put("Adreça", DadesFormulariDto.class.getMethod("getAdrecaEmpresa"));
-        getterDataForm.put("Còdig postal", DadesFormulariDto.class.getMethod("getCpempresa"));
-        getterDataForm.put("Població Empresa", DadesFormulariDto.class.getMethod("getPoblacioEmpresa"));
-        getterDataForm.put("Telèfon", DadesFormulariDto.class.getMethod("getTelefonEmpresa"));
-        getterDataForm.put("Nom Centre de treball", DadesFormulariDto.class.getMethod("getNomLlocTreball"));
-        getterDataForm.put("Adreça Centre de treball", DadesFormulariDto.class.getMethod("getAdrecaLlocTreball"));
-        getterDataForm.put("Còdi postal Centre de treball", DadesFormulariDto.class.getMethod("getCpLlocTreball"));
-        getterDataForm.put("Població Centre de treball", DadesFormulariDto.class.getMethod("getPoblacioLlocTreball"));
-        getterDataForm.put("Telèfon Centre de treball", DadesFormulariDto.class.getMethod("getTelefonLlocTreball"));
-        getterDataForm.put("Activitat Centre de treball", DadesFormulariDto.class.getMethod("getActivitatLlocTreball"));
-        getterDataForm.put("Nom complet representant legal", DadesFormulariDto.class.getMethod("getNomCompletRepresentantLegal"));
-        getterDataForm.put("NIF representant legal", DadesFormulariDto.class.getMethod("getNifRepresentantLegal"));
-        getterDataForm.put("Nom complet tutor empresa", DadesFormulariDto.class.getMethod("getNomCompletTutorEmpresa"));
-        getterDataForm.put("NIF tutor empresa", DadesFormulariDto.class.getMethod("getNifTutorEmpresa"));
-        getterDataForm.put("Nacionalitat tutor empresa", DadesFormulariDto.class.getMethod("getNacionalitatTutorEmpresa"));
-        getterDataForm.put("Municipi tutor empresa", DadesFormulariDto.class.getMethod("getMunicipiTutorEmpresa"));
-        getterDataForm.put("Càrrec del tutor dins l'empresa", DadesFormulariDto.class.getMethod("getCarrecTutorEmpresa"));
-        getterDataForm.put("Correu electrònic de l'empresa", DadesFormulariDto.class.getMethod("getEmailEmpresa"));
-        getterDataForm.put("Dia seguiment centre educatiu", DadesFormulariDto.class.getMethod("getDiaSeguimentCentreEducatiu"));
-        getterDataForm.put("Hora seguiment centre educatiu", DadesFormulariDto.class.getMethod("getHoraSeguimentCentreEducatiu"));
-        getterDataForm.put("Dia seguiment amb responsable FCT", DadesFormulariDto.class.getMethod("getDiaSeguimentResponsableFct"));
-        getterDataForm.put("Hora seguiment amb responsable FCT", DadesFormulariDto.class.getMethod("getHoraSeguimentResponsableFct"));
-        getterDataForm.put("Hi ha algun tipus de flexibilització en el mòdul de FCT", DadesFormulariDto.class.getMethod("getFlexibilitzacioModulFct"));
+        LocalDateTime now = LocalDateTime.now();
+        String nowFormat = now.format(formatterDateTime);
+
+        Map<String, String> getterDataForm = new LinkedHashMap<>();
+        getterDataForm.put("Marca temporal", nowFormat);
+        getterDataForm.put("Dirección de correo", email);
+        getterDataForm.put("Nom", form.getNomAlumne());
+        getterDataForm.put("Llinatges", form.getLlinatgesAlumne());
+        getterDataForm.put("Població", form.getPoblacio());
+        getterDataForm.put("DNI", form.getDni());
+        getterDataForm.put("Nombre expedient", form.getNumeroExpedient());
+        getterDataForm.put("Cicle Formatiu", form.getCicleFormatiu());
+        getterDataForm.put("Grup", form.getGrup());
+        getterDataForm.put("Durada del cicle", form.getDuradaCicle());
+        getterDataForm.put("Número d'hores totals proposades per FCT (posa només el número. Exemple: 240)", form.getTotalHoresProposadesFct());
+        getterDataForm.put("Número d'hores diàries (posa només el número. Exemple: 7)", form.getHoresDiaries());
+        getterDataForm.put("Km centre treball-població alumne (posa només el número. Exemple: 14)", form.getKm());
+        getterDataForm.put("Període", form.getPeriode());
+        getterDataForm.put("Data inicial", form.getDataInici().format(formatterDate));
+        getterDataForm.put("Data final", form.getDataFi().format(formatterDate));
+        getterDataForm.put("Tipus de jornada", form.getTipusJornada());
+        getterDataForm.put("Horari (Exemple jornada continua: 8:00-13:00 i jornada partida: 8.00-12:00 ; 15:00-18:00)", form.getHorari());
+        getterDataForm.put("Nom professor/tutor", form.getNomTutor());
+        getterDataForm.put("Llinatges professor/tutor", form.getLlinatgesTutor());
+        getterDataForm.put("Telèfon mòbil professor/tutor", form.getTelefonTutor());
+        getterDataForm.put("És una empresa nova?", form.getEmpresaNova()?"Si":"No");
+        getterDataForm.put("Número de conveni ( si el sabeu)", form.getNumeroConveni());
+        getterDataForm.put("Nom de l'empresa", form.getNomEmpresa());
+        getterDataForm.put("CIF", form.getCif());
+        getterDataForm.put("Adreça Empresa", form.getAdrecaEmpresa());
+        getterDataForm.put("Còdig postal CP Empresa", form.getCpempresa());
+        getterDataForm.put("Població Empresa", form.getPoblacioEmpresa());
+        getterDataForm.put("Telèfon Empresa", form.getTelefonEmpresa());
+        getterDataForm.put("Fax Empresa", ""); //TODO: mirar si es necessita
+        getterDataForm.put("Nom Centre de treball (on ha d'anar l'alumne)", form.getNomLlocTreball());
+        getterDataForm.put("Adreça Centre de treball ", form.getAdrecaLlocTreball());
+        getterDataForm.put("Codi postal CP Centre de treball ", form.getCpLlocTreball());
+        getterDataForm.put("Població Centre de treball ", form.getPoblacioLlocTreball());
+        getterDataForm.put("Telèfon Centre de treball ", form.getTelefonLlocTreball());
+        getterDataForm.put("Activitat Centre de treball ", form.getActivitatLlocTreball());
+        getterDataForm.put("Nom representant legal", form.getNomCompletRepresentantLegal());
+        getterDataForm.put("Llinatges representant legal", ""); //TODO: mirar si es necessita
+        getterDataForm.put("NIF representant legal", form.getNifRepresentantLegal());
+        getterDataForm.put("Nom tutor empresa", form.getNomTutor());
+        getterDataForm.put("Llinatges tutor empresa", form.getLlinatgesTutor());
+        getterDataForm.put("NIF tutor empresa", form.getNifTutorEmpresa());
+        getterDataForm.put("Municipi (que consta al DNI del tutor empresa)", form.getMunicipiTutorEmpresa());
+        getterDataForm.put("Càrrec del tutor dins l'empresa", form.getCarrecTutorEmpresa());
+        getterDataForm.put("Correu electrònic de l'empresa", form.getEmailEmpresa());
+        getterDataForm.put("CURS ESCOLAR (Exemple: 23/24)", form.getAnyCurs());
+        getterDataForm.put("Data màxima acabament", form.getDataAcabament().format(formatterDate));
+        getterDataForm.put("Dia seguiment centre educatiu", form.getDiaSeguimentCentreEducatiu());
+        getterDataForm.put("Hora seguiment centre educatiu", form.getHoraSeguimentCentreEducatiu());
+        getterDataForm.put("Dia seguiment amb responsable FCT", form.getDiaSeguimentCentreEducatiu());
+        getterDataForm.put("Hora seguiment amb responsable FCT", form.getHoraSeguimentCentreEducatiu());
+        getterDataForm.put("Estudis", form.getEstudis());
+        getterDataForm.put("Nacionalitat tutor empresa", form.getNacionalitatTutorEmpresa());
+        getterDataForm.put("Es menor d'edat en el moment de començar la FCT?", form.getMenorEdat()?"Si":"No");
+        getterDataForm.put("És una empresa de l'Administració Pública?", form.getEmpresaAdministracioPublica()? "Si":"No");
+        getterDataForm.put("Tipus de flexibilització", ""); //TODO: mirar si es necessita
+        getterDataForm.put("Hi ha algun tipus de flexibilització en el mòdul de FCT?", form.getFlexibilitzacioModulFct()? "Si":"No");
+        getterDataForm.put("Si realitza horari nocturn indicau quin horari té", ""); //TODO: mirar si es necessita
+        getterDataForm.put("Edat de l'alumne (només número)", form.getEdat());
 
         return getterDataForm;
     }
