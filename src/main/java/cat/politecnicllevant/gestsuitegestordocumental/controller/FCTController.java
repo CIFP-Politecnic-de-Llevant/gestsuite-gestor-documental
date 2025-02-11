@@ -1532,6 +1532,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         getterDataForm.put("Telèfon mòbil professor/tutor", form.getTelefonTutor());
         getterDataForm.put("És una empresa nova?", form.getEmpresaNova()?"Si":"No");
         getterDataForm.put("Número de conveni ( si el sabeu)", form.getNumeroConveni());
+        getterDataForm.put("Número d'annex ( si el sabeu)", form.getNumeroAnnex());
         getterDataForm.put("Nom de l'empresa", form.getNomEmpresa());
         getterDataForm.put("CIF", form.getCif());
         getterDataForm.put("Adreça Empresa", form.getAdrecaEmpresa());

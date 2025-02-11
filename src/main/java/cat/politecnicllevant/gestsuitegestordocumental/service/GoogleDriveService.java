@@ -431,7 +431,7 @@ public class GoogleDriveService {
         }
     }
 
-    public void writeData(Map<String, String> gettersDataForm) throws IOException, GeneralSecurityException, IllegalAccessException, InvocationTargetException {
+    public void writeData(Map<String, String> gettersDataForm) throws IOException, GeneralSecurityException {
 
         int startRowIndex = getLastDataRow() + 1;
         String range = "A" + startRowIndex + ":BZ";
@@ -456,15 +456,16 @@ public class GoogleDriveService {
         //Escriure les dades
         List<Object> dataRow = new ArrayList<>();
         for (Map.Entry<String, String> entry : gettersDataForm.entrySet()) {
-            String value = entry.getValue();
+            String value = "";
+            if(entry.getValue()!=null) {
+                value = entry.getValue();
+            }
 
             //Aqui dona fallo, arreglar-lo
             if(value.equals("true")){
-                System.out.println("entra = " + value);
                 value = "Si";
             } else if (value.equals("false")) {
                 value ="No";
-                System.out.println("entra = " + value);
             }
             System.out.println("Datos en el for =  " + value);
             dataRow.add(value);
