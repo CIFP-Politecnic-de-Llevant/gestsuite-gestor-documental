@@ -1539,7 +1539,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         getterDataForm.put("Còdig postal CP Empresa", form.getCpempresa());
         getterDataForm.put("Població Empresa", form.getPoblacioEmpresa());
         getterDataForm.put("Telèfon Empresa", form.getTelefonEmpresa());
-        getterDataForm.put("Fax Empresa", ""); //TODO: mirar si es necessita
+        getterDataForm.put("Fax Empresa", "");
         getterDataForm.put("Nom Centre de treball (on ha d'anar l'alumne)", form.getNomLlocTreball());
         getterDataForm.put("Adreça Centre de treball ", form.getAdrecaLlocTreball());
         getterDataForm.put("Codi postal CP Centre de treball ", form.getCpLlocTreball());
@@ -1565,9 +1565,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         getterDataForm.put("Nacionalitat tutor empresa", form.getNacionalitatTutorEmpresa());
         getterDataForm.put("Es menor d'edat en el moment de començar la FCT?", form.getMenorEdat()?"Si":"No");
         getterDataForm.put("És una empresa de l'Administració Pública?", form.getEmpresaAdministracioPublica()? "Si":"No");
-        getterDataForm.put("Tipus de flexibilització", ""); //TODO: mirar si es necessita
+        getterDataForm.put("Tipus de flexibilització", "");
         getterDataForm.put("Hi ha algun tipus de flexibilització en el mòdul de FCT?", form.getFlexibilitzacioModulFct()? "Si":"No");
-        getterDataForm.put("Si realitza horari nocturn indicau quin horari té", ""); //TODO: mirar si es necessita
+        getterDataForm.put("Si realitza horari nocturn indicau quin horari té", "");
         getterDataForm.put("Edat de l'alumne (només número)", form.getEdat());
 
         return getterDataForm;
