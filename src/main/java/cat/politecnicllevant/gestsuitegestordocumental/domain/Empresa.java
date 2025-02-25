@@ -31,7 +31,7 @@ public @Data class Empresa {
     private String adreca;
 
     @Column(name = "codi_postal",nullable = true)
-    private Long codiPostal;
+    private String codiPostal;
 
     @Column(name = "poblacio",nullable = true, length = 128)
     private String poblacio;

@@ -7,7 +7,7 @@ public @Data class LlocTreballDto {
     private Long idLlocTreball;
     private String nom;
     private String adreca;
-    private Long codiPostal;
+    private String codiPostal;
     private String telefon;
     private String poblacio;
     private String activitat;

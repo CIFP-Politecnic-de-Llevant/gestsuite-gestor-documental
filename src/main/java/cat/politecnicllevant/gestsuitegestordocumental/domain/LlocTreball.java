@@ -19,7 +19,7 @@ public @Data class LlocTreball {
     private String adreca;
 
     @Column(name = "codi_potal",nullable = true)
-    private Long codiPostal;
+    private String codiPostal;
 
     @Column(name = "telefon",nullable = true, length = 128)
     private String telefon;
