@@ -1549,8 +1549,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         getterDataForm.put("Nom representant legal", form.getNomCompletRepresentantLegal());
         getterDataForm.put("Llinatges representant legal", ""); //TODO: mirar si es necessita
         getterDataForm.put("NIF representant legal", form.getNifRepresentantLegal());
-        getterDataForm.put("Nom tutor empresa", form.getNomTutor());
-        getterDataForm.put("Llinatges tutor empresa", form.getLlinatgesTutor());
+        getterDataForm.put("Nom tutor empresa", form.getNomCompletTutorEmpresa());
+        getterDataForm.put("Llinatges tutor empresa", "");
         getterDataForm.put("NIF tutor empresa", form.getNifTutorEmpresa());
         getterDataForm.put("Municipi (que consta al DNI del tutor empresa)", form.getMunicipiTutorEmpresa());
         getterDataForm.put("Càrrec del tutor dins l'empresa", form.getCarrecTutorEmpresa());
@@ -1559,8 +1559,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         getterDataForm.put("Data màxima acabament", form.getDataAcabament().format(formatterDate));
         getterDataForm.put("Dia seguiment centre educatiu", form.getDiaSeguimentCentreEducatiu());
         getterDataForm.put("Hora seguiment centre educatiu", form.getHoraSeguimentCentreEducatiu());
-        getterDataForm.put("Dia seguiment amb responsable FCT", form.getDiaSeguimentCentreEducatiu());
-        getterDataForm.put("Hora seguiment amb responsable FCT", form.getHoraSeguimentCentreEducatiu());
+        getterDataForm.put("Dia seguiment amb responsable FCT", form.getDiaSeguimentResponsableFct());
+        getterDataForm.put("Hora seguiment amb responsable FCT", form.getHoraSeguimentResponsableFct());
         getterDataForm.put("Estudis", form.getEstudis());
         getterDataForm.put("Nacionalitat tutor empresa", form.getNacionalitatTutorEmpresa());
         getterDataForm.put("Es menor d'edat en el moment de començar la FCT?", form.getMenorEdat()?"Si":"No");
