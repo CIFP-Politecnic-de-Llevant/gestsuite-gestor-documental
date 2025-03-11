@@ -49,7 +49,7 @@ public @Data class LlocTreball {
     private String carrecTutor;
 
     @Column(name = "email",nullable = true, length = 255)
-    private String email;
+    private String emailTutorEmpresa;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn( name = "idEmpresa")

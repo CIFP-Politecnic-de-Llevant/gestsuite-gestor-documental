@@ -18,8 +18,8 @@ public @Data class Empresa {
     @Column(name = "numero_conveni",nullable = true, length = 128)
     private String numeroConveni;
 
-    @Column(name = "numero_annex",nullable = true, length = 128)
-    private String numeroAnnex;
+    @Column(name = "email_empresa",nullable = true, length = 128)
+    private String emailEmpresa;
 
     @Column(name = "nom",nullable = true, length = 255)
     private String nom;

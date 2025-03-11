@@ -8,7 +8,7 @@ public @Data class EmpresaDto {
 
     private Long idEmpresa;
     private String numeroConveni;
-    private String numeroAnnex;
+    private String emailEmpresa;
     private String nom;
     private String cif;
     private String adreca;

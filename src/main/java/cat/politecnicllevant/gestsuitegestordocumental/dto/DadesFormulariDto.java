@@ -36,7 +36,6 @@ public @Data class DadesFormulariDto {
     private Boolean empresaNova;
     private Boolean empresaAdministracioPublica;
     private String numeroConveni;
-    private String numeroAnnex;
     private String nomEmpresa;
     private String cif;
     private String adrecaEmpresa;
@@ -57,6 +56,7 @@ public @Data class DadesFormulariDto {
     private String municipiTutorEmpresa;
     private String carrecTutorEmpresa;
     private String emailEmpresa;
+    private String emailTutorEmpresa;
     private String diaSeguimentCentreEducatiu;
     private String horaSeguimentCentreEducatiu;
     private String diaSeguimentResponsableFct;

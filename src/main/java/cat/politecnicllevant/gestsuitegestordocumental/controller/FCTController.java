@@ -1532,7 +1532,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         getterDataForm.put("Telèfon mòbil professor/tutor", form.getTelefonTutor());
         getterDataForm.put("És una empresa nova?", form.getEmpresaNova()?"Si":"No");
         getterDataForm.put("Número de conveni ( si el sabeu)", form.getNumeroConveni());
-        getterDataForm.put("Número d'annex ( si el sabeu)", form.getNumeroAnnex());
         getterDataForm.put("Nom de l'empresa", form.getNomEmpresa());
         getterDataForm.put("CIF", form.getCif());
         getterDataForm.put("Adreça Empresa", form.getAdrecaEmpresa());
@@ -1554,7 +1553,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         getterDataForm.put("NIF tutor empresa", form.getNifTutorEmpresa());
         getterDataForm.put("Municipi (que consta al DNI del tutor empresa)", form.getMunicipiTutorEmpresa());
         getterDataForm.put("Càrrec del tutor dins l'empresa", form.getCarrecTutorEmpresa());
-        getterDataForm.put("Correu electrònic de l'empresa", form.getEmailEmpresa());
+        getterDataForm.put("Correu electrònic de l'empresa", form.getEmailTutorEmpresa());
         getterDataForm.put("CURS ESCOLAR (Exemple: 23/24)", form.getAnyCurs());
         getterDataForm.put("Data màxima acabament", form.getDataAcabament().format(formatterDate));
         getterDataForm.put("Dia seguiment centre educatiu", form.getDiaSeguimentCentreEducatiu());

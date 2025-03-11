@@ -17,6 +17,6 @@ public @Data class LlocTreballDto {
     private String dniTutorEmpresa;
     private String municipi;
     private String carrecTutor;
-    private String email;
+    private String emailTutorEmpresa;
     private EmpresaDto empresa;
 }
