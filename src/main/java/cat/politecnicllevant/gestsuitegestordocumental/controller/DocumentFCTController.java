@@ -2,8 +2,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Convocatoria;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.Document;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
@@ -19,34 +17,22 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.security.GeneralSecurityException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
 @Slf4j
-public class FCTController {
+public class DocumentFCTController {
 
     private final CoreRestClient coreRestClient;
 
@@ -59,16 +45,6 @@ public class FCTController {
     private final SignaturaService signaturaService;
 
     private final DocumentSignaturaService documentSignaturaService;
-
-    private final EmpresaService empresaService;
-
-    private final LlocTreballService llocTreballService;
-
-    private final AlumneService alumneService;
-
-    private final ProgramaFormatiuService programaFormatiuService;
-
-    private final DadesFormulariService dadesFormulariService;
 
     private final Gson gson;
     private final ConvocatoriaService convocatoriaService;
@@ -102,18 +78,13 @@ public class FCTController {
     private String pathDesti = "FCT_DEVELOPMENT";
     private Boolean isUnitatOrganitzativaDesti = true;
 
-    public FCTController(
+    public DocumentFCTController(
             GoogleDriveService googleDriveService,
             CoreRestClient coreRestClient,
             DocumentService documentService,
             TipusDocumentService tipusDocumentService,
             SignaturaService signaturaService,
             DocumentSignaturaService documentSignaturaService,
-            AlumneService alumneService,
-            EmpresaService empresaService,
-            LlocTreballService llocTreballService,
-            ProgramaFormatiuService programaFormatiuService,
-            DadesFormulariService dadesFormulariService,
             Gson gson,
             ConvocatoriaService convocatoriaService) {
         this.googleDriveService = googleDriveService;
@@ -122,11 +93,6 @@ public class FCTController {
         this.tipusDocumentService = tipusDocumentService;
         this.signaturaService = signaturaService;
         this.documentSignaturaService = documentSignaturaService;
-        this.empresaService = empresaService;
-        this.llocTreballService = llocTreballService;
-        this.alumneService = alumneService;
-        this.programaFormatiuService = programaFormatiuService;
-        this.dadesFormulariService = dadesFormulariService;
         this.gson = gson;
         this.convocatoriaService = convocatoriaService;
     }
@@ -1111,510 +1077,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
 
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-
-    //ALUMNE
-    @PostMapping("/alumnes/get-students-from-file")
-    public ResponseEntity<List<AlumneDto>> getStudentsFromFile(@RequestParam("file") MultipartFile file) throws Exception {
-
-        try(InputStream inpSt = file.getInputStream()){
-            Workbook workbook = new HSSFWorkbook(inpSt);
-            Sheet sheet = workbook.getSheetAt(0);
-
-            List<AlumneDto> alumnes = new ArrayList<AlumneDto>();
-
-            Map<String, Method> setterStudent = getSettersStudent();
-
-            //Conseguir el headers del fitxer
-            Row headerRow = sheet.getRow(4);
-            List<String> headers = getHeaders(headerRow);
-
-            Iterator<Row> rowIterator = sheet.iterator();
-            //Botas fins després dels headers(si estan sempre a la mateixa fila)
-            for (int i = 0; i < 4; i++) {
-                if (rowIterator.hasNext()) {
-                    rowIterator.next();
-                }
-            }
-
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-                AlumneDto alumne = new AlumneDto();
-
-                Iterator<Cell> cellIterator = row.cellIterator();
-                int index = 0;
-
-                while (cellIterator.hasNext() && index < headers.size()) {
-
-                    Cell cell = cellIterator.next();
-                    String cellValue = cell.getStringCellValue().trim();
-                    String header = headers.get(index);
-
-                    DateTimeFormatter formatoFechanacimineto = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-                    // Cercar els setters corresponents i amb el nom de la capçalera
-                    Method setter = setterStudent.get(header);
-                    if (setter != null) {
-                        try {
-                            if(header.equals("Data de naixement")) {
-                                LocalDate fechaNacimiento = LocalDate.parse(cellValue, formatoFechanacimineto);
-                                setter.invoke(alumne, fechaNacimiento);
-                            }else if(header.equals("Exp.")){
-                                setter.invoke(alumne,cellValue);
-                                UsuariDto user = coreRestClient.getUsuariByNumExpedient(cellValue).getBody();
-                                if(user!=null) {
-                                    alumne.setIdUsuari(user.getIdusuari());
-                                }
-                            }else if(header.equals("Llinatges i nom")){
-
-                                String[] partesNombre = cellValue.split(",\\s+");
-                                String[] apellidos = partesNombre[0].split("\\s+");
-                                String apellido1 = apellidos[0];
-                                String apellido2 = apellidos.length > 1 ? apellidos[1] : "";
-                                String nombre = partesNombre[1];
-
-                                setterStudent.get("cognom1").invoke(alumne, apellido1);
-                                setterStudent.get("cognom2").invoke(alumne, apellido2);
-                                setterStudent.get("Llinatges i nom").invoke(alumne, nombre);
-
-                            }else if(header.equals("Tel. fix")){
-
-                                String[] telefonos = cellValue.split("Tel");
-
-                                for (int i = 0; i < telefonos.length; i++) {
-
-                                    if(telefonos[i].contains("fix")){
-
-                                        String[] fix = telefonos[i].split(":\\s+");
-                                        setterStudent.get("Tel. fix").invoke(alumne, fix[1].trim());
-
-                                    }else if(telefonos[i].contains("mòbil")) {
-                                        String[] mobil = telefonos[i].split(":\\s+");
-                                        setterStudent.get("mobil").invoke(alumne, mobil[1].trim());
-
-                                    }
-                                }
-                            }else {
-                                setter.invoke(alumne, cellValue);
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    index++;
-                }
-                if(alumne.getIdUsuari()!=null) {
-                    alumnes.add(alumne);
-                }
-            }
-            return new ResponseEntity<>(alumnes, HttpStatus.OK);
-        }
-    }
-
-    @GetMapping("/alumnes/delete-student/{nExp}")
-    public ResponseEntity<Notificacio> deleteStudent(@PathVariable String nExp){
-
-        boolean eliminado = alumneService.delete(nExp);
-        Notificacio notificacio = new Notificacio();
-
-        if(eliminado) {
-            notificacio.setNotifyMessage("Alumne eliminat correctament");
-            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-            return new ResponseEntity<>(notificacio, HttpStatus.OK);
-        }else {
-            notificacio.setNotifyMessage("Aquest alumne no té número d'expedient");
-            notificacio.setNotifyType(NotificacioTipus.ERROR);
-            return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
-        }
-    }
-
-    @PostMapping("/alumnes/update-student")
-    public ResponseEntity<Notificacio> updateStudent(@RequestBody AlumneDto alumne){
-
-        Notificacio notificacio = new Notificacio();
-        UsuariDto user = coreRestClient.getUsuariByNumExpedient(String.valueOf(alumne.getNumeroExpedient())).getBody();
-        alumne.setIdUsuari(Objects.requireNonNull(user).getIdusuari());
-        alumneService.save(alumne);
-
-        notificacio.setNotifyMessage("Alumne actualitzat");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
-    }
-    @PostMapping("/alumnes/save-student")
-    public ResponseEntity<Notificacio> saveStudent(@RequestBody AlumneDto[] alumnes){
-
-        Notificacio notificacio = new Notificacio();
-
-        for (AlumneDto alumne:alumnes) {
-
-            UsuariDto user = coreRestClient.getUsuariByNumExpedient(alumne.getNumeroExpedient()).getBody();
-            if(user!=null) {
-
-                AlumneDto alumneDB = alumneService.getByNumeroExpedient(alumne.getNumeroExpedient());
-                if(alumneDB == null){
-                    alumneDB = new AlumneDto();
-                    alumneDB.setIdUsuari(user.getIdusuari());
-                    alumneDB.setIsFCT(false);
-                }
-
-                alumneDB.setNumeroExpedient(user.getGestibExpedient());
-                alumneDB.setNom(user.getGestibNom());
-                alumneDB.setCognom1(user.getGestibCognom1());
-                alumneDB.setCognom2(user.getGestibCognom2());
-                alumneDB.setGrup(user.getGestibGrup());
-
-                alumneDB.setCIP(alumne.getCIP());
-                alumneDB.setCP(alumne.getCP());
-                alumneDB.setAdrecaCompleta(alumne.getAdrecaCompleta());
-                alumneDB.setLocalitat(alumne.getLocalitat());
-                alumneDB.setMunicipi(alumne.getMunicipi());
-                alumneDB.setTelefon(alumne.getTelefon());
-                alumneDB.setTelefonFix(alumne.getTelefonFix());
-                alumneDB.setEmail(alumne.getEmail());
-                alumneDB.setSexe(alumne.getSexe());
-                alumneDB.setDataNaixement(alumne.getDataNaixement());
-                alumneDB.setNacionalitat(alumne.getNacionalitat());
-                alumneDB.setPaisNaixement(alumne.getPaisNaixement());
-                alumneDB.setProvinciaNaixement(alumne.getProvinciaNaixement());
-                alumneDB.setLocalitatNaixement(alumne.getLocalitatNaixement());
-                alumneDB.setDni(alumne.getDni());
-                alumneDB.setTargetaSanitaria(alumne.getTargetaSanitaria());
-                alumneDB.setTutor(alumne.getTutor());
-                alumneDB.setTelefonTutor(alumne.getTelefonTutor());
-                alumneDB.setEmailTutor(alumne.getEmailTutor());
-                alumneDB.setDniTutor(alumne.getDniTutor());
-                alumneDB.setAdrecaTutor(alumne.getAdrecaTutor());
-                alumneDB.setNacionalitatTutor(alumne.getNacionalitatTutor());
-
-                String ensenyament = alumne.getEnsenyament();
-                if(ensenyament.equals("GS")){
-                    ensenyament = "CF Grau Superior";
-                } else if(ensenyament.equals("GM")) {
-                    ensenyament = "CF Grau Mitjà";
-                } else if(ensenyament.equals("FPGB")) {
-                    ensenyament = "FP Bàsica";
-                }
-                alumneDB.setEnsenyament(ensenyament);
-
-                GrupDto grupDto = coreRestClient.getByGestibIdentificador(alumneDB.getGrup()).getBody();
-                CursDto cursDto = coreRestClient.getCursByCodiGestib(grupDto.getGestibCurs()).getBody();
-                alumneDB.setEstudis(cursDto.getGestibNom()+grupDto.getGestibNom());
-
-                alumneService.save(alumneDB);
-            }
-        }
-
-        notificacio.setNotifyMessage("Alumnes guardats i/o actualitzats");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
-    }
-
-    @GetMapping("/alumnes/all-students")
-    public ResponseEntity<List<AlumneDto>>findAllStudents(){
-
-        List<AlumneDto> alumnes = alumneService.findAll();
-        return new ResponseEntity<>(alumnes,HttpStatus.OK);
-    }
-
-    private static Map<String,Method> getSettersStudent() throws NoSuchMethodException {
-
-        Map<String, Method> setterStudent = new HashMap<>();
-        setterStudent.put("Llinatges i nom", AlumneDto.class.getMethod("setNom", String.class));
-        setterStudent.put("cognom1", AlumneDto.class.getMethod("setCognom1", String.class));
-        setterStudent.put("cognom2", AlumneDto.class.getMethod("setCognom2", String.class));
-        setterStudent.put("Ensenyament", AlumneDto.class.getMethod("setEnsenyament", String.class));
-        setterStudent.put("Estudis", AlumneDto.class.getMethod("setEstudis", String.class));
-        setterStudent.put("Grup", AlumneDto.class.getMethod("setGrup", String.class));
-        setterStudent.put("Exp.", AlumneDto.class.getMethod("setNumeroExpedient", String.class));
-        setterStudent.put("Sexe", AlumneDto.class.getMethod("setSexe", String.class));
-        setterStudent.put("Data de naixement", AlumneDto.class.getMethod("setDataNaixement", LocalDate.class));
-        setterStudent.put("Nacionalitat", AlumneDto.class.getMethod("setNacionalitat", String.class));
-        setterStudent.put("País naixement", AlumneDto.class.getMethod("setPaisNaixement", String.class));
-        setterStudent.put("Província naixement", AlumneDto.class.getMethod("setProvinciaNaixement", String.class));
-        setterStudent.put("Localitat naixement", AlumneDto.class.getMethod("setLocalitatNaixement", String.class));
-        setterStudent.put("DNI", AlumneDto.class.getMethod("setDni", String.class));
-        setterStudent.put("Targeta sanitària", AlumneDto.class.getMethod("setTargetaSanitaria", String.class));
-        setterStudent.put("CIP", AlumneDto.class.getMethod("setCIP", String.class));
-        setterStudent.put("Adreça (Corresp.)", AlumneDto.class.getMethod("setAdrecaCompleta", String.class));
-        setterStudent.put("Municipi", AlumneDto.class.getMethod("setMunicipi", String.class));
-        setterStudent.put("Localitat", AlumneDto.class.getMethod("setLocalitat", String.class));
-        setterStudent.put("CP.", AlumneDto.class.getMethod("setCP", String.class));
-        setterStudent.put("mobil", AlumneDto.class.getMethod("setTelefon", String.class));
-        setterStudent.put("Tel. fix", AlumneDto.class.getMethod("setTelefonFix", String.class));
-        setterStudent.put("E-mail", AlumneDto.class.getMethod("setEmail", String.class));
-        setterStudent.put("Tutor/a", AlumneDto.class.getMethod("setTutor", String.class));
-        setterStudent.put("Tel. tutor/a", AlumneDto.class.getMethod("setTelefonTutor", String.class));
-        setterStudent.put("E-mail tutor/a", AlumneDto.class.getMethod("setEmailTutor", String.class));
-        setterStudent.put("DNI tutor/a", AlumneDto.class.getMethod("setDniTutor", String.class));
-        setterStudent.put("Adreça pares o tutors (Corresp.)", AlumneDto.class.getMethod("setAdrecaTutor", String.class));
-        setterStudent.put("Nacionalitat pares o tutors", AlumneDto.class.getMethod("setNacionalitatTutor", String.class));
-
-        return setterStudent;
-    }
-
-    private static List<String> getHeaders(Row headerRow) {
-        List<String> headers = new ArrayList<>();
-        if (headerRow != null) {
-            for (Cell cell : headerRow) {
-                String header = cell.getStringCellValue();
-                headers.add(header);
-            }
-        }
-        return headers;
-    }
-
-    //EMPRESA
-
-    @PostMapping("/empresa/save-company")
-    public ResponseEntity<Notificacio> saveCompany(@RequestBody EmpresaDto empresa){
-
-        Notificacio notificacio = new Notificacio();
-
-        empresaService.save(empresa);
-
-        notificacio.setNotifyMessage("Empresa creada");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
-    }
-    @PostMapping("/empresa/update-company")
-    public ResponseEntity<Notificacio> updateCompany(@RequestBody EmpresaDto empresa){
-
-        Notificacio notificacio = new Notificacio();
-
-        empresaService.save(empresa);
-
-        notificacio.setNotifyMessage("Empresa actualitzada");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
-    }
-
-    @GetMapping("/empresa/all-companies")
-    public ResponseEntity<List<EmpresaDto>> allCompanies(){
-
-        List<EmpresaDto> companies = empresaService.findAll();
-
-        for (EmpresaDto company:companies){
-
-            List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(company.getIdEmpresa());
-
-            if(llocsTreball != null){
-                company.setLlocsTreball(llocsTreball);
-            }
-        }
-        return new ResponseEntity<>(companies,HttpStatus.OK);
-    }
-
-    @PostMapping("/empresa/company/{id}")
-    public ResponseEntity<EmpresaDto> getCompany(@PathVariable Long id){
-
-        EmpresaDto empresa = empresaService.findCompanyById(id);
-
-        List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(id);
-        empresa.setLlocsTreball(llocsTreball);
-
-        return new ResponseEntity<>(empresa,HttpStatus.OK);
-    }
-
-    @GetMapping("/empresa/delete-company/{id}")
-    public ResponseEntity<Notificacio> deleteCompany(@PathVariable Long id){
-
-        llocTreballService.deleteByIdEmpresa(id);
-        boolean eliminado = empresaService.delete(id);
-        Notificacio notificacio = new Notificacio();
-
-
-        if(eliminado) {
-            notificacio.setNotifyMessage("Empresa eliminada correctament");
-            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-            return new ResponseEntity<>(notificacio, HttpStatus.OK);
-        }else {
-            notificacio.setNotifyMessage("Aquest empresa no s'ha pogut eliminar");
-            notificacio.setNotifyType(NotificacioTipus.ERROR);
-            return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
-        }
-    }
-
-    @PostMapping("/empresa/lloc-treball/save-workspace")
-    public ResponseEntity<Notificacio> saveWorkspace(@RequestBody LlocTreballDto llocTreball){
-
-        Notificacio notificacio = new Notificacio();
-
-        llocTreballService.save(llocTreball);
-
-        notificacio.setNotifyMessage("Lloc de treball creat");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
-    }
-    @PostMapping("/empresa/lloc-treball/update-workspace")
-    public ResponseEntity<Notificacio> updateWorkspace(@RequestBody LlocTreballDto llocTreball){
-
-        Notificacio notificacio = new Notificacio();
-
-        System.out.println(llocTreball);
-        llocTreballService.save(llocTreball);
-
-        notificacio.setNotifyMessage("Lloc de treball actualitzat");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
-    }
-
-    @GetMapping("/empresa/lloc-treball/delete/{id}")
-    public ResponseEntity<Notificacio> deleteWorkspace(@PathVariable Long id){
-
-        boolean eliminado = llocTreballService.deleteById(id);
-        Notificacio notificacio = new Notificacio();
-
-
-        if(eliminado) {
-            notificacio.setNotifyMessage("Lloc de treball eliminat correctament");
-            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-            return new ResponseEntity<>(notificacio, HttpStatus.OK);
-        }else {
-            notificacio.setNotifyMessage("Aquest llod de treball no s'ha pogut eliminar");
-            notificacio.setNotifyType(NotificacioTipus.ERROR);
-            return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
-        }
-    }
-
-    //FORMULARI FCT
-    @GetMapping("/formulari/llistat")
-    public ResponseEntity<List<DadesFormulariDto>> getFormularis(){
-        List<DadesFormulariDto> formularis = dadesFormulariService.findAll();
-        return new ResponseEntity<>(formularis,HttpStatus.OK);
-    }
-
-    @PostMapping("/formulari/save-formulari")
-    public ResponseEntity<Notificacio> saveForm(@RequestBody DadesFormulariDto form, @RequestParam String email) throws NoSuchMethodException, GeneralSecurityException, IOException, InvocationTargetException, IllegalAccessException {
-
-        CursAcademicDto cursAcademic = this.coreRestClient.getActualCursAcademic().getBody();
-
-        form.setIdCursAcademic(cursAcademic.getIdcursAcademic());
-
-        dadesFormulariService.save(form);
-        googleDriveService.writeData(getGettersDataForm(form, email));
-
-        Notificacio notificacio = new Notificacio();
-        notificacio.setNotifyMessage("Formulari guardat correctament");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
-    }
-
-
-    private static Map<String,String> getGettersDataForm(DadesFormulariDto form, String email) throws NoSuchMethodException {
-        DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        LocalDateTime now = LocalDateTime.now();
-        String nowFormat = now.format(formatterDateTime);
-
-        Map<String, String> getterDataForm = new LinkedHashMap<>();
-        getterDataForm.put("Marca temporal", nowFormat);
-        getterDataForm.put("Dirección de correo", email);
-        getterDataForm.put("Nom", form.getNomAlumne());
-        getterDataForm.put("Llinatges", form.getLlinatgesAlumne());
-        getterDataForm.put("Població", form.getPoblacio());
-        getterDataForm.put("DNI", form.getDni());
-        getterDataForm.put("Nombre expedient", form.getNumeroExpedient());
-        getterDataForm.put("Cicle Formatiu", form.getCicleFormatiu());
-        getterDataForm.put("Grup", form.getGrup());
-        getterDataForm.put("Durada del cicle", form.getDuradaCicle());
-        getterDataForm.put("Número d'hores totals proposades per FCT (posa només el número. Exemple: 240)", form.getTotalHoresProposadesFct());
-        getterDataForm.put("Número d'hores diàries (posa només el número. Exemple: 7)", form.getHoresDiaries());
-        getterDataForm.put("Km centre treball-població alumne (posa només el número. Exemple: 14)", form.getKm());
-        getterDataForm.put("Període", form.getPeriode());
-        getterDataForm.put("Data inicial", form.getDataInici().format(formatterDate));
-        getterDataForm.put("Data final", form.getDataFi().format(formatterDate));
-        getterDataForm.put("Tipus de jornada", form.getTipusJornada());
-        getterDataForm.put("Horari (Exemple jornada continua: 8:00-13:00 i jornada partida: 8.00-12:00 ; 15:00-18:00)", form.getHorari());
-        getterDataForm.put("Nom professor/tutor", form.getNomTutor());
-        getterDataForm.put("Llinatges professor/tutor", form.getLlinatgesTutor());
-        getterDataForm.put("Telèfon mòbil professor/tutor", form.getTelefonTutor());
-        getterDataForm.put("És una empresa nova?", form.getEmpresaNova()?"Si":"No");
-        getterDataForm.put("Número de conveni ( si el sabeu)", form.getNumeroConveni());
-        getterDataForm.put("Nom de l'empresa", form.getNomEmpresa());
-        getterDataForm.put("CIF", form.getCif());
-        getterDataForm.put("Adreça Empresa", form.getAdrecaEmpresa());
-        getterDataForm.put("Còdig postal CP Empresa", form.getCpempresa());
-        getterDataForm.put("Població Empresa", form.getPoblacioEmpresa());
-        getterDataForm.put("Telèfon Empresa", form.getTelefonEmpresa());
-        getterDataForm.put("Fax Empresa", "");
-        getterDataForm.put("Nom Centre de treball (on ha d'anar l'alumne)", form.getNomLlocTreball());
-        getterDataForm.put("Adreça Centre de treball ", form.getAdrecaLlocTreball());
-        getterDataForm.put("Codi postal CP Centre de treball ", form.getCpLlocTreball());
-        getterDataForm.put("Població Centre de treball ", form.getPoblacioLlocTreball());
-        getterDataForm.put("Telèfon Centre de treball ", form.getTelefonLlocTreball());
-        getterDataForm.put("Activitat Centre de treball ", form.getActivitatLlocTreball());
-        getterDataForm.put("Nom representant legal", form.getNomCompletRepresentantLegal());
-        getterDataForm.put("Llinatges representant legal", ""); //TODO: mirar si es necessita
-        getterDataForm.put("NIF representant legal", form.getNifRepresentantLegal());
-        getterDataForm.put("Nom tutor empresa", form.getNomCompletTutorEmpresa());
-        getterDataForm.put("Llinatges tutor empresa", "");
-        getterDataForm.put("NIF tutor empresa", form.getNifTutorEmpresa());
-        getterDataForm.put("Municipi (que consta al DNI del tutor empresa)", form.getMunicipiTutorEmpresa());
-        getterDataForm.put("Càrrec del tutor dins l'empresa", form.getCarrecTutorEmpresa());
-        getterDataForm.put("Correu electrònic de l'empresa", form.getEmailTutorEmpresa());
-        getterDataForm.put("CURS ESCOLAR (Exemple: 23/24)", form.getAnyCurs());
-        getterDataForm.put("Data màxima acabament", form.getDataAcabament().format(formatterDate));
-        getterDataForm.put("Dia seguiment centre educatiu", form.getDiaSeguimentCentreEducatiu());
-        getterDataForm.put("Hora seguiment centre educatiu", form.getHoraSeguimentCentreEducatiu());
-        getterDataForm.put("Dia seguiment amb responsable FCT", form.getDiaSeguimentResponsableFct());
-        getterDataForm.put("Hora seguiment amb responsable FCT", form.getHoraSeguimentResponsableFct());
-        getterDataForm.put("Estudis", form.getEstudis());
-        getterDataForm.put("Nacionalitat tutor empresa", form.getNacionalitatTutorEmpresa());
-        getterDataForm.put("Es menor d'edat en el moment de començar la FCT?", form.getMenorEdat()?"Si":"No");
-        getterDataForm.put("És una empresa de l'Administració Pública?", form.getEmpresaAdministracioPublica()? "Si":"No");
-        getterDataForm.put("Tipus de flexibilització", "");
-        getterDataForm.put("Hi ha algun tipus de flexibilització en el mòdul de FCT?", form.getFlexibilitzacioModulFct()? "Si":"No");
-        getterDataForm.put("Si realitza horari nocturn indicau quin horari té", "");
-        getterDataForm.put("Edat de l'alumne (només número)", form.getEdat());
-
-        return getterDataForm;
-    }
-
-    //PROGRAMA FORMATIU
-
-    @PostMapping("/programa-formacio/save-task")
-    public ResponseEntity<Notificacio> saveTask(@RequestBody ProgramaFormatiuDto programaFormatiuDto){
-
-        Notificacio notificacio = new Notificacio();
-        System.out.println(programaFormatiuDto);
-        programaFormatiuService.save(programaFormatiuDto);
-
-        if(programaFormatiuDto.getIdPFormatiu() == null){
-            notificacio.setNotifyMessage("Tasca guardada");
-            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-            return new ResponseEntity<>(notificacio, HttpStatus.OK);
-        }else{
-            notificacio.setNotifyMessage("Tasca actualitzada");
-            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-            return new ResponseEntity<>(notificacio, HttpStatus.OK);
-        }
-
-    }
-
-    @GetMapping("/programa-formacio/delete-task/{id}")
-    public ResponseEntity<Notificacio> deleteTask(@PathVariable Long id){
-
-        programaFormatiuService.deleteById(id);
-        Notificacio notificacio = new Notificacio();
-
-        notificacio.setNotifyMessage("Tasca eliminada");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
-    }
-
-    @GetMapping("/programa-formacio/all-PFormatius")
-    public ResponseEntity<List<ProgramaFormatiuDto>>findAllPFormatius(){
-
-        List<ProgramaFormatiuDto> pf = programaFormatiuService.findAll();
-        return new ResponseEntity<>(pf,HttpStatus.OK);
-    }
-    @GetMapping("/programa-formacio/all-PFormatiusById/{id}")
-    public ResponseEntity<List<ProgramaFormatiuDto>>findAllPFormatiusById(@PathVariable Long id){
-
-        List<ProgramaFormatiuDto> pf = programaFormatiuService.findAllById(id);
-        return new ResponseEntity<>(pf,HttpStatus.OK);
     }
 
 }
