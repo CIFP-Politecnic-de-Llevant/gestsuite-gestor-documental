@@ -184,7 +184,7 @@ public class AlumneController {
                 alumneDB.setNom(user.getGestibNom());
                 alumneDB.setCognom1(user.getGestibCognom1());
                 alumneDB.setCognom2(user.getGestibCognom2());
-                alumneDB.setGrup(user.getGestibGrup());
+                //alumneDB.setGrup(user.getGestibGrup());
 
                 alumneDB.setCIP(alumne.getCIP());
                 alumneDB.setCP(alumne.getCP());
@@ -219,11 +219,8 @@ public class AlumneController {
                 }
                 alumneDB.setEnsenyament(ensenyament);
 
-                //GrupDto grupDto = coreRestClient.getByGestibIdentificador(alumneDB.getGrup()).getBody();
-                //CursDto cursDto = coreRestClient.getCursByCodiGestib(grupDto.getGestibCurs()).getBody();
-                if(alumne.getEstudis()!=null && alumne.getGrup()!=null){
-                    alumneDB.setEstudis(alumne.getEstudis()+alumne.getGrup());
-                }
+                alumneDB.setEstudis(alumne.getEstudis());
+                alumneDB.setGrup(alumne.getGrup());
 
                 alumneService.save(alumneDB);
             }
