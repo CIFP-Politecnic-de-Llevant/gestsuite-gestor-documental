@@ -219,9 +219,11 @@ public class AlumneController {
                 }
                 alumneDB.setEnsenyament(ensenyament);
 
-                GrupDto grupDto = coreRestClient.getByGestibIdentificador(alumneDB.getGrup()).getBody();
-                CursDto cursDto = coreRestClient.getCursByCodiGestib(grupDto.getGestibCurs()).getBody();
-                alumneDB.setEstudis(cursDto.getGestibNom()+grupDto.getGestibNom());
+                //GrupDto grupDto = coreRestClient.getByGestibIdentificador(alumneDB.getGrup()).getBody();
+                //CursDto cursDto = coreRestClient.getCursByCodiGestib(grupDto.getGestibCurs()).getBody();
+                if(alumne.getEstudis()!=null && alumne.getGrup()!=null){
+                    alumneDB.setEstudis(alumne.getEstudis()+alumne.getGrup());
+                }
 
                 alumneService.save(alumneDB);
             }
