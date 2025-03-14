@@ -164,164 +164,167 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
 
         //Traspassam els documents
-        for(DocumentDto document: documents){
-            String[] documentParts = document.getNomOriginal().split("_");
+        for(DocumentDto document: documents) {
+            try{
+                String[] documentParts = document.getNomOriginal().split("_");
 
-            if(documentParts.length==2){
-                String cicle = documentParts[0];
-                String nomDocument = documentParts[1];
+                if (documentParts.length == 2) {
+                    String cicle = documentParts[0];
+                    String nomDocument = documentParts[1];
 
-                TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(nomDocument);
+                    TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(nomDocument);
 
-                if(tipusDocumentDto==null){
-                    continue;
-                }
+                    if (tipusDocumentDto == null) {
+                        continue;
+                    }
 
-                //Permisos
-                List<UsuariDto> tutorsFCT = coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+                    //Permisos
+                    List<UsuariDto> tutorsFCT = coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
 
-                JsonObject jsonCarpetaRoot = new JsonObject();
-                jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
-                jsonCarpetaRoot.addProperty("email", email);
-                jsonCarpetaRoot.addProperty("parentFolderId", APP_SHAREDDRIVE_GESTORDOCUMENTAL);
+                    JsonObject jsonCarpetaRoot = new JsonObject();
+                    jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
+                    jsonCarpetaRoot.addProperty("email", email);
+                    jsonCarpetaRoot.addProperty("parentFolderId", APP_SHAREDDRIVE_GESTORDOCUMENTAL);
 
-                File carpetaRoot = this.createFolder(gson.toJson(jsonCarpetaRoot)).getBody();
+                    File carpetaRoot = this.createFolder(gson.toJson(jsonCarpetaRoot)).getBody();
 
-                JsonObject jsonCarpetaCicle = new JsonObject();
-                //jsonCarpetaRoot.addProperty("path", FOLDER_BASE);
-                jsonCarpetaCicle.addProperty("folderName", cicle);
-                jsonCarpetaCicle.addProperty("email", email);
+                    JsonObject jsonCarpetaCicle = new JsonObject();
+                    //jsonCarpetaRoot.addProperty("path", FOLDER_BASE);
+                    jsonCarpetaCicle.addProperty("folderName", cicle);
+                    jsonCarpetaCicle.addProperty("email", email);
 
-                JsonArray jsonEditorsCarpetaRoot = new JsonArray();
-                tutorsFCT.forEach(usuariDto -> {
-                    jsonEditorsCarpetaRoot.add(usuariDto.getGsuiteEmail());
-                });
-                jsonCarpetaCicle.add("editors", jsonEditorsCarpetaRoot);
+                    JsonArray jsonEditorsCarpetaRoot = new JsonArray();
+                    tutorsFCT.forEach(usuariDto -> {
+                        jsonEditorsCarpetaRoot.add(usuariDto.getGsuiteEmail());
+                    });
+                    jsonCarpetaCicle.add("editors", jsonEditorsCarpetaRoot);
 
-                jsonCarpetaCicle.addProperty("parentFolderId", carpetaRoot.getId());
+                    jsonCarpetaCicle.addProperty("parentFolderId", carpetaRoot.getId());
 
-                File carpetaCicle = this.createFolder(gson.toJson(jsonCarpetaCicle)).getBody();
+                    File carpetaCicle = this.createFolder(gson.toJson(jsonCarpetaCicle)).getBody();
 
-                JsonObject jsonFitxer = new JsonObject();
-                jsonFitxer.addProperty("idFile", document.getIdGoogleDrive());
-                jsonFitxer.addProperty("email", email);
-                jsonFitxer.addProperty("filename", nomDocument);
-                jsonFitxer.addProperty("parentFolderId", carpetaCicle.getId());
-                jsonFitxer.addProperty("originalName", document.getNomOriginal());
+                    JsonObject jsonFitxer = new JsonObject();
+                    jsonFitxer.addProperty("idFile", document.getIdGoogleDrive());
+                    jsonFitxer.addProperty("email", email);
+                    jsonFitxer.addProperty("filename", nomDocument);
+                    jsonFitxer.addProperty("parentFolderId", carpetaCicle.getId());
+                    jsonFitxer.addProperty("originalName", document.getNomOriginal());
 
-                File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
+                    File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
 
-                //Desem el fitxer NOMÉS si no existeix
-                DocumentDto documentSaved = documentService.getDocumentByOriginalName(document.getNomOriginal(),convocatoria);
-                if(documentSaved == null) {
+                    //Desem el fitxer NOMÉS si no existeix
+                    DocumentDto documentSaved = documentService.getDocumentByOriginalName(document.getNomOriginal(), convocatoria);
+                    if (documentSaved == null) {
+                        JsonObject tipusFitxer = new JsonObject();
+                        tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
+
+                        JsonObject jsonFitxerDesat = new JsonObject();
+                        jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
+                        jsonFitxerDesat.addProperty("path", FOLDER_BASE + "/" + cicle + "/" + nomDocument);
+                        jsonFitxerDesat.addProperty("email", email);
+                        jsonFitxerDesat.addProperty("tipus", nomDocument);
+                        jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                        jsonFitxerDesat.add("tipusDocument", tipusFitxer);
+                        jsonFitxerDesat.addProperty("codiGrup", cicle);
+
+                        this.createDocument(gson.toJson(jsonFitxerDesat));
+                    }
+
+                } else if (documentParts.length == 5) {
+                    String cicle = documentParts[0];
+                    String cognoms = documentParts[1];
+                    String nom = documentParts[2];
+                    String numExpedient = documentParts[3];
+                    String nomDocument = documentParts[4];
+
+                    TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(nomDocument);
+                    UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
+
+                    if (tipusDocumentDto == null || alumne == null) {
+                        continue;
+                    }
+
+                    //Permisos
+                    List<UsuariDto> tutorsFCT = this.coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+
+                    //Creem l'estructura de carpetes
+                    JsonObject jsonCarpetaRoot = new JsonObject();
+                    jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
+                    jsonCarpetaRoot.addProperty("email", email);
+                    jsonCarpetaRoot.addProperty("parentFolderId", APP_SHAREDDRIVE_GESTORDOCUMENTAL);
+
+                    File carpetaRoot = this.createFolder(gson.toJson(jsonCarpetaRoot)).getBody();
+
+                    JsonObject jsonCarpetaCicle = new JsonObject();
+                    //jsonCarpetaRoot.addProperty("path", FOLDER_BASE);
+                    jsonCarpetaCicle.addProperty("folderName", cicle);
+                    jsonCarpetaCicle.addProperty("email", email);
+
+                    JsonArray jsonEditorsCarpetaRoot = new JsonArray();
+                    tutorsFCT.forEach(usuariDto -> {
+                        jsonEditorsCarpetaRoot.add(usuariDto.getGsuiteEmail());
+                    });
+                    jsonCarpetaCicle.add("editors", jsonEditorsCarpetaRoot);
+
+                    jsonCarpetaCicle.addProperty("parentFolderId", carpetaRoot.getId());
+
+                    File carpetaCicle = this.createFolder(gson.toJson(jsonCarpetaCicle)).getBody();
+
+                    JsonObject jsonCarpetaAlumne = new JsonObject();
+                    jsonCarpetaAlumne.addProperty("folderName", cognoms + " " + nom);
+                    jsonCarpetaAlumne.addProperty("email", email);
+                    jsonCarpetaAlumne.addProperty("parentFolderId", carpetaCicle.getId());
+
+                    File carpetaAlumne = this.createFolder(gson.toJson(jsonCarpetaAlumne)).getBody();
+
+                    //Fer còpia
+                    JsonObject jsonFitxer = new JsonObject();
+                    jsonFitxer.addProperty("idFile", document.getIdGoogleDrive());
+                    jsonFitxer.addProperty("email", email);
+                    jsonFitxer.addProperty("filename", cognoms + " " + nom + "_" + nomDocument);
+                    jsonFitxer.addProperty("parentFolderId", carpetaAlumne.getId());
+                    jsonFitxer.addProperty("originalName", document.getNomOriginal());
+
+                    File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
+
+                    //Desem el fitxer
                     JsonObject tipusFitxer = new JsonObject();
                     tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
 
+
                     JsonObject jsonFitxerDesat = new JsonObject();
                     jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
-                    jsonFitxerDesat.addProperty("path", FOLDER_BASE + "/" + cicle + "/" + nomDocument);
+                    jsonFitxerDesat.addProperty("path", FOLDER_BASE + "/" + cicle + "/" + cognoms + " " + nom + "/" + cognoms + " " + nom + "_" + nomDocument);
                     jsonFitxerDesat.addProperty("email", email);
                     jsonFitxerDesat.addProperty("tipus", nomDocument);
                     jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
                     jsonFitxerDesat.add("tipusDocument", tipusFitxer);
+                    jsonFitxerDesat.addProperty("idusuari", alumne.getIdusuari());
                     jsonFitxerDesat.addProperty("codiGrup", cicle);
 
                     this.createDocument(gson.toJson(jsonFitxerDesat));
+
+                    //Si és un document d'empresa avisem al coordinador FCT
+                    if (tipusDocumentDto.getNom().contains("Dades alumne empresa")) {
+                        /** TODO - Avisar al coordinador/s FCT **/
+                        JsonObject jsonNotificacio = new JsonObject();
+                        jsonNotificacio.addProperty("assumpte", "Document d'empresa pujat a " + cicle + " per " + cognoms + " " + nom);
+                        jsonNotificacio.addProperty("missatge", "Document d'empresa pujat a " + cicle + " per " + cognoms + " " + nom + " amb el número d'expedient " + numExpedient);
+                        jsonNotificacio.addProperty("to", "ppulido@politecnicllevant.cat");
+
+                        coreRestClient.sendEmail(gson.toJson(jsonNotificacio));
+
+                        /*List<UsuariDto> coordinadorsFCT = this.coreRestClient.getCoordinadorFCT().getBody();
+                        if(coordinadosrFCT!=null){
+                            Notificacio notificacio = new Notificacio();
+                            notificacio.setNotifyMessage("S'ha pujat un document de dades d'empresa de l'alumne "+cognoms+" "+nom+" amb el número d'expedient "+numExpedient);
+                            notificacio.setNotifyType(NotificacioTipus.INFO);
+                            this.coreRestClient.sendNotification(notificacio, coordinadorFCT.getIdusuari());
+                        }*/
+                    }
                 }
-
-            }
-            else if(documentParts.length==5){
-                String cicle = documentParts[0];
-                String cognoms = documentParts[1];
-                String nom = documentParts[2];
-                String numExpedient = documentParts[3];
-                String nomDocument = documentParts[4];
-
-                TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(nomDocument);
-                UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
-
-                if(tipusDocumentDto==null || alumne==null){
-                    continue;
-                }
-
-                //Permisos
-                List<UsuariDto> tutorsFCT = this.coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
-
-                //Creem l'estructura de carpetes
-                JsonObject jsonCarpetaRoot = new JsonObject();
-                jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
-                jsonCarpetaRoot.addProperty("email", email);
-                jsonCarpetaRoot.addProperty("parentFolderId", APP_SHAREDDRIVE_GESTORDOCUMENTAL);
-
-                File carpetaRoot = this.createFolder(gson.toJson(jsonCarpetaRoot)).getBody();
-
-                JsonObject jsonCarpetaCicle = new JsonObject();
-                //jsonCarpetaRoot.addProperty("path", FOLDER_BASE);
-                jsonCarpetaCicle.addProperty("folderName", cicle);
-                jsonCarpetaCicle.addProperty("email", email);
-
-                JsonArray jsonEditorsCarpetaRoot = new JsonArray();
-                tutorsFCT.forEach(usuariDto -> {
-                    jsonEditorsCarpetaRoot.add(usuariDto.getGsuiteEmail());
-                });
-                jsonCarpetaCicle.add("editors", jsonEditorsCarpetaRoot);
-
-                jsonCarpetaCicle.addProperty("parentFolderId", carpetaRoot.getId());
-
-                File carpetaCicle = this.createFolder(gson.toJson(jsonCarpetaCicle)).getBody();
-
-                JsonObject jsonCarpetaAlumne = new JsonObject();
-                jsonCarpetaAlumne.addProperty("folderName", cognoms+" "+nom);
-                jsonCarpetaAlumne.addProperty("email", email);
-                jsonCarpetaAlumne.addProperty("parentFolderId", carpetaCicle.getId());
-
-                File carpetaAlumne = this.createFolder(gson.toJson(jsonCarpetaAlumne)).getBody();
-
-                //Fer còpia
-                JsonObject jsonFitxer = new JsonObject();
-                jsonFitxer.addProperty("idFile", document.getIdGoogleDrive());
-                jsonFitxer.addProperty("email", email);
-                jsonFitxer.addProperty("filename", cognoms+" "+nom+"_"+nomDocument);
-                jsonFitxer.addProperty("parentFolderId", carpetaAlumne.getId());
-                jsonFitxer.addProperty("originalName", document.getNomOriginal());
-
-                File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
-
-                //Desem el fitxer
-                JsonObject tipusFitxer = new JsonObject();
-                tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
-
-
-                JsonObject jsonFitxerDesat = new JsonObject();
-                jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
-                jsonFitxerDesat.addProperty("path", FOLDER_BASE+"/"+cicle+"/"+cognoms+" "+nom+"/"+cognoms+" "+nom+"_"+nomDocument);
-                jsonFitxerDesat.addProperty("email", email);
-                jsonFitxerDesat.addProperty("tipus", nomDocument);
-                jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
-                jsonFitxerDesat.add("tipusDocument", tipusFitxer);
-                jsonFitxerDesat.addProperty("idusuari", alumne.getIdusuari());
-                jsonFitxerDesat.addProperty("codiGrup", cicle);
-
-                this.createDocument(gson.toJson(jsonFitxerDesat));
-
-                //Si és un document d'empresa avisem al coordinador FCT
-                if(tipusDocumentDto.getNom().contains("Dades alumne empresa")){
-                    /** TODO - Avisar al coordinador/s FCT **/
-                    JsonObject jsonNotificacio = new JsonObject();
-                    jsonNotificacio.addProperty("assumpte", "Document d'empresa pujat a "+cicle+" per "+cognoms+" "+nom);
-                    jsonNotificacio.addProperty("missatge", "Document d'empresa pujat a "+cicle+" per "+cognoms+" "+nom+" amb el número d'expedient "+numExpedient);
-                    jsonNotificacio.addProperty("to", "ppulido@politecnicllevant.cat");
-
-                    coreRestClient.sendEmail(gson.toJson(jsonNotificacio));
-
-                    /*List<UsuariDto> coordinadorsFCT = this.coreRestClient.getCoordinadorFCT().getBody();
-                    if(coordinadosrFCT!=null){
-                        Notificacio notificacio = new Notificacio();
-                        notificacio.setNotifyMessage("S'ha pujat un document de dades d'empresa de l'alumne "+cognoms+" "+nom+" amb el número d'expedient "+numExpedient);
-                        notificacio.setNotifyType(NotificacioTipus.INFO);
-                        this.coreRestClient.sendNotification(notificacio, coordinadorFCT.getIdusuari());
-                    }*/
-                }
+            } catch (Exception e){
+                log.error("Error traspassant document",e);
             }
         }
 
