@@ -165,6 +165,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         //Traspassam els documents
         for(DocumentDto document: documents) {
+            log.info("Traspassant document {}...", document.getNomOriginal());
             try{
                 String[] documentParts = document.getNomOriginal().split("_");
 
@@ -175,6 +176,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(nomDocument);
 
                     if (tipusDocumentDto == null) {
+                        log.info("No s'ha trobat el tipus de document {}. Número de parts del document: 2", nomDocument);
                         continue;
                     }
 
@@ -241,6 +243,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
 
                     if (tipusDocumentDto == null || alumne == null) {
+                        log.info("No s'ha trobat el tipus de document {}. Número de parts del document: 5", nomDocument);
                         continue;
                     }
 
@@ -323,6 +326,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                         }*/
                     }
                 }
+                log.info("Document traspassat {}", document.getNomOriginal());
             } catch (Exception e){
                 log.error("Error traspassant document",e);
             }
