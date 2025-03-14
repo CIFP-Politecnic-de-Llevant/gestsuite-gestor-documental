@@ -90,6 +90,7 @@ public class FormulariFCTController {
         getterDataForm.put("Telèfon mòbil professor/tutor", form.getTelefonTutor());
         getterDataForm.put("És una empresa nova?", form.getEmpresaNova()?"Si":"No");
         getterDataForm.put("Número de conveni ( si el sabeu)", form.getNumeroConveni());
+        getterDataForm.put("Número d'annex ( si el sabeu)", "");
         getterDataForm.put("Nom de l'empresa", form.getNomEmpresa());
         getterDataForm.put("CIF", form.getCif());
         getterDataForm.put("Adreça Empresa", form.getAdrecaEmpresa());
