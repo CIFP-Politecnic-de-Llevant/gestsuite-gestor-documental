@@ -161,8 +161,13 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         //Esborrem els documents trobats
         for(DocumentDto documentDto: documentsNoTraspassats){
-            log.info("Esborrant document {} de la llista de documents a traspassar...", documentDto.getNomOriginal());
-            documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
+            log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
+            //documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
+            if(documentDto.getIdGoogleDrive()!=null && !documentDto.getIdGoogleDrive().isEmpty()) {
+                documents.removeIf(documentDto1 -> documentDto1.getIdGoogleDrive().equals(documentDto.getIdGoogleDrive()));
+            } else {
+                documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
+            }
         }
 
         //Traspassam els documents
