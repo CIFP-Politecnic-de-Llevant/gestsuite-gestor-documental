@@ -28,10 +28,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -94,7 +92,11 @@ public class GoogleDriveService {
             .execute();
     }
 
-    public List<File> getFilesInFolder(String path,String user) {
+    public List<File> getFilesInFolder(String path,String user) throws InterruptedException {
+        return getFilesInFolder(path, user, 0);
+    }
+
+    private List<File> getFilesInFolder(String path,String user, int retry) throws InterruptedException {
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
@@ -122,10 +124,12 @@ public class GoogleDriveService {
                         .setQ("'" + folderId + "' in parents and not trashed")
                         .setSupportsAllDrives(true)
                         .setFields("files(id,name,owners,mimeType,createdTime,modifiedTime,webViewLink,fullFileExtension,driveId,originalFilename,webContentLink)")
+                        .setPageSize(1000)
                         .execute();
 
                 List<File> files = query.getFiles();
                 String pageToken = query.getNextPageToken();
+                log.info("PAGE TOKEN getFilesInFolder: "+pageToken);
 
                 if(files!=null) {
                     result.addAll(files);
@@ -151,8 +155,13 @@ public class GoogleDriveService {
             } else {
                 System.out.println("Folder not found in this path: " + path);
             }
-        } catch (IOException | GeneralSecurityException e) {
-            e.printStackTrace();
+        } catch (GeneralSecurityException | IOException e) {
+            if (retry < 5) {
+                TimeUnit.MILLISECONDS.sleep(((2 ^ retry) * 1000L) + getRandomMilliseconds());
+                return getFilesInFolder(path, user,retry + 1);
+            }
+            log.error("Error aconseguint documents de la carpeta "+path+" i usuari "+user, e);
+            log.error(e.getMessage());
         }
         return Collections.emptyList();
     }
@@ -480,5 +489,12 @@ public class GoogleDriveService {
                 .execute();
     }
 
+    private int getRandomMilliseconds() {
+        Random r = new Random();
+        int low = 0;
+        int high = 1000;
+        int result = r.nextInt(high - low) + low;
+        return result;
+    }
 
 }
