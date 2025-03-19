@@ -153,7 +153,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                 document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
 
                 documents.add(document);
-                //documentService.save(document);
             }
         }
 
@@ -163,11 +162,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         for(DocumentDto documentDto: documentsNoTraspassats){
             log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
             documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
-            /*if(documentDto.getIdGoogleDrive()!=null && !documentDto.getIdGoogleDrive().isEmpty()) {
-                documents.removeIf(documentDto1 -> documentDto1.getIdGoogleDrive().equals(documentDto.getIdGoogleDrive()));
-            } else {
-                documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
-            }*/
         }
 
         //Traspassam els documents
@@ -247,12 +241,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     String nomDocument = documentParts[4];
 
                     TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(nomDocument);
-                    UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
+                    ResponseEntity<UsuariDto> alumneResponse = coreRestClient.getUsuariByNumExpedient(numExpedient);
 
-                    if (tipusDocumentDto == null || alumne == null) {
+                    if (tipusDocumentDto == null || alumneResponse == null) {
                         log.info("No s'ha trobat el tipus de document {}. Número de parts del document: 5", nomDocument);
                         continue;
                     }
+
+                    UsuariDto alumne = alumneResponse.getBody();
 
                     //Permisos
                     List<UsuariDto> tutorsFCT = this.coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();

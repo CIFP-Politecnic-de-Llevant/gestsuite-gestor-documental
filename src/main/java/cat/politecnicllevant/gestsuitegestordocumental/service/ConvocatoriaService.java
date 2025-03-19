@@ -26,9 +26,12 @@ public class ConvocatoriaService {
 
     public ConvocatoriaDto findConvocatoriaById(Long id){
         ModelMapper modelMapper =  new ModelMapper();
-        Convocatoria e = convocatoriaRepository.findById(id).orElse(null);
+        Convocatoria c = convocatoriaRepository.findById(id).orElse(null);
 
-        return modelMapper.map(e,ConvocatoriaDto.class);
+        if(c == null){
+            return null;
+        }
+        return modelMapper.map(c,ConvocatoriaDto.class);
     }
 
     public ConvocatoriaDto findConvocatoriaActual(){
