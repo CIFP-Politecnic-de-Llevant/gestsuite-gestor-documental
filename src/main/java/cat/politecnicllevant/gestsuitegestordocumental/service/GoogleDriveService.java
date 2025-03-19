@@ -123,7 +123,7 @@ public class GoogleDriveService {
                 FileList query = service.files().list()
                         .setQ("'" + folderId + "' in parents and not trashed")
                         .setSupportsAllDrives(true)
-                        .setFields("files(id,name,owners,mimeType,createdTime,modifiedTime,webViewLink,fullFileExtension,driveId,originalFilename,webContentLink)")
+                        .setFields("nextPageToken, files(id,name,owners,mimeType,createdTime,modifiedTime,webViewLink,fullFileExtension,driveId,originalFilename,webContentLink)")
                         .setPageSize(1000)
                         .execute();
 
@@ -138,7 +138,7 @@ public class GoogleDriveService {
                         FileList query2 = service.files().list()
                                 .setQ("'" + folderId + "' in parents and not trashed")
                                 .setSupportsAllDrives(true)
-                                .setFields("files(id,name,owners,mimeType,createdTime,modifiedTime,webViewLink,fullFileExtension,driveId,originalFilename,webContentLink)")
+                                .setFields("nextPageToken, files(id,name,owners,mimeType,createdTime,modifiedTime,webViewLink,fullFileExtension,driveId,originalFilename,webContentLink)")
                                 .setPageToken(pageToken)
                                 .execute();
                         List<File> files2 = query2.getFiles();
