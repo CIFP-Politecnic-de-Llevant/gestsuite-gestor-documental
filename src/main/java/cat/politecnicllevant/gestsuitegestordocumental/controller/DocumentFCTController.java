@@ -126,7 +126,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @Scheduled(fixedRate = 60*60*1000, initialDelay = 60*1000)
     public void sincronitzaDocumentsAutomatic() throws Exception {
         if(environment.equals("dev")){
-            log.info("No es sincronitzen els documents en entorn dev");
+            log.warn("No es sincronitzen els documents en entorn dev");
             return;
         }
 
