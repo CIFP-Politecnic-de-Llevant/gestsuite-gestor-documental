@@ -489,6 +489,87 @@ public class GoogleDriveService {
                 .execute();
     }
 
+
+    public void writeDataPosition(Map<String, String> gettersDataForm) throws IOException, GeneralSecurityException {
+
+        String range = "A2:CZ5000";
+        String rangeHeader = "A1:CZ1";
+
+        String[] scopes = {SheetsScopes.SPREADSHEETS};
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(this.adminUser);
+        HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+        Sheets sheetsService = new Sheets.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer)
+                .setApplicationName(this.nomProjecte)
+                .build();
+
+        ValueRange header = sheetsService.spreadsheets().values().get(this.shareSpredaSheetId, rangeHeader).execute();
+        List<List<Object>> valuesHeader = header.getValues();
+        int lastColumnIndex = valuesHeader != null ? valuesHeader.get(0).size() : 0;
+
+        ValueRange data = sheetsService.spreadsheets().values().get(this.shareSpredaSheetId, range).execute();
+        List<List<Object>> valuesData = data.getValues();
+        int lastRowIndex = valuesData != null ? valuesData.size() : 0;
+
+        List<List<Object>> valuesToWrite = new ArrayList<>();
+
+        for(int i = 0; i < lastColumnIndex; i++) {
+            List<Object> dataRow = new ArrayList<>();
+            for (Map.Entry<String, String> entry : gettersDataForm.entrySet()) {
+                if(entry.getKey().equals(valuesHeader.get(0).get(i))) {
+                    dataRow.add(entry.getValue());
+                } else {
+                    dataRow.add("");
+                }
+            }
+            valuesToWrite.add(dataRow);
+        }
+
+        ValueRange requestBody = new ValueRange().setValues(valuesToWrite);
+
+        sheetsService.spreadsheets().values()
+                .update(this.shareSpredaSheetId, range, requestBody)
+                .setValueInputOption("USER_ENTERED")
+                .execute();
+
+//        List<List<Object>> valuesToWrite = new ArrayList<>();
+//
+//
+//            List<Object> headerRow = new ArrayList<>(gettersDataForm.keySet());
+//            valuesToWrite.add(headerRow);
+//
+//        //Escriure les dades
+//        List<Object> dataRow = new ArrayList<>();
+//        for(Map.Entry<Object> entryHeader: headerRow.){
+//
+//        }
+//        for (Map.Entry<String, String> entry : gettersDataForm.entrySet()) {
+//            String value = "";
+//            if(entry.getValue()!=null) {
+//                value = entry.getValue();
+//            }
+//
+//            //Aqui dona fallo, arreglar-lo
+//            if(value.equals("true")){
+//                value = "Si";
+//            } else if (value.equals("false")) {
+//                value ="No";
+//            }
+//            System.out.println("Datos en el for =  " + value);
+//            dataRow.add(value);
+//        }
+//        valuesToWrite.add(dataRow);
+//
+//        ValueRange requestBody = new ValueRange().setValues(valuesToWrite);
+//
+//        sheetsService.spreadsheets().values()
+//                .update(this.shareSpredaSheetId, range, requestBody)
+//                .setValueInputOption("USER_ENTERED")
+//                .execute();
+    }
+
     private int getRandomMilliseconds() {
         Random r = new Random();
         int low = 0;

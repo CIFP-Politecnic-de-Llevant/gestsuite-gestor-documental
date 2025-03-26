@@ -58,6 +58,22 @@ public class FormulariFCTController {
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 
+    @PostMapping("/formulari/save-formulari-fempo")
+    public ResponseEntity<Notificacio> saveFormFEMPO(@RequestBody DadesFormulariDto form, @RequestParam String email) throws NoSuchMethodException, GeneralSecurityException, IOException, InvocationTargetException, IllegalAccessException {
+
+        CursAcademicDto cursAcademic = this.coreRestClient.getActualCursAcademic().getBody();
+
+        form.setIdCursAcademic(cursAcademic.getIdcursAcademic());
+
+        dadesFormulariService.save(form);
+        googleDriveService.writeData(getGettersDataForm(form, email));
+
+        Notificacio notificacio = new Notificacio();
+        notificacio.setNotifyMessage("Formulari guardat correctament");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
 
     private static Map<String,String> getGettersDataForm(DadesFormulariDto form, String email) throws NoSuchMethodException {
         DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
