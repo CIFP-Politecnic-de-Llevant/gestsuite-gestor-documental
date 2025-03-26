@@ -12,4 +12,6 @@ public @Data class GrupDto {
     private String gestibTutor3;
     private Boolean actiu;
     private String gsuiteUnitatOrganitzativa;
+    private String idGoogleSpreadsheet;
+    private String folderGoogleDrive;
 }
