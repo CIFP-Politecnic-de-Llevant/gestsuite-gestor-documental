@@ -97,11 +97,10 @@ public class FormulariFCTController {
         getterDataForm.put("Cicle_Formatiu", form.getCicleFormatiu());
         getterDataForm.put("Grup", form.getGrup());
         getterDataForm.put("Durada_cicle", form.getDuradaCicle());
-
-        getterDataForm.put("Número d'hores totals proposades per FCT (posa només el número. Exemple: 240)", form.getTotalHoresProposadesFct());
+        getterDataForm.put("Periode", form.getPeriode());
+        getterDataForm.put("Hores_FEMPO", form.getTotalHoresProposadesFct());
         getterDataForm.put("Número d'hores diàries (posa només el número. Exemple: 7)", form.getHoresDiaries());
         getterDataForm.put("Km centre treball-població alumne (posa només el número. Exemple: 14)", form.getKm());
-        getterDataForm.put("Període", form.getPeriode());
         getterDataForm.put("Data inicial", form.getDataInici().format(formatterDate));
         getterDataForm.put("Data final", form.getDataFi().format(formatterDate));
         getterDataForm.put("Tipus de jornada", form.getTipusJornada());
