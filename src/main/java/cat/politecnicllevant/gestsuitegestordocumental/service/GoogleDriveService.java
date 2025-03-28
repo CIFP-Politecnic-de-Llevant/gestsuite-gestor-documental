@@ -492,6 +492,8 @@ public class GoogleDriveService {
 
     public void writeDataPosition(Map<String, String> gettersDataForm) throws IOException, GeneralSecurityException {
 
+        System.out.println("HELLOOOOO - AQUI AQUI SOS writeDataPosition");
+
         String range = "A2:CZ5000";
         String rangeHeader = "A1:CZ1";
 
@@ -507,6 +509,7 @@ public class GoogleDriveService {
 
         ValueRange header = sheetsService.spreadsheets().values().get(this.shareSpredaSheetId, rangeHeader).execute();
         List<List<Object>> valuesHeader = header.getValues();
+        List<Object> headerRow = valuesHeader.get(0);
         int lastColumnIndex = valuesHeader != null ? valuesHeader.get(0).size() : 0;
 
         ValueRange data = sheetsService.spreadsheets().values().get(this.shareSpredaSheetId, range).execute();
@@ -515,22 +518,30 @@ public class GoogleDriveService {
 
         List<List<Object>> valuesToWrite = new ArrayList<>();
 
-        for(int i = 0; i < lastColumnIndex; i++) {
-            List<Object> dataRow = new ArrayList<>();
+        List<Object> dataRow = new ArrayList<>();
+
+        // Compare header value with key entry
+        for(Object rowHeader: headerRow){
+            boolean trobat = false;
             for (Map.Entry<String, String> entry : gettersDataForm.entrySet()) {
-                if(entry.getKey().equals(valuesHeader.get(0).get(i))) {
+                if(entry.getKey().equals(String.valueOf(rowHeader))) {
                     dataRow.add(entry.getValue());
-                } else {
-                    dataRow.add("");
+                    trobat = true;
                 }
             }
-            valuesToWrite.add(dataRow);
+            if(!trobat){
+                dataRow.add("");
+            }
+            System.out.println("Datos en el for22 =  " + dataRow);
         }
+        valuesToWrite.add(dataRow);
 
         ValueRange requestBody = new ValueRange().setValues(valuesToWrite);
 
+        String rangeData = "A"+(lastRowIndex+1)+":CZ"+(lastRowIndex+1);
+
         sheetsService.spreadsheets().values()
-                .update(this.shareSpredaSheetId, range, requestBody)
+                .update(this.shareSpredaSheetId, rangeData, requestBody)
                 .setValueInputOption("USER_ENTERED")
                 .execute();
 
