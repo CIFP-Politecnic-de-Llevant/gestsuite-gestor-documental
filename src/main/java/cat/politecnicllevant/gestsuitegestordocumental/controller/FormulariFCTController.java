@@ -82,16 +82,22 @@ public class FormulariFCTController {
         String nowFormat = now.format(formatterDateTime);
 
         Map<String, String> getterDataForm = new LinkedHashMap<>();
+        getterDataForm.put("MAIL", email);
         getterDataForm.put("Marca_temps", nowFormat);
-        getterDataForm.put("Dirección de correo", email);
-        getterDataForm.put("Nom", form.getNomAlumne());
-        getterDataForm.put("Llinatges", form.getLlinatgesAlumne());
-        getterDataForm.put("Població", form.getPoblacio());
-        getterDataForm.put("DNI", form.getDni());
-        getterDataForm.put("Nombre expedient", form.getNumeroExpedient());
-        getterDataForm.put("Cicle Formatiu", form.getCicleFormatiu());
+        getterDataForm.put("CURS_ESCOLAR", form.getAnyCurs());
+        getterDataForm.put("Nom_alumne", form.getNomAlumne());
+        getterDataForm.put("Llinatges_alumne", form.getLlinatgesAlumne());
+        getterDataForm.put("Telf_alumne", "");
+        getterDataForm.put("mail_alumne", "");
+        getterDataForm.put("Poblacio_alumne", form.getPoblacio());
+        getterDataForm.put("DNI_alumne", form.getDni());
+        getterDataForm.put("expedient_alumne", form.getNumeroExpedient());
+        getterDataForm.put("Menor_edat", form.getMenorEdat()?"Si":"No");
+        getterDataForm.put("Estudis", form.getEstudis());
+        getterDataForm.put("Cicle_Formatiu", form.getCicleFormatiu());
         getterDataForm.put("Grup", form.getGrup());
-        getterDataForm.put("Durada del cicle", form.getDuradaCicle());
+        getterDataForm.put("Durada_cicle", form.getDuradaCicle());
+
         getterDataForm.put("Número d'hores totals proposades per FCT (posa només el número. Exemple: 240)", form.getTotalHoresProposadesFct());
         getterDataForm.put("Número d'hores diàries (posa només el número. Exemple: 7)", form.getHoresDiaries());
         getterDataForm.put("Km centre treball-població alumne (posa només el número. Exemple: 14)", form.getKm());
@@ -128,15 +134,12 @@ public class FormulariFCTController {
         getterDataForm.put("Municipi (que consta al DNI del tutor empresa)", form.getMunicipiTutorEmpresa());
         getterDataForm.put("Càrrec del tutor dins l'empresa", form.getCarrecTutorEmpresa());
         getterDataForm.put("Correu electrònic de l'empresa", form.getEmailTutorEmpresa());
-        getterDataForm.put("CURS ESCOLAR (Exemple: 23/24)", form.getAnyCurs());
         getterDataForm.put("Data màxima acabament", form.getDataAcabament().format(formatterDate));
         getterDataForm.put("Dia seguiment centre educatiu", form.getDiaSeguimentCentreEducatiu());
         getterDataForm.put("Hora seguiment centre educatiu", form.getHoraSeguimentCentreEducatiu());
         getterDataForm.put("Dia seguiment amb responsable FCT", form.getDiaSeguimentResponsableFct());
         getterDataForm.put("Hora seguiment amb responsable FCT", form.getHoraSeguimentResponsableFct());
-        getterDataForm.put("Estudis", form.getEstudis());
         getterDataForm.put("Nacionalitat tutor empresa", form.getNacionalitatTutorEmpresa());
-        getterDataForm.put("Es menor d'edat en el moment de començar la FCT?", form.getMenorEdat()?"Si":"No");
         getterDataForm.put("És una empresa de l'Administració Pública?", form.getEmpresaAdministracioPublica()? "Si":"No");
         getterDataForm.put("Tipus de flexibilització", "");
         getterDataForm.put("Hi ha algun tipus de flexibilització en el mòdul de FCT?", form.getFlexibilitzacioModulFct()? "Si":"No");

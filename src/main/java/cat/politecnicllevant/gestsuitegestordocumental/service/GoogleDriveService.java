@@ -544,41 +544,6 @@ public class GoogleDriveService {
                 .update(this.shareSpredaSheetId, rangeData, requestBody)
                 .setValueInputOption("USER_ENTERED")
                 .execute();
-
-//        List<List<Object>> valuesToWrite = new ArrayList<>();
-//
-//
-//            List<Object> headerRow = new ArrayList<>(gettersDataForm.keySet());
-//            valuesToWrite.add(headerRow);
-//
-//        //Escriure les dades
-//        List<Object> dataRow = new ArrayList<>();
-//        for(Map.Entry<Object> entryHeader: headerRow.){
-//
-//        }
-//        for (Map.Entry<String, String> entry : gettersDataForm.entrySet()) {
-//            String value = "";
-//            if(entry.getValue()!=null) {
-//                value = entry.getValue();
-//            }
-//
-//            //Aqui dona fallo, arreglar-lo
-//            if(value.equals("true")){
-//                value = "Si";
-//            } else if (value.equals("false")) {
-//                value ="No";
-//            }
-//            System.out.println("Datos en el for =  " + value);
-//            dataRow.add(value);
-//        }
-//        valuesToWrite.add(dataRow);
-//
-//        ValueRange requestBody = new ValueRange().setValues(valuesToWrite);
-//
-//        sheetsService.spreadsheets().values()
-//                .update(this.shareSpredaSheetId, range, requestBody)
-//                .setValueInputOption("USER_ENTERED")
-//                .execute();
     }
 
     private int getRandomMilliseconds() {
