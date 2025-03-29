@@ -74,7 +74,7 @@ public class FormulariFCTController {
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 
-    private static Map<String,String> getGettersDataFormPosition(DadesFormulariDto form, String email) throws NoSuchMethodException {
+    private static Map<String,String> getGettersDataFormPosition(DadesFormulariDto form, String email) {
         DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -87,10 +87,10 @@ public class FormulariFCTController {
         getterDataForm.put("CURS_ESCOLAR", form.getAnyCurs());
         getterDataForm.put("Nom_alumne", form.getNomAlumne());
         getterDataForm.put("Llinatges_alumne", form.getLlinatgesAlumne());
-        getterDataForm.put("Telf_alumne", "telefon alumne");
-        getterDataForm.put("mail_alumne", "email alumne");
-        getterDataForm.put("Poblacio_alumne", form.getPoblacio());
-        getterDataForm.put("DNI_alumne", form.getDni());
+        getterDataForm.put("Telf_alumne", form.getTelefonAlumne());
+        getterDataForm.put("mail_alumne", form.getEmailAlumne());
+        getterDataForm.put("Poblacio_alumne", form.getPoblacioAlumne());
+        getterDataForm.put("DNI_alumne", form.getDniAlumne());
         getterDataForm.put("expedient_alumne", form.getNumeroExpedient());
         getterDataForm.put("Menor_edat", form.getMenorEdat()?"Si":"No");
         getterDataForm.put("Estudis", form.getEstudis());
@@ -107,7 +107,7 @@ public class FormulariFCTController {
         getterDataForm.put("Nom_tutor_centre", form.getNomTutor());
         getterDataForm.put("Llinatges_tutor_centre", form.getLlinatgesTutor());
         getterDataForm.put("Telf_tutor_centre", form.getTelefonTutor());
-        getterDataForm.put("mail_tutor_centre", "email tutor");
+        getterDataForm.put("mail_tutor_centre", form.getEmailTutor());
         getterDataForm.put("Admin_publica", form.getEmpresaAdministracioPublica()? "Si":"No");
         getterDataForm.put("N_conveni", form.getNumeroConveni());
         getterDataForm.put("Nom_empresa", form.getNomEmpresa());
@@ -115,11 +115,11 @@ public class FormulariFCTController {
         getterDataForm.put("CP_empresa", form.getCpempresa());
         getterDataForm.put("Adreca_empresa", form.getAdrecaEmpresa());
         getterDataForm.put("Poblacio_empresa", form.getPoblacioEmpresa());
-        getterDataForm.put("Provincia_empresa", "provincia empresa");
+        getterDataForm.put("Provincia_empresa", form.getProvinciaEmpresa());
         getterDataForm.put("Telf_empresa", form.getTelefonEmpresa());
-        getterDataForm.put("mail_empresa", "mail empresa");
-        getterDataForm.put("Nom_representant_legal", form.getNomCompletRepresentantLegal());
-        getterDataForm.put("Llinatges representant legal", "llinatges representatn legal");
+        getterDataForm.put("mail_empresa", form.getEmailEmpresa());
+        getterDataForm.put("Nom_representant_legal", form.getNomRepresentantLegal());
+        getterDataForm.put("Llinatges_representant_legal", form.getCognomsRepresentantLegal());
         getterDataForm.put("NIF_representant_legal", form.getNifRepresentantLegal());
         getterDataForm.put("Nom_centre_treball", form.getNomLlocTreball());
         getterDataForm.put("Adreca_centre_treball", form.getAdrecaLlocTreball());
@@ -127,10 +127,10 @@ public class FormulariFCTController {
         getterDataForm.put("Poblacio_centre_treball", form.getPoblacioLlocTreball());
         getterDataForm.put("Telf_centre_treball", form.getTelefonLlocTreball());
         getterDataForm.put("Activitat_centre_treball", form.getActivitatLlocTreball());
-        getterDataForm.put("Nom_tutor_empresa", form.getNomCompletTutorEmpresa());
-        getterDataForm.put("Llinatges_tutor_empresa", "llinatges tutor empresa");
+        getterDataForm.put("Nom_tutor_empresa", form.getNomTutorEmpresa());
+        getterDataForm.put("Llinatges_tutor_empresa", form.getCognomsTutorEmpresa());
         getterDataForm.put("NIF_tutor_empresa", form.getNifTutorEmpresa());
-        getterDataForm.put("Telf_tutor_empresa", "telefon tutor empresa");
+        getterDataForm.put("Telf_tutor_empresa", form.getTelefonTutorEmpresa());
         getterDataForm.put("mail_tutor_empresa", form.getEmailTutorEmpresa());
         getterDataForm.put("Nacionalitat_tutor_empresa", form.getNacionalitatTutorEmpresa());
         getterDataForm.put("Municipi_DNI_tutor_empresa", form.getMunicipiTutorEmpresa());
@@ -140,7 +140,7 @@ public class FormulariFCTController {
         getterDataForm.put("Autoritzacio_extra ", "Autorització extra");
         getterDataForm.put("motiu ", "motiu Autorització extra");
         //TODO A PARTIR D'AQUI
-        getterDataForm.put("Km centre treball-població alumne (posa només el número. Exemple: 14)", form.getKm());
+        /*getterDataForm.put("Km centre treball-població alumne (posa només el número. Exemple: 14)", form.getKm());
         getterDataForm.put("És una empresa nova?", form.getEmpresaNova()?"Si":"No");
         getterDataForm.put("Número d'annex ( si el sabeu)", "");
         getterDataForm.put("Data màxima acabament", form.getDataAcabament().format(formatterDate));
@@ -151,7 +151,7 @@ public class FormulariFCTController {
         getterDataForm.put("Tipus de flexibilització", "");
         getterDataForm.put("Hi ha algun tipus de flexibilització en el mòdul de FCT?", form.getFlexibilitzacioModulFct()? "Si":"No");
         getterDataForm.put("Si realitza horari nocturn indicau quin horari té", "");
-        getterDataForm.put("Edat de l'alumne (només número)", form.getEdat());
+        getterDataForm.put("Edat de l'alumne (només número)", form.getEdat());*/
 
         return getterDataForm;
     }
@@ -169,8 +169,8 @@ public class FormulariFCTController {
         getterDataForm.put("Dirección de correo", email);
         getterDataForm.put("Nom", form.getNomAlumne());
         getterDataForm.put("Llinatges", form.getLlinatgesAlumne());
-        getterDataForm.put("Població", form.getPoblacio());
-        getterDataForm.put("DNI", form.getDni());
+        getterDataForm.put("Població", form.getPoblacioAlumne());
+        getterDataForm.put("DNI", form.getDniAlumne());
         getterDataForm.put("Nombre expedient", form.getNumeroExpedient());
         getterDataForm.put("Cicle Formatiu", form.getCicleFormatiu());
         getterDataForm.put("Grup", form.getGrup());

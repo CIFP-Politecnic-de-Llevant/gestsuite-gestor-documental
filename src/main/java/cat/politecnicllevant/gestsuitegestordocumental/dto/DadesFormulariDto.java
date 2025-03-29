@@ -1,6 +1,5 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,8 +10,10 @@ public @Data class DadesFormulariDto {
     private String anyCurs;
     private String nomAlumne;
     private String llinatgesAlumne;
-    private String poblacio;
-    private String dni;
+    private String poblacioAlumne;
+    private String dniAlumne;
+    private String telefonAlumne;
+    private String emailAlumne;
     //@JsonProperty(value = "nExpedient")
     private String numeroExpedient;
     private Boolean menorEdat;
@@ -33,6 +34,7 @@ public @Data class DadesFormulariDto {
     private String nomTutor;
     private String llinatgesTutor;
     private String telefonTutor;
+    private String emailTutor;
     private Boolean empresaNova;
     private Boolean empresaAdministracioPublica;
     private String numeroConveni;
@@ -41,7 +43,9 @@ public @Data class DadesFormulariDto {
     private String adrecaEmpresa;
     private String cpempresa;
     private String poblacioEmpresa;
+    private String provinciaEmpresa;
     private String telefonEmpresa;
+    private String emailEmpresa;
     private String nomLlocTreball;
     private String adrecaLlocTreball;
     private String cpLlocTreball;
@@ -49,13 +53,17 @@ public @Data class DadesFormulariDto {
     private String telefonLlocTreball;
     private String activitatLlocTreball;
     private String nomCompletRepresentantLegal;
+    private String nomRepresentantLegal;
+    private String cognomsRepresentantLegal;
     private String nifRepresentantLegal;
     private String nomCompletTutorEmpresa;
+    private String nomTutorEmpresa;
+    private String cognomsTutorEmpresa;
     private String nifTutorEmpresa;
     private String nacionalitatTutorEmpresa;
     private String municipiTutorEmpresa;
     private String carrecTutorEmpresa;
-    private String emailEmpresa;
+    private String telefonTutorEmpresa;
     private String emailTutorEmpresa;
     private String diaSeguimentCentreEducatiu;
     private String horaSeguimentCentreEducatiu;

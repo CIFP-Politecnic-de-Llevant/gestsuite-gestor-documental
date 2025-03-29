@@ -24,10 +24,16 @@ public @Data class DadesFormulari {
     private String llinatgesAlumne;
 
     @Column(name = "poblacio", nullable = true, length = 1024)
-    private String poblacio;
+    private String poblacioAlumne;
 
     @Column(name = "dni", nullable = true, length = 128)
-    private String dni;
+    private String dniAlumne;
+
+    @Column(name = "telefon_alumne", nullable = true, length = 128)
+    private String telefonAlumne;
+
+    @Column(name = "email_alumne", nullable = true, length = 128)
+    private String emailAlumne;
 
     @Column(name = "n_expedient", nullable = true, length = 10)
     private String nExpedient;
@@ -86,6 +92,9 @@ public @Data class DadesFormulari {
     @Column(name = "telefon_tutor", nullable = true, length = 128)
     private String telefonTutor;
 
+    @Column(name = "email_tutor", nullable = true, length = 128)
+    private String email_tutor;
+
     @Column(name = "empresa_nova", nullable = true)
     private Boolean empresaNova;
 
@@ -110,8 +119,14 @@ public @Data class DadesFormulari {
     @Column(name = "poblacio_empresa", nullable = true, length = 128)
     private String poblacioEmpresa;
 
+    @Column(name = "provincia_empresa", nullable = true, length = 128)
+    private String provinciaEmpresa;
+
     @Column(name = "telefon_empresa", nullable = true, length = 128)
     private String telefonEmpresa;
+
+    @Column(name = "email_empresa", nullable = true, length = 128)
+    private String emailEmpresa;
 
     @Column(name = "nom_lloc_treball", nullable = true, length = 128)
     private String nomLlocTreball;
@@ -134,11 +149,23 @@ public @Data class DadesFormulari {
     @Column(name = "nom_complet_representant_legal", nullable = true, length = 512)
     private String nomCompletRepresentantLegal;
 
+    @Column(name = "nom_representant_legal", nullable = true, length = 512)
+    private String nomRepresentantLegal;
+
+    @Column(name = "cognoms_representant_legal", nullable = true, length = 512)
+    private String cognomsRepresentantLegal;
+
     @Column(name = "nif_representant_legal", nullable = true, length = 64)
     private String nifRepresentantLegal;
 
     @Column(name = "nom_complet_tutor_empresa", nullable = true, length = 512)
     private String nomCompletTutorEmpresa;
+
+    @Column(name = "nom_tutor_empresa", nullable = true, length = 128)
+    private String nomTutorEmpresa;
+
+    @Column(name = "cognoms_tutor_empresa", nullable = true, length = 128)
+    private String cognomsTutorEmpresa;
 
     @Column(name = "nif_tutor_empresa", nullable = true, length = 64)
     private String nifTutorEmpresa;
@@ -152,8 +179,8 @@ public @Data class DadesFormulari {
     @Column(name = "carrec_tutor_empresa", nullable = true, length = 128)
     private String carrecTutorEmpresa;
 
-    @Column(name = "email_empresa", nullable = true, length = 128)
-    private String emailEmpresa;
+    @Column(name = "telefon_tutor_empresa", nullable = true, length = 128)
+    private String telefonTutorEmpresa;
 
     @Column(name = "email_tutor_empresa", nullable = true, length = 128)
     private String emailTutorEmpresa;
