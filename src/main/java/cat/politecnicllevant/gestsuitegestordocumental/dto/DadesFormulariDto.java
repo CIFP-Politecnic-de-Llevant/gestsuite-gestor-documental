@@ -70,5 +70,9 @@ public @Data class DadesFormulariDto {
     private String diaSeguimentResponsableFct;
     private String horaSeguimentResponsableFct;
     private Boolean flexibilitzacioModulFct;
+    private Boolean isMesuresEducatives;
+    private String mesuresEducativesDesripcio;
+    private Boolean isAutoritzacioExtraordinaria;
+    private String motiu;
     private Long idCursAcademic;
 }

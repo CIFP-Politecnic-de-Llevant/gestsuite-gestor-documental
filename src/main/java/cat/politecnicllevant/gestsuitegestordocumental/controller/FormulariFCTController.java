@@ -135,10 +135,10 @@ public class FormulariFCTController {
         getterDataForm.put("Nacionalitat_tutor_empresa", form.getNacionalitatTutorEmpresa());
         getterDataForm.put("Municipi_DNI_tutor_empresa", form.getMunicipiTutorEmpresa());
         getterDataForm.put("Carrec_tutor_empresa", form.getCarrecTutorEmpresa());
-        getterDataForm.put("Mesures_educatives", "mesures educatives");
-        getterDataForm.put("Especifica_mesures_educatives ", "especificar mesures educatives");
-        getterDataForm.put("Autoritzacio_extra ", "Autorització extra");
-        getterDataForm.put("motiu ", "motiu Autorització extra");
+        getterDataForm.put("Mesures_educatives", form.getIsMesuresEducatives()? "Si":"No");
+        getterDataForm.put("Especifica_mesures_educatives ", form.getMesuresEducativesDesripcio());
+        getterDataForm.put("Autoritzacio_extra ", form.getIsAutoritzacioExtraordinaria()? "Si":"No");
+        getterDataForm.put("motiu ", form.getMotiu());
         //TODO A PARTIR D'AQUI
         /*getterDataForm.put("Km centre treball-població alumne (posa només el número. Exemple: 14)", form.getKm());
         getterDataForm.put("És una empresa nova?", form.getEmpresaNova()?"Si":"No");

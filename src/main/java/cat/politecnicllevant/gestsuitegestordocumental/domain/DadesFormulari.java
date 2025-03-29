@@ -2,6 +2,8 @@ package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.Type;
+
 
 import java.time.LocalDate;
 
@@ -199,6 +201,18 @@ public @Data class DadesFormulari {
 
     @Column(name = "flexibilitzacio_fct", nullable = true)
     private Boolean flexibilitzacioModulFct;
+
+    @Column(name = "mesures_educatives", nullable = true)
+    private Boolean isMesuresEducatives;
+
+    @Column(name = "mesures_educatives_desripcio", nullable = false, columnDefinition = "TEXT")
+    private String mesuresEducativesDesripcio;
+
+    @Column(name = "autoritzacio_extraordinaria", nullable = true)
+    private Boolean isAutoritzacioExtraordinaria;
+
+    @Column(name = "motiu", nullable = false, columnDefinition = "TEXT")
+    private String motiu;
 
     @Column(name = "curs_academic",nullable = false, length = 128)
     private Long idCursAcademic;
