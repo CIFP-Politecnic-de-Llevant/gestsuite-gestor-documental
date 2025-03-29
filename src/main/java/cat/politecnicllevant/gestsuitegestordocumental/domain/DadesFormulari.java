@@ -43,7 +43,7 @@ public @Data class DadesFormulari {
     @Column(name = "sexe", nullable = false)
     private Boolean menorEdat;
 
-    @Column(name = "edat", nullable = false)
+    @Column(name = "edat", nullable = true)
     private Integer edat;
 
     @Column(name = "estudis", nullable = true, length = 128)
@@ -205,7 +205,7 @@ public @Data class DadesFormulari {
     @Column(name = "mesures_educatives", nullable = true)
     private Boolean isMesuresEducatives;
 
-    @Column(name = "mesures_educatives_desripcio", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "mesures_educatives_desripcio", nullable = true, columnDefinition = "TEXT")
     private String mesuresEducativesDesripcio;
 
     @Column(name = "autoritzacio_extraordinaria", nullable = true)
