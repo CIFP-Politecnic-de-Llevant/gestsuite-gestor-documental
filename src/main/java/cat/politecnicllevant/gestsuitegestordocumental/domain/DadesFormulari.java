@@ -211,7 +211,7 @@ public @Data class DadesFormulari {
     @Column(name = "autoritzacio_extraordinaria", nullable = true)
     private Boolean isAutoritzacioExtraordinaria;
 
-    @Column(name = "motiu", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "motiu", nullable = true, columnDefinition = "TEXT")
     private String motiu;
 
     @Column(name = "curs_academic",nullable = false, length = 128)
