@@ -206,7 +206,7 @@ public @Data class DadesFormulari {
     private Boolean isMesuresEducatives;
 
     @Column(name = "mesures_educatives_desripcio", nullable = true, columnDefinition = "TEXT")
-    private String mesuresEducativesDesripcio;
+    private String mesuresEducativesDescripcio;
 
     @Column(name = "autoritzacio_extraordinaria", nullable = true)
     private Boolean isAutoritzacioExtraordinaria;

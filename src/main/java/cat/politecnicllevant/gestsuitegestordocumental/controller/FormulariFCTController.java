@@ -136,7 +136,7 @@ public class FormulariFCTController {
         getterDataForm.put("Municipi_DNI_tutor_empresa", form.getMunicipiTutorEmpresa());
         getterDataForm.put("Carrec_tutor_empresa", form.getCarrecTutorEmpresa());
         getterDataForm.put("Mesures_educatives", form.getIsMesuresEducatives()? "Si":"No");
-        getterDataForm.put("Especifica_mesures_educatives ", form.getMesuresEducativesDesripcio());
+        getterDataForm.put("Especifica_mesures_educatives ", form.getMesuresEducativesDescripcio());
         getterDataForm.put("Autoritzacio_extra ", form.getIsAutoritzacioExtraordinaria()? "Si":"No");
         getterDataForm.put("motiu ", form.getMotiu());
         //TODO A PARTIR D'AQUI

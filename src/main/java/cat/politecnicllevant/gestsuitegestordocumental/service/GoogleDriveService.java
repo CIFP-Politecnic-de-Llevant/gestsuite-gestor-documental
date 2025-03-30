@@ -494,7 +494,8 @@ public class GoogleDriveService {
 
         System.out.println("HELLOOOOO - AQUI AQUI SOS writeDataPosition");
 
-        String range = "A2:CZ5000";
+        int startRowIndex = getLastDataRow() + 1;
+        String range = "A" + startRowIndex + ":CZ"+startRowIndex;
         String rangeHeader = "A1:CZ1";
 
         String[] scopes = {SheetsScopes.SPREADSHEETS};
@@ -520,28 +521,35 @@ public class GoogleDriveService {
 
         List<Object> dataRow = new ArrayList<>();
 
+        System.out.println("Row Header = " + headerRow);
+
         // Compare header value with key entry
         for(Object rowHeader: headerRow){
             boolean trobat = false;
             for (Map.Entry<String, String> entry : gettersDataForm.entrySet()) {
-                if(entry.getKey().equals(String.valueOf(rowHeader))) {
+                System.out.println("vvvvvvv Header = <" + entry.getKey()+"> --- <"+entry.getValue()+"> - <"+rowHeader+">");
+                if(entry.getKey() != null && rowHeader != null && entry.getKey().trim().equals(rowHeader.toString().trim())) {
                     dataRow.add(entry.getValue());
                     trobat = true;
+                    break;
                 }
             }
             if(!trobat){
-                dataRow.add("");
+                dataRow.add("xxx");
             }
-            System.out.println("Datos en el for22 =  " + dataRow);
+            //System.out.println("Datos en el for22 =  " + dataRow);
         }
+        System.out.println("Datos en el dataRow =  " + dataRow);
+        System.out.println("Datos en el gettersDataForm =  " + gettersDataForm);
+
         valuesToWrite.add(dataRow);
 
         ValueRange requestBody = new ValueRange().setValues(valuesToWrite);
 
-        String rangeData = "A"+(lastRowIndex+1)+":CZ"+(lastRowIndex+1);
+        System.out.println("RequestBody = " + requestBody);
 
         sheetsService.spreadsheets().values()
-                .update(this.shareSpredaSheetId, rangeData, requestBody)
+                .update(this.shareSpredaSheetId, range, requestBody)
                 .setValueInputOption("USER_ENTERED")
                 .execute();
     }
