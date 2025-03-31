@@ -155,7 +155,7 @@ public @Data class DadesFormulari {
     private String nomRepresentantLegal;
 
     @Column(name = "cognoms_representant_legal", nullable = true, length = 512)
-    private String cognomsRepresentantLegal;
+    private String llinatgesRepresentantLegal;
 
     @Column(name = "nif_representant_legal", nullable = true, length = 64)
     private String nifRepresentantLegal;
@@ -167,7 +167,7 @@ public @Data class DadesFormulari {
     private String nomTutorEmpresa;
 
     @Column(name = "cognoms_tutor_empresa", nullable = true, length = 128)
-    private String cognomsTutorEmpresa;
+    private String llinatgesTutorEmpresa;
 
     @Column(name = "nif_tutor_empresa", nullable = true, length = 64)
     private String nifTutorEmpresa;

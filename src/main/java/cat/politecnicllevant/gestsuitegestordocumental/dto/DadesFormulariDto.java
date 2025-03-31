@@ -54,11 +54,11 @@ public @Data class DadesFormulariDto {
     private String activitatLlocTreball;
     private String nomCompletRepresentantLegal;
     private String nomRepresentantLegal;
-    private String cognomsRepresentantLegal;
+    private String llinatgesRepresentantLegal;
     private String nifRepresentantLegal;
     private String nomCompletTutorEmpresa;
     private String nomTutorEmpresa;
-    private String cognomsTutorEmpresa;
+    private String llinatgesTutorEmpresa;
     private String nifTutorEmpresa;
     private String nacionalitatTutorEmpresa;
     private String municipiTutorEmpresa;

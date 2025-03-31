@@ -93,6 +93,7 @@ public class FormulariFCTController {
         getterDataForm.put("DNI_alumne", (form.getDniAlumne()!=null)?form.getDniAlumne():"");
         getterDataForm.put("expedient_alumne", (form.getNumeroExpedient()!=null)?form.getNumeroExpedient():"");
         getterDataForm.put("Menor_edat", form.getMenorEdat()?"Si":"No");
+        getterDataForm.put("Edat_alumne", form.getEdat());
         getterDataForm.put("Estudis", (form.getEstudis()!=null)?form.getEstudis():"");
         getterDataForm.put("Cicle_Formatiu", (form.getCicleFormatiu()!=null)?form.getCicleFormatiu():"");
         getterDataForm.put("Grup", (form.getGrup()!=null)?form.getGrup():"");
@@ -119,7 +120,7 @@ public class FormulariFCTController {
         getterDataForm.put("Telf_empresa", (form.getTelefonEmpresa()!=null)?form.getTelefonEmpresa():"Sense telèfon");
         getterDataForm.put("mail_empresa", (form.getEmailEmpresa()!=null)?form.getEmailEmpresa():"Sense correu electrònic");
         getterDataForm.put("Nom_representant_legal", (form.getNomRepresentantLegal()!=null)?form.getNomRepresentantLegal():"");
-        getterDataForm.put("Llinatges_representant_legal", (form.getCognomsRepresentantLegal()!=null)?form.getCognomsRepresentantLegal():"");
+        getterDataForm.put("Llinatges_representant_legal", (form.getLlinatgesRepresentantLegal()!=null)?form.getLlinatgesRepresentantLegal():"");
         getterDataForm.put("NIF_representant_legal", (form.getNifRepresentantLegal()!=null)?form.getNifRepresentantLegal():"");
         getterDataForm.put("Nom_centre_treball", (form.getNomLlocTreball()!=null)?form.getNomLlocTreball():"");
         getterDataForm.put("Adreca_centre_treball", (form.getAdrecaLlocTreball()!=null)?form.getAdrecaLlocTreball():"");
@@ -128,7 +129,7 @@ public class FormulariFCTController {
         getterDataForm.put("Telf_centre_treball", (form.getTelefonLlocTreball()!=null)?form.getTelefonLlocTreball():"");
         getterDataForm.put("Activitat_centre_treball", (form.getActivitatLlocTreball()!=null)?form.getActivitatLlocTreball():"");
         getterDataForm.put("Nom_tutor_empresa", (form.getNomTutorEmpresa()!=null)?form.getNomTutorEmpresa():"");
-        getterDataForm.put("Llinatges_tutor_empresa", (form.getCognomsTutorEmpresa()!=null)?form.getCognomsTutorEmpresa():"");
+        getterDataForm.put("Llinatges_tutor_empresa", (form.getLlinatgesTutorEmpresa()!=null)?form.getLlinatgesTutorEmpresa():"");
         getterDataForm.put("NIF_tutor_empresa", (form.getNifTutorEmpresa()!=null)?form.getNifTutorEmpresa():"");
         getterDataForm.put("Telf_tutor_empresa", (form.getTelefonTutorEmpresa()!=null)?form.getTelefonTutorEmpresa():"");
         getterDataForm.put("mail_tutor_empresa", (form.getEmailTutorEmpresa()!=null)?form.getEmailTutorEmpresa():"");
@@ -151,7 +152,7 @@ public class FormulariFCTController {
         getterDataForm.put("Tipus de flexibilització", "");
         getterDataForm.put("Hi ha algun tipus de flexibilització en el mòdul de FCT?", form.getFlexibilitzacioModulFct()? "Si":"No");
         getterDataForm.put("Si realitza horari nocturn indicau quin horari té", "");
-        getterDataForm.put("Edat de l'alumne (només número)", form.getEdat());*/
+        */
 
         return getterDataForm;
     }
