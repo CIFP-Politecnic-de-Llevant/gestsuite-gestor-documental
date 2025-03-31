@@ -378,7 +378,7 @@ public class GoogleDriveService {
 
     //SpreadSheet
 
-    public int getLastDataRow() throws IOException, GeneralSecurityException {
+    public int getLastDataRow(String idSpreadSheet) throws IOException, GeneralSecurityException {
 
         String range = "A:Z";
         String[] scopes = {SheetsScopes.SPREADSHEETS_READONLY};
@@ -392,7 +392,7 @@ public class GoogleDriveService {
                 .build();
 
         ValueRange response = sheetsService.spreadsheets().values()
-                .get(this.shareSpredaSheetId, range)
+                .get(idSpreadSheet, range)
                 .execute();
 
 
@@ -442,7 +442,7 @@ public class GoogleDriveService {
 
     public void writeData(Map<String, String> gettersDataForm) throws IOException, GeneralSecurityException {
 
-        int startRowIndex = getLastDataRow() + 1;
+        int startRowIndex = getLastDataRow(this.shareSpredaSheetId) + 1;
         String range = "A" + startRowIndex + ":BZ";
 
         String[] scopes = {SheetsScopes.SPREADSHEETS};
@@ -490,9 +490,9 @@ public class GoogleDriveService {
     }
 
 
-    public void writeDataPosition(Map<String, String> gettersDataForm) throws IOException, GeneralSecurityException {
+    public void writeDataPosition(Map<String, String> gettersDataForm, String idSpreadSheet) throws IOException, GeneralSecurityException {
 
-        int startRowIndex = getLastDataRow() + 1;
+        int startRowIndex = getLastDataRow(idSpreadSheet) + 1;
         String range = "A" + startRowIndex + ":CZ"+startRowIndex;
         String rangeHeader = "A1:CZ1";
 
@@ -506,12 +506,12 @@ public class GoogleDriveService {
                 .setApplicationName(this.nomProjecte)
                 .build();
 
-        ValueRange header = sheetsService.spreadsheets().values().get(this.shareSpredaSheetId, rangeHeader).execute();
+        ValueRange header = sheetsService.spreadsheets().values().get(idSpreadSheet, rangeHeader).execute();
         List<List<Object>> valuesHeader = header.getValues();
         List<Object> headerRow = valuesHeader.get(0);
         int lastColumnIndex = valuesHeader != null ? valuesHeader.get(0).size() : 0;
 
-        ValueRange data = sheetsService.spreadsheets().values().get(this.shareSpredaSheetId, range).execute();
+        ValueRange data = sheetsService.spreadsheets().values().get(idSpreadSheet, range).execute();
         List<List<Object>> valuesData = data.getValues();
         int lastRowIndex = valuesData != null ? valuesData.size() : 0;
 
@@ -547,7 +547,7 @@ public class GoogleDriveService {
         System.out.println("RequestBody = " + requestBody);
 
         sheetsService.spreadsheets().values()
-                .update(this.shareSpredaSheetId, range, requestBody)
+                .update(idSpreadSheet, range, requestBody)
                 .setValueInputOption("USER_ENTERED")
                 .execute();
     }

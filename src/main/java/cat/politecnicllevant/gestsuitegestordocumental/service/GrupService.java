@@ -11,10 +11,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class GrupService {
 
     public final GrupRepository grupRepository;
+
+    public GrupService(GrupRepository grupRepository) {
+        this.grupRepository = grupRepository;
+    }
 
     public List<GrupDto> findAll(){
         ModelMapper modelMapper =  new ModelMapper();
@@ -28,9 +31,15 @@ public class GrupService {
 
     public GrupDto getByIdGrupCore(long id){
         ModelMapper modelMapper = new ModelMapper();
-        Grup grup = grupRepository.findByIdGrupCore(id);
+        Grup grup = grupRepository.findByCoreIdGrup(id);
         if(grup !=null) {
-            return modelMapper.map(grup, GrupDto.class);
+            GrupDto grupDto = new GrupDto();
+            grupDto.setCoreIdGrup(grup.getCoreIdGrup());
+            grupDto.setIdGoogleSpreadsheet(grup.getIdGoogleSpreadsheet());
+            grupDto.setFolderGoogleDrive(grup.getFolderGoogleDrive());
+            grupDto.setCursGrup(grup.getCursGrup());
+            grupDto.setIdgrup(grup.getIdGrupGestorDocumental());
+            return grupDto;
         }
         return null;
     }

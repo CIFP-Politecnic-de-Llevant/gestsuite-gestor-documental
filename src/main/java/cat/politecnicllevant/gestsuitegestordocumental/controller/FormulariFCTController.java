@@ -68,20 +68,36 @@ public class FormulariFCTController {
 
         System.out.println("Configurant grups...<<<"+form.getGrup()+">>>");
         ResponseEntity<GrupDto> responseEntity = coreRestClient.getByCodigrup(form.getGrup());
+        String idFolder = null;
+        String idSpreadSheet = null;
         if(responseEntity != null && responseEntity.getBody() != null){
             GrupDto grupDtoCore = responseEntity.getBody();
-            GrupDto grupDtoGestorDocumental = grupService.getByIdGrupCore(grupDtoCore.getIdgrup());
+            System.out.println("GrupDtoCore: "+grupDtoCore);
+            if(grupDtoCore != null && grupDtoCore.getIdgrup() != null) {
+                GrupDto grupDtoGestorDocumental = grupService.getByIdGrupCore(grupDtoCore.getIdgrup());
 
-            System.out.println(grupDtoCore);
-            System.out.println(grupDtoGestorDocumental);
+                System.out.println("grupDtoGestorDocumental: "+grupDtoGestorDocumental);
+
+                if(grupDtoGestorDocumental != null) {
+                    idFolder = grupDtoGestorDocumental.getFolderGoogleDrive();
+                    idSpreadSheet = grupDtoGestorDocumental.getIdGoogleSpreadsheet();
+                }
+            }
         }
 
-        googleDriveService.writeDataPosition(getGettersDataFormPosition(form, email));
+        if(idFolder!=null && idSpreadSheet!=null && !idFolder.isEmpty() && !idSpreadSheet.isEmpty()){
+            googleDriveService.writeDataPosition(getGettersDataFormPosition(form, email), idSpreadSheet);
 
+            Notificacio notificacio = new Notificacio();
+            notificacio.setNotifyMessage("Formulari FEMPO guardat correctament");
+            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+            return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        }
+        log.error("Error guardant el formulari FEMPO");
         Notificacio notificacio = new Notificacio();
-        notificacio.setNotifyMessage("Formulari FEMPO guardat correctament");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        notificacio.setNotifyMessage("Error guardant el formulari FEMPO");
+        notificacio.setNotifyType(NotificacioTipus.ERROR);
+        return new ResponseEntity<>(notificacio, HttpStatus.NOT_ACCEPTABLE);
     }
 
     private static Map<String,String> getGettersDataFormPosition(DadesFormulariDto form, String email) {

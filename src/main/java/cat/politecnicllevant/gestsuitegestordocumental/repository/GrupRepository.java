@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface GrupRepository extends JpaRepository<Grup,Long> {
-    Grup findByIdGrupCore(Long id);
+    Grup findByCoreIdGrup(Long id);
 }

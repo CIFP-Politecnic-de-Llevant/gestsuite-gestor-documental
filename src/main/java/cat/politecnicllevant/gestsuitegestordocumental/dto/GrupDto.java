@@ -14,4 +14,6 @@ public @Data class GrupDto {
     private String gsuiteUnitatOrganitzativa;
     private String idGoogleSpreadsheet;
     private String folderGoogleDrive;
+    private Long coreIdGrup;
+    private String cursGrup;
 }
