@@ -65,7 +65,8 @@ public interface CoreRestClient {
     ResponseEntity<GrupDto> getByCodigrup(@PathVariable("codigrup") String codigrup);
 
     @GetMapping("/grup/getByGestibIdentificador/{idgrup}")
-    public ResponseEntity<GrupDto> getByGestibIdentificador(@PathVariable("idgrup") String idgrup);
+    ResponseEntity<GrupDto> getByGestibIdentificador(@PathVariable("idgrup") String idgrup);
+
 
     //FITXER BUCKET
     @GetMapping("/fitxerbucket/{id}")

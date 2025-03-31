@@ -4,9 +4,12 @@ import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.CursAcademicDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.DadesFormulariDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.GrupDto;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.DadesFormulariService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.GoogleDriveService;
+import cat.politecnicllevant.gestsuitegestordocumental.service.GrupService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,17 +26,13 @@ import java.util.Map;
 
 @RestController
 @Slf4j
+@RequiredArgsConstructor
 public class FormulariFCTController {
 
     private final GoogleDriveService googleDriveService;
     private final DadesFormulariService dadesFormulariService;
     private final CoreRestClient coreRestClient;
-
-    public FormulariFCTController(GoogleDriveService googleDriveService, DadesFormulariService dadesFormulariService, CoreRestClient coreRestClient) {
-        this.googleDriveService = googleDriveService;
-        this.dadesFormulariService = dadesFormulariService;
-        this.coreRestClient = coreRestClient;
-    }
+    private final GrupService grupService;
 
     //FORMULARI FCT
     @GetMapping("/formulari/llistat")
@@ -66,6 +65,17 @@ public class FormulariFCTController {
         form.setIdCursAcademic(cursAcademic.getIdcursAcademic());
 
         dadesFormulariService.save(form);
+
+        System.out.println("Configurant grups...<<<"+form.getGrup()+">>>");
+        ResponseEntity<GrupDto> responseEntity = coreRestClient.getByCodigrup(form.getGrup());
+        if(responseEntity != null && responseEntity.getBody() != null){
+            GrupDto grupDtoCore = responseEntity.getBody();
+            GrupDto grupDtoGestorDocumental = grupService.getByIdGrupCore(grupDtoCore.getIdgrup());
+
+            System.out.println(grupDtoCore);
+            System.out.println(grupDtoGestorDocumental);
+        }
+
         googleDriveService.writeDataPosition(getGettersDataFormPosition(form, email));
 
         Notificacio notificacio = new Notificacio();

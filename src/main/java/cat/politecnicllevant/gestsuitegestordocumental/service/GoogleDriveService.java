@@ -492,8 +492,6 @@ public class GoogleDriveService {
 
     public void writeDataPosition(Map<String, String> gettersDataForm) throws IOException, GeneralSecurityException {
 
-        System.out.println("HELLOOOOO - AQUI AQUI SOS writeDataPosition");
-
         int startRowIndex = getLastDataRow() + 1;
         String range = "A" + startRowIndex + ":CZ"+startRowIndex;
         String rangeHeader = "A1:CZ1";
@@ -527,7 +525,7 @@ public class GoogleDriveService {
         for(Object rowHeader: headerRow){
             boolean trobat = false;
             for (Map.Entry<String, String> entry : gettersDataForm.entrySet()) {
-                System.out.println("vvvvvvv Header = <" + entry.getKey()+"> --- <"+entry.getValue()+"> - <"+rowHeader+">");
+                //System.out.println("Values = <" + entry.getKey()+"> --- <"+entry.getValue()+"> - <"+rowHeader+">");
                 if(entry.getKey() != null && rowHeader != null && entry.getKey().trim().equals(rowHeader.toString().trim())) {
                     dataRow.add(entry.getValue());
                     trobat = true;
