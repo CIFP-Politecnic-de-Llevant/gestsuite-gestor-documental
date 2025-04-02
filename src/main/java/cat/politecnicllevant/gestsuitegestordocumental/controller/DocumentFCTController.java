@@ -137,11 +137,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String FOLDER_BASE = pathDesti;
         final String APP_SHAREDDRIVE_GESTORDOCUMENTAL=sharedDriveId;
 
-        /*if (environment.equals("dev")) {
-            path = envUserPath;
-            FOLDER_BASE = envSharedDrivePath;
-        }*/
-
         ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
         List<DocumentDto> documents = new ArrayList<>();
         List<GrupDto> grups = grupService.findAll();
