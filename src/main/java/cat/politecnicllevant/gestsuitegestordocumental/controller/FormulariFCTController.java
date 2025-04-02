@@ -33,6 +33,7 @@ public class FormulariFCTController {
     private final DadesFormulariService dadesFormulariService;
     private final CoreRestClient coreRestClient;
     private final GrupService grupService;
+    private final String idSpreadsheetFEMPOGeneral = "1B452x9ovCin40_yQpyJ_-TgunGQYVr50zGESGgE8Y2o";
 
     //FORMULARI FCT
     @GetMapping("/formulari/llistat")
@@ -86,7 +87,11 @@ public class FormulariFCTController {
         }
 
         if(idFolder!=null && idSpreadSheet!=null && !idFolder.isEmpty() && !idSpreadSheet.isEmpty()){
+            // Carpeta específica del grup
             googleDriveService.writeDataPosition(getGettersDataFormPosition(form, email), idSpreadSheet);
+
+            // Carpeta general
+            googleDriveService.writeDataPosition(getGettersDataFormPosition(form, email), this.idSpreadsheetFEMPOGeneral);
 
             Notificacio notificacio = new Notificacio();
             notificacio.setNotifyMessage("Formulari FEMPO guardat correctament");
