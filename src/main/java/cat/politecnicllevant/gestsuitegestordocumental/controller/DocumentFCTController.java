@@ -153,7 +153,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             for (File driveFile : driveFiles) {
 
                 //System.out.println(driveFile);
-                log.info("Document {} in folder {}", driveFile.getName(), path);
+                //log.info("Document {} in folder {}", driveFile.getName(), path);
 
                 DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(), convocatoria);
 
@@ -170,7 +170,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         //Esborrem els documents trobats
         for(DocumentDto documentDto: documentsNoTraspassats){
-            log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
+            //log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
             documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
         }
 
@@ -355,7 +355,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     if (!doc.getEstat().equals(DocumentEstatDto.ACCEPTAT)) {
                         continue;
                     }
-                    System.out.println("Doc no traspassat: " + doc.getNomOriginal());
+                    //System.out.println("Doc no traspassat: " + doc.getNomOriginal());
                     ResponseEntity<FitxerBucketDto> responseEntity = coreRestClient.getFitxerBucketById(doc.getIdFitxer());
                     FitxerBucketDto fitxerBucket = responseEntity.getBody();
 
@@ -375,7 +375,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     //Get file from URL
                     InputStream in = new URL(url).openStream();
                     Files.copy(in, Paths.get("/tmp/" + nomFitxerCleaned), StandardCopyOption.REPLACE_EXISTING);
-                    log.info("Fitxer copiat a /tmp/" + nomFitxerCleaned);
+                    //log.info("Fitxer copiat a /tmp/" + nomFitxerCleaned);
 
                     String basePathGoogleDrive = userPathDocDefinitiva;
                     ConvocatoriaDto convocatoriaDocument = convocatoriaService.findConvocatoriaById(doc.getConvocatoria().getIdConvocatoria());
@@ -518,7 +518,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         //Esborrem els documents trobats
         for(DocumentDto documentDto: documentsNoTraspassats){
-            log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
+            //log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
             documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
         }
 
