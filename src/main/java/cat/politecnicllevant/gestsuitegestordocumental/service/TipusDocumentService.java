@@ -32,9 +32,18 @@ public class TipusDocumentService {
         //TipusDocument tipusDocument = tipusDocumentRepository.findTipusDocumentByNom(nom);
         TipusDocument tipusDocument = tipusDocumentRepository.findAll()
                 .stream()
-                .filter(td->removeIllegalCharacters(td.getNom()).equals(removeIllegalCharacters(nom)) || removeIllegalCharacters(nom).contains(removeIllegalCharacters(td.getNom())))
+                .filter(td->td.getNom() != null && (!td.getNom().isEmpty()) && removeIllegalCharacters(td.getNom()).equals(removeIllegalCharacters(nom)))
                 .findFirst()
                 .orElse(null);
+
+        if(tipusDocument == null && nom != null && !nom.isEmpty()) {
+            tipusDocument = tipusDocumentRepository.findAll()
+                    .stream()
+                    .filter(td -> td.getNom() != null && (!td.getNom().isEmpty()) && (removeIllegalCharacters(td.getNom()).equals(removeIllegalCharacters(nom)) || removeIllegalCharacters(nom).contains(removeIllegalCharacters(td.getNom()))))
+                    .findFirst()
+                    .orElse(null);
+        }
+
         if(tipusDocument!=null) {
             return modelMapper.map(tipusDocument, TipusDocumentDto.class);
         }
