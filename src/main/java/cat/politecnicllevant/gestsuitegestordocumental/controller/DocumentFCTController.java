@@ -1075,7 +1075,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             //System.out.println(e.getMessage());
         }
 
-        ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal()+".pdf", remotePath, bucketName);
+        ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal()+".pdf", remotePath, "application/pdf", bucketName);
         FitxerBucketDto fitxerBucket = fitxerBucketResponse.getBody();
 
         //Save the file

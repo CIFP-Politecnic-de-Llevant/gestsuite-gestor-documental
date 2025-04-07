@@ -89,7 +89,7 @@ public interface CoreRestClient {
     ResponseEntity<String> generateSignedURL(@RequestBody String json) throws IOException;
 
     @PostMapping("/googlestorage/uploadobject")
-    ResponseEntity<FitxerBucketDto> uploadObject(@RequestParam("objectName") String objectName, @RequestParam("filePath") String filePath, @RequestParam("bucket") String bucket) throws IOException, GeneralSecurityException;
+    ResponseEntity<FitxerBucketDto> uploadObject(@RequestParam("objectName") String objectName, @RequestParam("filePath") String filePath, @RequestParam("contentType") String contentType, @RequestParam("bucket") String bucket) throws IOException, GeneralSecurityException;
 
     //GMAIL
     @PostMapping(value="/gsuite/sendemailattachment-path")
