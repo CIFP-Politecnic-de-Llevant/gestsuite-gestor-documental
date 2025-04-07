@@ -48,6 +48,7 @@ public class DocumentFCTController {
 
     private final Gson gson;
     private final ConvocatoriaService convocatoriaService;
+    private final GrupService grupService;
 
     @Value("${app.allowed-users}")
     private String[] autoritzats;
@@ -86,7 +87,7 @@ public class DocumentFCTController {
             SignaturaService signaturaService,
             DocumentSignaturaService documentSignaturaService,
             Gson gson,
-            ConvocatoriaService convocatoriaService) {
+            ConvocatoriaService convocatoriaService, GrupService grupService) {
         this.googleDriveService = googleDriveService;
         this.coreRestClient = coreRestClient;
         this.documentService = documentService;
@@ -95,6 +96,7 @@ public class DocumentFCTController {
         this.documentSignaturaService = documentSignaturaService;
         this.gson = gson;
         this.convocatoriaService = convocatoriaService;
+        this.grupService = grupService;
     }
 
     @PostConstruct
@@ -115,6 +117,356 @@ public class DocumentFCTController {
     }
 
 
+    /*
+Second Minute Hour Day-of-Month
+second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
+0 0 2 * * * = a les 2AM de cada dia
+*/
+    @Scheduled(cron = "0 0 * * * *")
+    //@Scheduled(fixedRate = 60*60*1000, initialDelay = 60*1000)
+    public void sincronitzaDocumentsAutomaticFEMPO() throws Exception {
+        if(environment.equals("dev")){
+            log.warn("No es sincronitzen els documents en entorn dev");
+            return;
+        }
+
+        log.info("Sincronitzant documents FEMPO...");
+
+        //String path = pathOrigen;
+        final String email = userEmail;
+        String FOLDER_BASE = pathDesti;
+        final String APP_SHAREDDRIVE_GESTORDOCUMENTAL=sharedDriveId;
+
+        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
+        List<DocumentDto> documents = new ArrayList<>();
+        List<GrupDto> grups = grupService.findAll();
+
+        for(GrupDto grup : grups) {
+            String path = "FEMPO/"+grup.getCursGrup()+"_Q_FEMPO";
+            List<File> driveFiles = googleDriveService.getFilesInFolder(path, email);
+
+            if (driveFiles == null || driveFiles.isEmpty()) {
+                log.info("No s'han trobat fitxers a la carpeta {}", path);
+                continue;
+            }
+
+            for (File driveFile : driveFiles) {
+
+                //System.out.println(driveFile);
+                //log.info("Document {} in folder {}", driveFile.getName(), path);
+
+                DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(), convocatoria);
+
+                if (document == null) {
+                    document = documentService.getDocumentByGoogleDriveFile(driveFile, convocatoria);
+                    document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
+
+                    documents.add(document);
+                }
+            }
+        }
+
+        List<DocumentDto> documentsNoTraspassats = documentService.findAll(convocatoria);
+
+        //Esborrem els documents trobats
+        for(DocumentDto documentDto: documentsNoTraspassats){
+            //log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
+            documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
+        }
+
+        //Traspassam els documents
+        for(DocumentDto document: documents) {
+            log.info("Traspassant document {}...", document.getNomOriginal());
+            try{
+                String[] documentParts = document.getNomOriginal().split("_");
+
+                if (documentParts.length == 2) {
+                    String cicle = documentParts[0];
+                    String nomDocument = documentParts[1];
+
+                    TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(nomDocument);
+
+                    if (tipusDocumentDto == null) {
+                        log.info("No s'ha trobat el tipus de document {}. Número de parts del document: 2", nomDocument);
+                        continue;
+                    }
+
+                    //Permisos
+                    List<UsuariDto> tutorsFCT = coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+
+                    JsonObject jsonCarpetaRoot = new JsonObject();
+                    jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
+                    jsonCarpetaRoot.addProperty("email", email);
+                    jsonCarpetaRoot.addProperty("parentFolderId", APP_SHAREDDRIVE_GESTORDOCUMENTAL);
+
+                    File carpetaRoot = this.createFolder(gson.toJson(jsonCarpetaRoot)).getBody();
+
+                    JsonObject jsonCarpetaCicle = new JsonObject();
+                    //jsonCarpetaRoot.addProperty("path", FOLDER_BASE);
+                    jsonCarpetaCicle.addProperty("folderName", cicle);
+                    jsonCarpetaCicle.addProperty("email", email);
+
+                    JsonArray jsonEditorsCarpetaRoot = new JsonArray();
+                    tutorsFCT.forEach(usuariDto -> {
+                        jsonEditorsCarpetaRoot.add(usuariDto.getGsuiteEmail());
+                    });
+                    jsonCarpetaCicle.add("editors", jsonEditorsCarpetaRoot);
+
+                    jsonCarpetaCicle.addProperty("parentFolderId", carpetaRoot.getId());
+
+                    File carpetaCicle = this.createFolder(gson.toJson(jsonCarpetaCicle)).getBody();
+
+                    JsonObject jsonFitxer = new JsonObject();
+                    jsonFitxer.addProperty("idFile", document.getIdGoogleDrive());
+                    jsonFitxer.addProperty("email", email);
+                    jsonFitxer.addProperty("filename", nomDocument);
+                    jsonFitxer.addProperty("parentFolderId", carpetaCicle.getId());
+                    jsonFitxer.addProperty("originalName", document.getNomOriginal());
+
+                    File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
+
+                    //Desem el fitxer NOMÉS si no existeix
+                    DocumentDto documentSaved = documentService.getDocumentByOriginalName(document.getNomOriginal(), convocatoria);
+                    if (documentSaved == null) {
+                        JsonObject tipusFitxer = new JsonObject();
+                        tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
+
+                        JsonObject jsonFitxerDesat = new JsonObject();
+                        jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
+                        jsonFitxerDesat.addProperty("path", FOLDER_BASE + "/" + cicle + "/" + nomDocument);
+                        jsonFitxerDesat.addProperty("email", email);
+                        jsonFitxerDesat.addProperty("tipus", nomDocument);
+                        jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                        jsonFitxerDesat.add("tipusDocument", tipusFitxer);
+                        jsonFitxerDesat.addProperty("codiGrup", cicle);
+
+                        this.createDocument(gson.toJson(jsonFitxerDesat));
+                    }
+
+                } else if (documentParts.length == 5) {
+                    String cicle = documentParts[0];
+                    String cognoms = documentParts[1];
+                    String nom = documentParts[2];
+                    String numExpedient = documentParts[3];
+                    String nomDocument = documentParts[4];
+
+                    TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(nomDocument);
+                    ResponseEntity<UsuariDto> alumneResponse = coreRestClient.getUsuariByNumExpedient(numExpedient);
+
+                    if (tipusDocumentDto == null || alumneResponse == null) {
+                        log.info("No s'ha trobat el tipus de document {}. Número de parts del document: 5", nomDocument);
+                        continue;
+                    }
+
+                    UsuariDto alumne = alumneResponse.getBody();
+
+                    //Permisos
+                    List<UsuariDto> tutorsFCT = this.coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+
+                    //Creem l'estructura de carpetes
+                    JsonObject jsonCarpetaRoot = new JsonObject();
+                    jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
+                    jsonCarpetaRoot.addProperty("email", email);
+                    jsonCarpetaRoot.addProperty("parentFolderId", APP_SHAREDDRIVE_GESTORDOCUMENTAL);
+
+                    File carpetaRoot = this.createFolder(gson.toJson(jsonCarpetaRoot)).getBody();
+
+                    JsonObject jsonCarpetaCicle = new JsonObject();
+                    //jsonCarpetaRoot.addProperty("path", FOLDER_BASE);
+                    jsonCarpetaCicle.addProperty("folderName", cicle);
+                    jsonCarpetaCicle.addProperty("email", email);
+
+                    JsonArray jsonEditorsCarpetaRoot = new JsonArray();
+                    tutorsFCT.forEach(usuariDto -> {
+                        jsonEditorsCarpetaRoot.add(usuariDto.getGsuiteEmail());
+                    });
+                    jsonCarpetaCicle.add("editors", jsonEditorsCarpetaRoot);
+
+                    jsonCarpetaCicle.addProperty("parentFolderId", carpetaRoot.getId());
+
+                    File carpetaCicle = this.createFolder(gson.toJson(jsonCarpetaCicle)).getBody();
+
+                    JsonObject jsonCarpetaAlumne = new JsonObject();
+                    jsonCarpetaAlumne.addProperty("folderName", cognoms + " " + nom);
+                    jsonCarpetaAlumne.addProperty("email", email);
+                    jsonCarpetaAlumne.addProperty("parentFolderId", carpetaCicle.getId());
+
+                    File carpetaAlumne = this.createFolder(gson.toJson(jsonCarpetaAlumne)).getBody();
+
+                    //Fer còpia
+                    JsonObject jsonFitxer = new JsonObject();
+                    jsonFitxer.addProperty("idFile", document.getIdGoogleDrive());
+                    jsonFitxer.addProperty("email", email);
+                    jsonFitxer.addProperty("filename", cognoms + " " + nom + "_" + nomDocument);
+                    jsonFitxer.addProperty("parentFolderId", carpetaAlumne.getId());
+                    jsonFitxer.addProperty("originalName", document.getNomOriginal());
+
+                    File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
+
+                    //Desem el fitxer
+                    JsonObject tipusFitxer = new JsonObject();
+                    tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
+
+
+                    JsonObject jsonFitxerDesat = new JsonObject();
+                    jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
+                    jsonFitxerDesat.addProperty("path", FOLDER_BASE + "/" + cicle + "/" + cognoms + " " + nom + "/" + cognoms + " " + nom + "_" + nomDocument);
+                    jsonFitxerDesat.addProperty("email", email);
+                    jsonFitxerDesat.addProperty("tipus", nomDocument);
+                    jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                    jsonFitxerDesat.add("tipusDocument", tipusFitxer);
+                    jsonFitxerDesat.addProperty("idusuari", alumne.getIdusuari());
+                    jsonFitxerDesat.addProperty("codiGrup", cicle);
+
+                    this.createDocument(gson.toJson(jsonFitxerDesat));
+
+                    //Si és un document d'empresa avisem al coordinador FCT
+                    if (tipusDocumentDto.getNom().contains("Dades alumne empresa")) {
+                        /** TODO - Avisar al coordinador/s FCT **/
+                        JsonObject jsonNotificacio = new JsonObject();
+                        jsonNotificacio.addProperty("assumpte", "Document d'empresa pujat a " + cicle + " per " + cognoms + " " + nom);
+                        jsonNotificacio.addProperty("missatge", "Document d'empresa pujat a " + cicle + " per " + cognoms + " " + nom + " amb el número d'expedient " + numExpedient);
+                        jsonNotificacio.addProperty("to", "ppulido@politecnicllevant.cat");
+
+                        coreRestClient.sendEmail(gson.toJson(jsonNotificacio));
+
+                        /*List<UsuariDto> coordinadorsFCT = this.coreRestClient.getCoordinadorFCT().getBody();
+                        if(coordinadosrFCT!=null){
+                            Notificacio notificacio = new Notificacio();
+                            notificacio.setNotifyMessage("S'ha pujat un document de dades d'empresa de l'alumne "+cognoms+" "+nom+" amb el número d'expedient "+numExpedient);
+                            notificacio.setNotifyType(NotificacioTipus.INFO);
+                            this.coreRestClient.sendNotification(notificacio, coordinadorFCT.getIdusuari());
+                        }*/
+                    }
+                }
+                log.info("Document traspassat {}", document.getNomOriginal());
+            } catch (Exception e){
+                log.error("Error traspassant document",e);
+            }
+        }
+
+        //Traspassar documents del bucket
+        log.info("Traspassant documents del bucket...");
+        List<ConvocatoriaDto> convocatories = convocatoriaService.findAll();
+        for(ConvocatoriaDto convocatoriaDto: convocatories){
+            List<DocumentDto> documentsBucketNoTraspassats = documentService.findAllDocumentsBucketNoTraspassats(convocatoriaDto);
+            for(DocumentDto doc: documentsBucketNoTraspassats) {
+                try {
+                    if (!doc.getEstat().equals(DocumentEstatDto.ACCEPTAT)) {
+                        continue;
+                    }
+                    //System.out.println("Doc no traspassat: " + doc.getNomOriginal());
+                    ResponseEntity<FitxerBucketDto> responseEntity = coreRestClient.getFitxerBucketById(doc.getIdFitxer());
+                    FitxerBucketDto fitxerBucket = responseEntity.getBody();
+
+                    JsonObject jsonFitxerBucket = new JsonObject();
+                    jsonFitxerBucket.addProperty("idfitxer", fitxerBucket.getIdfitxer());
+                    jsonFitxerBucket.addProperty("nom", fitxerBucket.getNom());
+                    jsonFitxerBucket.addProperty("bucket", fitxerBucket.getBucket());
+                    jsonFitxerBucket.addProperty("path", fitxerBucket.getPath());
+
+                    ResponseEntity<String> urlResponse = coreRestClient.generateSignedURL(jsonFitxerBucket.toString());
+                    String url = urlResponse.getBody();
+
+                    //Split / and get last part
+                    String[] parts = fitxerBucket.getNom().split("/");
+                    String nomFitxerCleaned = parts[parts.length - 1];
+
+                    //Get file from URL
+                    InputStream in = new URL(url).openStream();
+                    Files.copy(in, Paths.get("/tmp/" + nomFitxerCleaned), StandardCopyOption.REPLACE_EXISTING);
+                    //log.info("Fitxer copiat a /tmp/" + nomFitxerCleaned);
+
+                    String basePathGoogleDrive = userPathDocDefinitiva;
+                    ConvocatoriaDto convocatoriaDocument = convocatoriaService.findConvocatoriaById(doc.getConvocatoria().getIdConvocatoria());
+
+                    String[] pathDoc = doc.getNomOriginal().split("_");
+
+                    String nomFitxer = nomFitxerCleaned;
+                    List<String> pathDocList = new ArrayList<String>();
+                    if (pathDoc.length == 5) {
+                        String numExpedient = pathDoc[3];
+                        UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
+
+                        if(alumne==null){
+                            log.error("No s'ha pogut traspassar el fitxer " + nomFitxerCleaned);
+                            continue;
+                        }
+
+                        nomFitxer = pathDoc[4]; //Nom fitxer original
+
+                        pathDocList.add(basePathGoogleDrive); // Base
+                        pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                        pathDocList.add(pathDoc[0]); // Curs + Grup. IFC33B
+                        pathDocList.add(alumne.getGestibCognom1() + " " + alumne.getGestibCognom2() + ", " + alumne.getGestibNom()); //Cognoms + Nom
+                    } else if (pathDoc.length == 2) {
+                        nomFitxer = pathDoc[1];//Nom fitxer original
+
+                        pathDocList.add(basePathGoogleDrive); // Base
+                        pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                        pathDocList.add(pathDoc[0]); // Curs + Grup. IFC33B
+
+                    } else if (pathDoc.length == 4 && pathDoc[0].equals("CUSTOM") && pathDoc[1].equals("Altra documentació grup")) {
+                        nomFitxer = pathDoc[3]; //Nom fitxer original
+
+                        pathDocList.add(basePathGoogleDrive); // Base
+                        pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                        pathDocList.add(pathDoc[2]); //Curs + Grup. IFC33B
+                    } else if (pathDoc.length == 4 && pathDoc[0].equals("CUSTOM") && pathDoc[1].equals("Annex 4")) {
+                        nomFitxer = pathDoc[3]; //Nom fitxer original
+                        String numExpedient = pathDoc[3];
+                        UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
+
+                        if(alumne==null){
+                            log.error("No s'ha pogut traspassar el fitxer " + nomFitxerCleaned);
+                            continue;
+                        }
+
+                        pathDocList.add(basePathGoogleDrive); // Base
+                        pathDocList.add(convocatoriaDocument.getNom()); // Convocatòria del document
+                        pathDocList.add(pathDoc[2]); //Curs + Grup. IFC33B
+                        pathDocList.add(alumne.getGestibCognom1() + " " + alumne.getGestibCognom2() + ", " + alumne.getGestibNom()); //Cognoms + Nom
+                    } else {
+                        log.error("No s'ha pogut traspassar el fitxer " + nomFitxerCleaned);
+                        continue;
+                    }
+
+
+                    //Crear carpetes si no existeixen
+                    File parent = googleDriveService.getFolder(basePathGoogleDrive, "qualitat@politecnicllevant.cat", "root");
+                    if (parent == null) {
+                        log.error("No s'ha trobat la carpeta base " + basePathGoogleDrive);
+                    } else {
+                        log.info("Carpeta base trobada: " + basePathGoogleDrive);
+                    }
+                    for (int i = 1; i < pathDocList.size(); i++) {
+                        if (parent != null && parent.getId() != null) {
+                            log.info("Cercant la carpeta " + pathDocList.get(i));
+                            File folder = googleDriveService.getFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
+                            if (folder == null) {
+                                folder = googleDriveService.createFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
+                            }
+
+                            if (pathDocList.size() - 1 == i) {
+                                //Get file from folder
+                                java.io.File fileToUpload = new java.io.File("/tmp/" + nomFitxerCleaned);
+                                googleDriveService.uploadFile(folder.getId(), "qualitat@politecnicllevant.cat", fileToUpload, nomFitxer);
+
+                                doc.setTraspassat(true);
+                                documentService.save(doc, convocatoriaDocument);
+                            }
+
+                            parent = googleDriveService.getFolder(pathDocList.get(i), "qualitat@politecnicllevant.cat", parent.getId());
+                        }
+                    }
+
+
+                } catch (Exception e) {
+                    log.error("Error traspassant fitxer de bucket de " + doc.getNomOriginal(), e);
+                }
+            }
+        }
+    }
 
 
     /*
@@ -122,8 +474,9 @@ Second Minute Hour Day-of-Month
 second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 0 0 2 * * * = a les 2AM de cada dia
  */
-    //@Scheduled(cron = "0 0 * * * *")
-    @Scheduled(fixedRate = 60*60*1000, initialDelay = 60*1000)
+    @Deprecated
+    @Scheduled(cron = "0 30 * * * *")
+    //@Scheduled(fixedRate = 60*60*1000, initialDelay = 60*1000)
     public void sincronitzaDocumentsAutomatic() throws Exception {
         if(environment.equals("dev")){
             log.warn("No es sincronitzen els documents en entorn dev");
@@ -165,7 +518,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         //Esborrem els documents trobats
         for(DocumentDto documentDto: documentsNoTraspassats){
-            log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
+            //log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
             documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
         }
 

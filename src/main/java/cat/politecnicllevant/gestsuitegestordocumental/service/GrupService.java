@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,8 +21,20 @@ public class GrupService {
     }
 
     public List<GrupDto> findAll(){
-        ModelMapper modelMapper =  new ModelMapper();
-        return grupRepository.findAll().stream().map(pf->modelMapper.map(pf, GrupDto.class)).collect(Collectors.toList());
+        List<GrupDto> grupDtos = new ArrayList<>();
+        List<Grup> grups = grupRepository.findAll();
+
+        for(Grup grup : grups) {
+            GrupDto grupDto = new GrupDto();
+            grupDto.setCoreIdGrup(grup.getCoreIdGrup());
+            grupDto.setIdGoogleSpreadsheet(grup.getIdGoogleSpreadsheet());
+            grupDto.setFolderGoogleDrive(grup.getFolderGoogleDrive());
+            grupDto.setCursGrup(grup.getCursGrup());
+            grupDto.setIdgrup(grup.getIdGrupGestorDocumental());
+            grupDtos.add(grupDto);
+        }
+
+        return grupDtos;
     }
 
     public GrupDto getById(long id){
@@ -30,7 +43,6 @@ public class GrupService {
     }
 
     public GrupDto getByIdGrupCore(long id){
-        ModelMapper modelMapper = new ModelMapper();
         Grup grup = grupRepository.findByCoreIdGrup(id);
         if(grup !=null) {
             GrupDto grupDto = new GrupDto();

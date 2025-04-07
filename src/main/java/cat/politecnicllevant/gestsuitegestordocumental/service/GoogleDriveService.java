@@ -533,7 +533,7 @@ public class GoogleDriveService {
                 }
             }
             if(!trobat){
-                dataRow.add("xxx");
+                dataRow.add("");
             }
             //System.out.println("Datos en el for22 =  " + dataRow);
         }
