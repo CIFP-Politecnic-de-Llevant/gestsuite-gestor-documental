@@ -17,6 +17,9 @@ public class TipusDocument {
     @Column(name = "nom", unique = true, nullable = false, length = 2048)
     private String nom;
 
+    @Column(name = "descripcio", length = 2048)
+    private String descripcio;
+
     @Column(name = "visibilitat_defecte", nullable = false)
     private Boolean visibilitatDefecte;
 
