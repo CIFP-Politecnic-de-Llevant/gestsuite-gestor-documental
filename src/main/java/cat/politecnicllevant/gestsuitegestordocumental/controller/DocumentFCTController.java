@@ -74,6 +74,9 @@ public class DocumentFCTController {
     @Value("${app.google.drive.user.pathdocdefinitiva}")
     private String userPathDocDefinitiva;
 
+    @Value("${app.google.drive.user.pathdocsmigrats}")
+    private String userPathDocsMigrats;
+
     private String pathOrigen = "FCT_DEVELOPMENT";
     private Boolean isUnitatOrganitzativaOrigen = false;
     private String pathDesti = "FCT_DEVELOPMENT";
@@ -101,7 +104,7 @@ public class DocumentFCTController {
 
     @PostConstruct
     private void postConstruct() {
-        if(!environment.equals("dev")){
+        if (!environment.equals("dev")) {
             ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
             pathOrigen = convocatoria.getPathOrigen();
             pathDesti = convocatoria.getPathDesti();
@@ -125,7 +128,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @Scheduled(cron = "0 0 * * * *")
     //@Scheduled(fixedRate = 60*60*1000, initialDelay = 60*1000)
     public void sincronitzaDocumentsAutomaticFEMPO() throws Exception {
-        if(environment.equals("dev")){
+        if (environment.equals("dev")) {
             log.warn("No es sincronitzen els documents en entorn dev");
             return;
         }
@@ -135,14 +138,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         //String path = pathOrigen;
         final String email = userEmail;
         String FOLDER_BASE = pathDesti;
-        final String APP_SHAREDDRIVE_GESTORDOCUMENTAL=sharedDriveId;
+        final String APP_SHAREDDRIVE_GESTORDOCUMENTAL = sharedDriveId;
 
         ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
         List<DocumentDto> documents = new ArrayList<>();
         List<GrupDto> grups = grupService.findAll();
 
-        for(GrupDto grup : grups) {
-            String path = "FEMPO/"+grup.getCursGrup()+"_Q_FEMPO";
+        for (GrupDto grup : grups) {
+            String path = "FEMPO/" + grup.getCursGrup() + "_Q_FEMPO";
             List<File> driveFiles = googleDriveService.getFilesInFolder(path, email);
 
             if (driveFiles == null || driveFiles.isEmpty()) {
@@ -169,15 +172,15 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         List<DocumentDto> documentsNoTraspassats = documentService.findAll(convocatoria);
 
         //Esborrem els documents trobats
-        for(DocumentDto documentDto: documentsNoTraspassats){
+        for (DocumentDto documentDto : documentsNoTraspassats) {
             //log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
             documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
         }
 
         //Traspassam els documents
-        for(DocumentDto document: documents) {
+        for (DocumentDto document : documents) {
             log.info("Traspassant document {}...", document.getNomOriginal());
-            try{
+            try {
                 String[] documentParts = document.getNomOriginal().split("_");
 
                 if (documentParts.length == 2) {
@@ -340,17 +343,17 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     }
                 }
                 log.info("Document traspassat {}", document.getNomOriginal());
-            } catch (Exception e){
-                log.error("Error traspassant document",e);
+            } catch (Exception e) {
+                log.error("Error traspassant document", e);
             }
         }
 
         //Traspassar documents del bucket
         log.info("Traspassant documents del bucket...");
         List<ConvocatoriaDto> convocatories = convocatoriaService.findAll();
-        for(ConvocatoriaDto convocatoriaDto: convocatories){
+        for (ConvocatoriaDto convocatoriaDto : convocatories) {
             List<DocumentDto> documentsBucketNoTraspassats = documentService.findAllDocumentsBucketNoTraspassats(convocatoriaDto);
-            for(DocumentDto doc: documentsBucketNoTraspassats) {
+            for (DocumentDto doc : documentsBucketNoTraspassats) {
                 try {
                     if (!doc.getEstat().equals(DocumentEstatDto.ACCEPTAT)) {
                         continue;
@@ -388,7 +391,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                         String numExpedient = pathDoc[3];
                         UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
 
-                        if(alumne==null){
+                        if (alumne == null) {
                             log.error("No s'ha pogut traspassar el fitxer " + nomFitxerCleaned);
                             continue;
                         }
@@ -417,7 +420,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                         String numExpedient = pathDoc[3];
                         UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
 
-                        if(alumne==null){
+                        if (alumne == null) {
                             log.error("No s'ha pogut traspassar el fitxer " + nomFitxerCleaned);
                             continue;
                         }
@@ -478,7 +481,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @Scheduled(cron = "0 30 * * * *")
     //@Scheduled(fixedRate = 60*60*1000, initialDelay = 60*1000)
     public void sincronitzaDocumentsAutomatic() throws Exception {
-        if(environment.equals("dev")){
+        if (environment.equals("dev")) {
             log.warn("No es sincronitzen els documents en entorn dev");
             return;
         }
@@ -488,7 +491,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String path = pathOrigen;
         final String email = userEmail;
         String FOLDER_BASE = pathDesti;
-        final String APP_SHAREDDRIVE_GESTORDOCUMENTAL=sharedDriveId;
+        final String APP_SHAREDDRIVE_GESTORDOCUMENTAL = sharedDriveId;
 
         /*if (environment.equals("dev")) {
             path = envUserPath;
@@ -497,17 +500,17 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
 
-        List<File> driveFiles = googleDriveService.getFilesInFolder(path,email);
+        List<File> driveFiles = googleDriveService.getFilesInFolder(path, email);
         List<DocumentDto> documents = new ArrayList<>();
-        for(File driveFile: driveFiles){
+        for (File driveFile : driveFiles) {
 
             //System.out.println(driveFile);
             log.info("Document {} in folder {}", driveFile.getName(), path);
 
-            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(),convocatoria);
+            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(), convocatoria);
 
-            if(document == null){
-                document = documentService.getDocumentByGoogleDriveFile(driveFile,convocatoria);
+            if (document == null) {
+                document = documentService.getDocumentByGoogleDriveFile(driveFile, convocatoria);
                 document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
 
                 documents.add(document);
@@ -517,15 +520,15 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         List<DocumentDto> documentsNoTraspassats = documentService.findAll(convocatoria);
 
         //Esborrem els documents trobats
-        for(DocumentDto documentDto: documentsNoTraspassats){
+        for (DocumentDto documentDto : documentsNoTraspassats) {
             //log.info("Esborrant document {} de la llista de documents a traspassar... Id documentDto: {}", documentDto.getNomOriginal(), documentDto.getIdGoogleDrive());
             documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
         }
 
         //Traspassam els documents
-        for(DocumentDto document: documents) {
+        for (DocumentDto document : documents) {
             log.info("Traspassant document {}...", document.getNomOriginal());
-            try{
+            try {
                 String[] documentParts = document.getNomOriginal().split("_");
 
                 if (documentParts.length == 2) {
@@ -688,17 +691,17 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     }
                 }
                 log.info("Document traspassat {}", document.getNomOriginal());
-            } catch (Exception e){
-                log.error("Error traspassant document",e);
+            } catch (Exception e) {
+                log.error("Error traspassant document", e);
             }
         }
 
         //Traspassar documents del bucket
         log.info("Traspassant documents del bucket...");
         List<ConvocatoriaDto> convocatories = convocatoriaService.findAll();
-        for(ConvocatoriaDto convocatoriaDto: convocatories){
+        for (ConvocatoriaDto convocatoriaDto : convocatories) {
             List<DocumentDto> documentsBucketNoTraspassats = documentService.findAllDocumentsBucketNoTraspassats(convocatoriaDto);
-            for(DocumentDto doc: documentsBucketNoTraspassats) {
+            for (DocumentDto doc : documentsBucketNoTraspassats) {
                 try {
                     if (!doc.getEstat().equals(DocumentEstatDto.ACCEPTAT)) {
                         continue;
@@ -736,7 +739,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                         String numExpedient = pathDoc[3];
                         UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
 
-                        if(alumne==null){
+                        if (alumne == null) {
                             log.error("No s'ha pogut traspassar el fitxer " + nomFitxerCleaned);
                             continue;
                         }
@@ -765,7 +768,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                         String numExpedient = pathDoc[3];
                         UsuariDto alumne = coreRestClient.getUsuariByNumExpedient(numExpedient).getBody();
 
-                        if(alumne==null){
+                        if (alumne == null) {
                             log.error("No s'ha pogut traspassar el fitxer " + nomFitxerCleaned);
                             continue;
                         }
@@ -821,7 +824,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
 
         Long idusuari = null;
-        if(jsonObject.get("idusuari")!=null && !jsonObject.get("idusuari").isJsonNull()){
+        if (jsonObject.get("idusuari") != null && !jsonObject.get("idusuari").isJsonNull()) {
             idusuari = jsonObject.get("idusuari").getAsLong();
         }
         String curs = jsonObject.get("curs").getAsString();
@@ -836,32 +839,32 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         document.setIdUsuari(idusuari);
         document.setGrupCodi(curs);
 
-        if(document.getEstat()==null){
+        if (document.getEstat() == null) {
             document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
         }
-        if(document.getPathGoogleDrive()==null){
+        if (document.getPathGoogleDrive() == null) {
             document.setPathGoogleDrive("");
         }
-        if(document.getIdGoogleDrive()==null){
+        if (document.getIdGoogleDrive() == null) {
             document.setIdGoogleDrive("");
         }
         TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipusDocument);
         document.setTipusDocument(tipusDocumentDto);
         document.setVisibilitat(tipusDocumentDto.getVisibilitatDefecte());
 
-        if(document.getTraspassat() == null) {
+        if (document.getTraspassat() == null) {
             document.setTraspassat(false);
         }
 
-        document.setNomOriginal("CUSTOM_"+tipusDocumentDto.getNom()+"_"+curs+"_"+idusuari);
+        document.setNomOriginal("CUSTOM_" + tipusDocumentDto.getNom() + "_" + curs + "_" + idusuari);
         //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
         int i = 1;
-        while(documentService.findByNomOriginal(document.getNomOriginal(), convocatoria) != null){
-            document.setNomOriginal(document.getNomOriginal()+"_"+i);
+        while (documentService.findByNomOriginal(document.getNomOriginal(), convocatoria) != null) {
+            document.setNomOriginal(document.getNomOriginal() + "_" + i);
             i++;
         }
 
-        DocumentDto documentSaved = documentService.save(document,convocatoria);
+        DocumentDto documentSaved = documentService.save(document, convocatoria);
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }
 
@@ -869,9 +872,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     public ResponseEntity<List<UsuariDto>> getAutoritzats() throws Exception {
         List<UsuariDto> usuarisAutoritzats = new ArrayList<>();
 
-        for(String autoritzat: autoritzats){
+        for (String autoritzat : autoritzats) {
             UsuariDto usuariAutoritzat = coreRestClient.getUsuariByEmail(autoritzat).getBody();
-            System.out.println(usuariAutoritzat.getGsuiteEmail()+usuariAutoritzat.getGestibNom()+" "+usuariAutoritzat.getGestibCognom1()+" "+usuariAutoritzat.getGestibCognom2());
+            System.out.println(usuariAutoritzat.getGsuiteEmail() + usuariAutoritzat.getGestibNom() + " " + usuariAutoritzat.getGestibCognom1() + " " + usuariAutoritzat.getGestibCognom2());
             usuarisAutoritzats.add(usuariAutoritzat);
         }
         return new ResponseEntity<>(usuarisAutoritzats, HttpStatus.OK);
@@ -887,7 +890,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @GetMapping("/grups-amb-documentsfct")
     public ResponseEntity<List<GrupDto>> getGrupsAmbDocuments(@RequestParam(required = false) Long idConvocatoria) {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
@@ -912,7 +915,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/documents")
     public ResponseEntity<List<DocumentDto>> getDocumentsByPath(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
@@ -922,17 +925,17 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String path = jsonObject.get("path").getAsString();
         String email = jsonObject.get("email").getAsString();
 
-        List<File> driveFiles = googleDriveService.getFilesInFolder(path,email);
+        List<File> driveFiles = googleDriveService.getFilesInFolder(path, email);
         List<DocumentDto> documents = new ArrayList<>();
-        for(File driveFile: driveFiles){
+        for (File driveFile : driveFiles) {
 
             //System.out.println(driveFile);
-            log.info(driveFile.getId()+" "+driveFile.getName());
+            log.info(driveFile.getId() + " " + driveFile.getName());
 
-            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(),convocatoria);
+            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(), convocatoria);
 
-            if(document == null){
-                document = documentService.getDocumentByGoogleDriveFile(driveFile,convocatoria);
+            if (document == null) {
+                document = documentService.getDocumentByGoogleDriveFile(driveFile, convocatoria);
 
                 documents.add(document);
                 //documentService.save(document);
@@ -949,16 +952,16 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
 
-        List<File> driveFiles = googleDriveService.getFilesInFolder(path,email);
+        List<File> driveFiles = googleDriveService.getFilesInFolder(path, email);
         List<DocumentDto> documents = new ArrayList<>();
-        for(File driveFile: driveFiles){
+        for (File driveFile : driveFiles) {
 
             System.out.println(driveFile);
 
-            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(),convocatoria);
+            DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(), convocatoria);
 
-            if(document == null){
-                document = documentService.getDocumentByGoogleDriveFile(driveFile,convocatoria);
+            if (document == null) {
+                document = documentService.getDocumentByGoogleDriveFile(driveFile, convocatoria);
 
                 documents.add(document);
                 //documentService.save(document);
@@ -968,7 +971,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         List<DocumentDto> documentsTraspassats = documentService.findAll(convocatoria);
 
         //Esborrem els documents trobats
-        for(DocumentDto documentDto: documentsTraspassats){
+        for (DocumentDto documentDto : documentsTraspassats) {
             documents.removeIf(documentDto1 -> documentDto1.getNomOriginal().equals(documentDto.getNomOriginal()));
         }
 
@@ -978,19 +981,19 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @GetMapping("/documents-grup/{grupCodi}")
     public ResponseEntity<List<DocumentDto>> getDocumentsByGrup(@PathVariable String grupCodi, @RequestParam(required = false) Long idConvocatoria) throws Exception {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
         }
 
-        if(grupCodi==null || convocatoria==null){
-            return  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (grupCodi == null || convocatoria == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         List<DocumentDto> documents = documentService.findAllByGrupCodi(grupCodi, convocatoria);
 
-        for(DocumentDto documentDto: documents){
+        for (DocumentDto documentDto : documents) {
             List<DocumentSignaturaDto> documentSignaturaDtos = documentSignaturaService.findByDocument(documentDto);
             documentDto.setDocumentSignatures(new HashSet<>(documentSignaturaDtos));
         }
@@ -1002,13 +1005,13 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @GetMapping("/documents/{id}")
     public ResponseEntity<DocumentDto> getDocumentById(@PathVariable Long id, @RequestParam(required = false) Long idConvocatoria) throws Exception {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
         }
 
-        DocumentDto document = documentService.getDocumentById(id,convocatoria);
+        DocumentDto document = documentService.getDocumentById(id, convocatoria);
         return new ResponseEntity<>(document, HttpStatus.OK);
     }
 
@@ -1028,20 +1031,20 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         Long idUsuari = null;
 
-        if(jsonObject.get("usuari")!=null && !jsonObject.get("usuari").isJsonNull()) {
+        if (jsonObject.get("usuari") != null && !jsonObject.get("usuari").isJsonNull()) {
             JsonObject jsonObjectUsuari = jsonObject.get("usuari").getAsJsonObject();
             idUsuari = jsonObjectUsuari.get("id").getAsLong();
-        } else if(jsonObject.get("idusuari")!=null && !jsonObject.get("idusuari").isJsonNull()){
+        } else if (jsonObject.get("idusuari") != null && !jsonObject.get("idusuari").isJsonNull()) {
             idUsuari = jsonObject.get("idusuari").getAsLong();
         }
 
 
-        File file = googleDriveService.getFileById(idFile,emailUser);
+        File file = googleDriveService.getFileById(idFile, emailUser);
         ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
 
-        DocumentDto document = documentService.getDocumentByOriginalName(originalName,convocatoria);
+        DocumentDto document = documentService.getDocumentByOriginalName(originalName, convocatoria);
 
-        if(document == null){
+        if (document == null) {
             document = new DocumentDto();
             document.setNomOriginal(originalName);
 
@@ -1053,22 +1056,22 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         document.setIdGoogleDrive(file.getId());
         document.setIdDriveGoogleDrive(file.getDriveId());
         document.setPathGoogleDrive(path);
-        if(file.getOwners()!=null && !file.getOwners().isEmpty()) {
+        if (file.getOwners() != null && !file.getOwners().isEmpty()) {
             document.setOwnerGoogleDrive(file.getOwners().get(0).getEmailAddress());
         }
 
         document.setMimeTypeGoogleDrive(file.getMimeType());
 
-        if(file.getCreatedTime()!=null) {
+        if (file.getCreatedTime() != null) {
             document.setCreatedTimeGoogleDrive(file.getCreatedTime().toString());
         }
 
-        if(file.getModifiedTime()!=null) {
+        if (file.getModifiedTime() != null) {
             document.setModifiedTimeGoogleDrive(file.getModifiedTime().toString());
         }
 
         TipusDocumentDto tipusDocumentDto = tipusDocumentService.getTipusDocumentByNom(tipus);
-        if(tipusDocumentDto!=null) {
+        if (tipusDocumentDto != null) {
             document.setTipusDocument(tipusDocumentDto);
             document.setVisibilitat(tipusDocumentDto.getVisibilitatDefecte());
             document.setTraspassat(false);
@@ -1076,11 +1079,11 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
-        DocumentDto documentSaved = documentService.save(document,convocatoria);
+        DocumentDto documentSaved = documentService.save(document, convocatoria);
 
         //Creem les signatures
         Set<SignaturaDto> signatures = documentSaved.getTipusDocument().getSignatures();
-        for(SignaturaDto signatura: signatures){
+        for (SignaturaDto signatura : signatures) {
             DocumentSignaturaDto documentSignaturaDto = new DocumentSignaturaDto();
             documentSignaturaDto.setDocument(documentSaved);
             documentSignaturaDto.setSignatura(signatura);
@@ -1094,7 +1097,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/documents/eliminar-document")
     public ResponseEntity<Notificacio> deleteDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
@@ -1103,7 +1106,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         Long documentId = jsonObject.get("documentId").getAsLong();
         String email = jsonObject.get("email").getAsString();
-        DocumentDto documentDto = documentService.getDocumentById(documentId,convocatoria);
+        DocumentDto documentDto = documentService.getDocumentById(documentId, convocatoria);
 
         if (jsonObject.get("fitxerId") != null) {
             Long fitxerId = jsonObject.get("fitxerId").getAsLong();
@@ -1120,7 +1123,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             googleDriveService.deleteFileById(documentDto.getIdGoogleSharedDrive(), email);
 
         documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
-        documentService.deleteByIdDocument(documentId,convocatoria);
+        documentService.deleteByIdDocument(documentId, convocatoria);
 
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Document eliminat");
@@ -1132,7 +1135,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/documents/eliminar-documents-alumne")
     public ResponseEntity<Notificacio> deleteDocumentsAlumne(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
@@ -1145,14 +1148,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String parentFolderId = jsonObject.get("parentFolderId").getAsString();
 
         for (JsonElement id : documentIds) {
-            DocumentDto documentDto = this.documentService.getDocumentByIdGoogleDrive(id.getAsString(),convocatoria);
+            DocumentDto documentDto = this.documentService.getDocumentByIdGoogleDrive(id.getAsString(), convocatoria);
 
             this.googleDriveService.deleteFileById(id.getAsString(), email);
             this.documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
         }
 
-        Long alumneId = this.documentService.getDocumentByIdGoogleDrive(documentIds.get(0).getAsString(),convocatoria).getIdUsuari();
-        this.documentService.deleteAllByIdUsuari(alumneId,convocatoria);
+        Long alumneId = this.documentService.getDocumentByIdGoogleDrive(documentIds.get(0).getAsString(), convocatoria).getIdUsuari();
+        this.documentService.deleteAllByIdUsuari(alumneId, convocatoria);
 
         this.googleDriveService.deleteFolder(folderName, email, parentFolderId);
 
@@ -1170,7 +1173,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String email = jsonObject.get("email").getAsString();
         String parentFolderId = "root";
 
-        if(jsonObject.get("parentFolderId")!=null && !jsonObject.get("parentFolderId").isJsonNull()) {
+        if (jsonObject.get("parentFolderId") != null && !jsonObject.get("parentFolderId").isJsonNull()) {
             parentFolderId = jsonObject.get("parentFolderId").getAsString();
         }
 
@@ -1179,26 +1182,26 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     @PostMapping("/crear-carpeta")
-    public ResponseEntity<File> createFolder(@RequestBody String json){
+    public ResponseEntity<File> createFolder(@RequestBody String json) {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String folderName = jsonObject.get("folderName").getAsString();
         String email = jsonObject.get("email").getAsString();
 
         String parentFolderId = "root";
-        if(jsonObject.get("parentFolderId")!=null && !jsonObject.get("parentFolderId").isJsonNull()) {
+        if (jsonObject.get("parentFolderId") != null && !jsonObject.get("parentFolderId").isJsonNull()) {
             parentFolderId = jsonObject.get("parentFolderId").getAsString();
         }
 
-        File file = this.googleDriveService.createFolder(folderName,email,parentFolderId);
+        File file = this.googleDriveService.createFolder(folderName, email, parentFolderId);
 
-        if(jsonObject.get("administrators")!=null && !jsonObject.get("administrators").isJsonNull()) {
+        if (jsonObject.get("administrators") != null && !jsonObject.get("administrators").isJsonNull()) {
             JsonArray administrators = jsonObject.get("administrators").getAsJsonArray();
-            for(JsonElement administrador: administrators){
-                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.WRITER, administrador.getAsString(),email);
+            for (JsonElement administrador : administrators) {
+                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.WRITER, administrador.getAsString(), email);
             }
         }
 
-        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull() && !environment.equals("dev")) {
+        if (jsonObject.get("editors") != null && !jsonObject.get("editors").isJsonNull() && !environment.equals("dev")) {
             JsonArray editors = jsonObject.get("editors").getAsJsonArray();
             for (JsonElement editor : editors) {
                 this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.FILE_ORGANIZER, editor.getAsString(), email);
@@ -1209,7 +1212,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     @PostMapping("/copy")
-    public ResponseEntity<File> copyFile(@RequestBody String json){
+    public ResponseEntity<File> copyFile(@RequestBody String json) {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String idFile = jsonObject.get("idFile").getAsString();
         String email = jsonObject.get("email").getAsString();
@@ -1218,37 +1221,37 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         String parentFolderId = "root";
 
-        if(jsonObject.get("parentFolderId")!=null && !jsonObject.get("parentFolderId").isJsonNull()) {
+        if (jsonObject.get("parentFolderId") != null && !jsonObject.get("parentFolderId").isJsonNull()) {
             parentFolderId = jsonObject.get("parentFolderId").getAsString();
         }
 
         //Comprovem si ja existeix
-        System.out.println("nom original: "+originalName);
+        System.out.println("nom original: " + originalName);
         ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
         boolean existDocumentByOriginalName = this.documentService.existDocumentByOriginalName(originalName, convocatoria);
 
-        if(existDocumentByOriginalName){
+        if (existDocumentByOriginalName) {
             return new ResponseEntity<>(null, HttpStatus.OK);
         }
 
         //Si no existeix el copiem
-        File file = this.googleDriveService.getFileById(idFile,email);
+        File file = this.googleDriveService.getFileById(idFile, email);
 
-        if(jsonObject.get("administrators")!=null && !jsonObject.get("administrators").isJsonNull()) {
+        if (jsonObject.get("administrators") != null && !jsonObject.get("administrators").isJsonNull()) {
             JsonArray administrators = jsonObject.get("administrators").getAsJsonArray();
-            for(JsonElement administrador: administrators){
-                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.WRITER, administrador.getAsString(),email);
+            for (JsonElement administrador : administrators) {
+                this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.WRITER, administrador.getAsString(), email);
             }
         }
 
-        if(jsonObject.get("editors")!=null && !jsonObject.get("editors").isJsonNull() && !environment.equals("dev")) {
+        if (jsonObject.get("editors") != null && !jsonObject.get("editors").isJsonNull() && !environment.equals("dev")) {
             JsonArray editors = jsonObject.get("editors").getAsJsonArray();
             for (JsonElement editor : editors) {
                 this.googleDriveService.assignPermission(file, PermissionType.USER, PermissionRole.FILE_ORGANIZER, editor.getAsString(), email);
             }
         }
 
-        File fileCopy = this.googleDriveService.copy(file,email,filename,parentFolderId);
+        File fileCopy = this.googleDriveService.copy(file, email, filename, parentFolderId);
 
         return new ResponseEntity<>(fileCopy, HttpStatus.OK);
     }
@@ -1268,7 +1271,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/document/signar")
     public ResponseEntity<Notificacio> signarDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
@@ -1279,9 +1282,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         Long idSignatura = jsonObject.get("idSignatura").getAsLong();
         boolean signat = jsonObject.get("signat").getAsBoolean();
 
-        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
+        DocumentDto document = documentService.getDocumentById(idDocument, convocatoria);
         SignaturaDto signatura = signaturaService.getSignaturaById(idSignatura);
-        documentSignaturaService.signarDocument(document,signatura,signat);
+        documentSignaturaService.signarDocument(document, signatura, signat);
 
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Document signat correctament");
@@ -1292,7 +1295,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/document/canviarEstatDocument")
     public ResponseEntity<Notificacio> canviarEstatDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
@@ -1302,9 +1305,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         Long idDocument = jsonObject.get("idDocument").getAsLong();
         String estat = jsonObject.get("estat").getAsString();
 
-        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
+        DocumentDto document = documentService.getDocumentById(idDocument, convocatoria);
         document.setEstat(DocumentEstatDto.valueOf(estat));
-        documentService.save(document,convocatoria);
+        documentService.save(document, convocatoria);
 
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Estat canviat correctament");
@@ -1315,7 +1318,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/document/canviarObservacionsDocument")
     public ResponseEntity<Notificacio> canviarObservacionsDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
@@ -1325,9 +1328,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         Long idDocument = jsonObject.get("idDocument").getAsLong();
         String observacions = jsonObject.get("observacions").getAsString();
 
-        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
+        DocumentDto document = documentService.getDocumentById(idDocument, convocatoria);
         document.setObservacions(observacions);
-        documentService.save(document,convocatoria);
+        documentService.save(document, convocatoria);
 
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Observacions desades correctament");
@@ -1339,7 +1342,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/document/canviar-visibilitat-document")
     public ResponseEntity<String> canviarVisibilitatDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
@@ -1349,9 +1352,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         Long idDocument = jsonObject.get("idDocument").getAsLong();
         boolean visibilitat = jsonObject.get("visibilitat").getAsBoolean();
 
-        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
+        DocumentDto document = documentService.getDocumentById(idDocument, convocatoria);
         document.setVisibilitat(visibilitat);
-        documentService.save(document,convocatoria);
+        documentService.save(document, convocatoria);
 
         return new ResponseEntity<>("Canvi fet", HttpStatus.OK);
     }
@@ -1359,7 +1362,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/document/get-url")
     public ResponseEntity<String> getURL(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
@@ -1368,12 +1371,12 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         Long idDocument = jsonObject.get("idFile").getAsLong();
 
-        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
+        DocumentDto document = documentService.getDocumentById(idDocument, convocatoria);
 
         Long idFitxer = document.getIdFitxer();
-        if(idFitxer!=null){
+        if (idFitxer != null) {
             String url = documentService.getURLBucket(idFitxer);
-            if(url != null){
+            if (url != null) {
                 return new ResponseEntity<>(url, HttpStatus.OK);
             }
         }
@@ -1384,13 +1387,13 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     @PostMapping("/document/uploadFile")
     public ResponseEntity<Notificacio> uploadFile(@RequestParam("id") Long idDocument, @RequestParam(required = false) Long idConvocatoria, HttpServletRequest request) throws Exception {
         ConvocatoriaDto convocatoria;
-        if(idConvocatoria!=null){
+        if (idConvocatoria != null) {
             convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
         } else {
             convocatoria = convocatoriaService.findConvocatoriaActual();
         }
 
-        DocumentDto document = documentService.getDocumentById(idDocument,convocatoria);
+        DocumentDto document = documentService.getDocumentById(idDocument, convocatoria);
         Part filePart = request.getPart("arxiu");
 
         InputStream is = filePart.getInputStream();
@@ -1408,7 +1411,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
 
         // Passam l'arxiu a dins una carpeta
-        String pathArxiu = this.tmpPath + "/arxiu-fct-"+document.getIdDocument()+".pdf";
+        String pathArxiu = this.tmpPath + "/arxiu-fct-" + document.getIdDocument() + ".pdf";
 
         OutputStream outputStream = new FileOutputStream(pathArxiu);
         os.writeTo(outputStream);
@@ -1419,7 +1422,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String remotePath = "";
         try {
             byte[] fileContent = Files.readAllBytes(f.toPath());
-            System.out.println("Name: "+f.getName());
+            System.out.println("Name: " + f.getName());
             FileUploadDto fileUploadDTO = new FileUploadDto(f.getName(), fileContent);
             ResponseEntity<String> response = coreRestClient.handleFileUpload2(fileUploadDTO);
             remotePath = response.getBody();
@@ -1428,16 +1431,16 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             //System.out.println(e.getMessage());
         }
 
-        ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal()+".pdf", remotePath, "application/pdf", bucketName);
+        ResponseEntity<FitxerBucketDto> fitxerBucketResponse = coreRestClient.uploadObject(bucketPathFiles + "/fct/" + document.getGrupCodi() + "/" + document.getNomOriginal() + ".pdf", remotePath, "application/pdf", bucketName);
         FitxerBucketDto fitxerBucket = fitxerBucketResponse.getBody();
 
         //Save the file
         ResponseEntity<FitxerBucketDto> fitxerBucketSavedResponse = coreRestClient.save(fitxerBucket);
         FitxerBucketDto fitxerBucketSaved = fitxerBucketSavedResponse.getBody();
 
-        if(fitxerBucketSaved!=null && fitxerBucketSaved.getIdfitxer()!=null) {
+        if (fitxerBucketSaved != null && fitxerBucketSaved.getIdfitxer() != null) {
             document.setIdFitxer(fitxerBucketSaved.getIdfitxer());
-            documentService.save(document,convocatoria);
+            documentService.save(document, convocatoria);
 
             Notificacio notificacio = new Notificacio();
             notificacio.setNotifyMessage("Arxiu pujat amb èxit.");
@@ -1446,10 +1449,54 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             return new ResponseEntity<>(notificacio, HttpStatus.OK);
         }
         Notificacio notificacio = new Notificacio();
-        notificacio.setNotifyMessage("Error pujant el fitxer."+bucketPathFiles + "/fct/"+ document.getGrupCodi()+"/"+ document.getNomOriginal());
+        notificacio.setNotifyMessage("Error pujant el fitxer." + bucketPathFiles + "/fct/" + document.getGrupCodi() + "/" + document.getNomOriginal());
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
 
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @PostMapping("/document/migrarDocumentsGenerals")
+    public ResponseEntity<Notificacio> migrarDocumentsGenerals() throws Exception {
+
+        List<DocumentGeneralDto> docs = documentService.findAllDocumentsGenerals();
+
+        File parentFolder = googleDriveService.getFolder(userPathDocsMigrats, userEmail, "root");
+        System.out.println("parentFolder: " + parentFolder);
+
+        docs.forEach(document -> {
+            System.out.println("Provant d'obtenir document amb id: " + document.getIdGoogleDrive() + " amb nom: " + document.getNomOriginal());
+            File docFile = googleDriveService.getFileById(document.getIdGoogleDrive(), userEmail);
+
+            List<GrupDto> grups = grupService.findAllWithFempo();
+
+            grups.forEach(grup -> {
+                String folderName = grup.getCursGrup() + "_Q_FEMPO";
+                File groupFolder = googleDriveService.getFolder(folderName, userEmail, parentFolder.getId());
+
+                if (groupFolder != null) {
+                    System.out.println("groupFolder: " + groupFolder.getName());
+                    String folderPath = userPathDocsMigrats+"/"+folderName;
+                    String nomDocument = grup.getCursGrup() + "_" + docFile.getName();
+                    try {
+                        List<File> existingFiles = googleDriveService.getFilesInFolder(folderPath,userEmail);
+                        if (!fileAlreadyExist(nomDocument, existingFiles)) {
+                            googleDriveService.copy(docFile,userEmail,nomDocument,groupFolder.getId());
+                        }
+                    } catch (InterruptedException e) {
+                        System.out.println("Error obtenint documents de la carpeta " + folderPath);
+                    }
+                }
+            });
+        });
+
+        Notificacio notificacio = new Notificacio();
+        notificacio.setNotifyMessage("Els documents generals s'han migrat a les carpetes de grup FEMPO");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
+    private boolean fileAlreadyExist(String fileName, List<File> folderFiles) {
+        return folderFiles.stream().anyMatch(folderFile -> folderFile.getName().equals(fileName));
+    }
 }
