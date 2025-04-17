@@ -33,11 +33,23 @@ public @Data class LlocTreball {
     @Column(name = "nom_complet_representant_legal",nullable = true, length = 255)
     private String nomCompletRepresentantLegal;
 
+    @Column(name = "nom_representant_legal",nullable = true, length = 255)
+    private String nomRepresentantLegal;
+
+    @Column(name = "cognoms_representant_legal",nullable = true, length = 255)
+    private String cognomsRepresentantLegal;
+
     @Column(name = "dni_representant_legal",nullable = true, length = 128)
     private String dniRepresentantLegal;
 
     @Column(name = "nom_complet_tutor_empresa",nullable = true, length = 255)
     private String nomCompletTutorEmpresa;
+
+    @Column(name = "nom_tutor_empresa",nullable = true, length = 255)
+    private String nomTutorEmpresa;
+
+    @Column(name = "cognoms_tutor_empresa",nullable = true, length = 255)
+    private String cognomsTutorEmpresa;
 
     @Column(name = "dni_tutor_empresa",nullable = true, length = 128)
     private String dniTutorEmpresa;
