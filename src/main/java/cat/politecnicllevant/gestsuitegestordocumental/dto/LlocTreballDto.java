@@ -12,8 +12,12 @@ public @Data class LlocTreballDto {
     private String poblacio;
     private String activitat;
     private String nomCompletRepresentantLegal;
+    private String nomRepresentantLegal;
+    private String cognomsRepresentantLegal;
     private String dniRepresentantLegal;
     private String nomCompletTutorEmpresa;
+    private String nomTutorEmpresa;
+    private String cognomsTutorEmpresa;
     private String dniTutorEmpresa;
     private String municipi;
     private String carrecTutor;
