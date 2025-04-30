@@ -8,6 +8,7 @@ import java.util.Set;
 public class TipusDocumentDto {
         private Long idTipusDocument;
         private String nom;
+        private String descripcio;
         private Set<SignaturaDto> signatures;
         private TipusDocumentPropietariDto propietari;
         private Boolean visibilitatDefecte;
