@@ -2,7 +2,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.Type;
 
 
 import java.time.LocalDate;
@@ -155,7 +154,7 @@ public @Data class DadesFormulari {
     private String nomRepresentantLegal;
 
     @Column(name = "cognoms_representant_legal", nullable = true, length = 512)
-    private String llinatgesRepresentantLegal;
+    private String cognomsRepresentantLegal;
 
     @Column(name = "nif_representant_legal", nullable = true, length = 64)
     private String nifRepresentantLegal;
@@ -167,7 +166,7 @@ public @Data class DadesFormulari {
     private String nomTutorEmpresa;
 
     @Column(name = "cognoms_tutor_empresa", nullable = true, length = 128)
-    private String llinatgesTutorEmpresa;
+    private String cognomsTutorEmpresa;
 
     @Column(name = "nif_tutor_empresa", nullable = true, length = 64)
     private String nifTutorEmpresa;
