@@ -12,6 +12,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentGenera
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentSignaturaRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
+import cat.politecnicllevant.gestsuitegestordocumental.restclient.OauthRestClient;
 import com.google.api.services.drive.model.File;
 import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class DocumentService {
     private final DocumentGeneralRepository documentGeneralRepository;
 
     public final CoreRestClient coreRestClient;
+    public final OauthRestClient oauthRestClient;
 
     @Value("${public.password}")
     private String publicPassword;
@@ -43,12 +45,14 @@ public class DocumentService {
             DocumentRepository documentRepository,
             DocumentSignaturaRepository documentSignaturaRepository, ConvocatoriaRepository convocatoriaRepository,
             CoreRestClient coreRestClient,
+            OauthRestClient oauthRestClient,
             DocumentGeneralRepository documentGeneralRepository
     ) {
         this.documentRepository = documentRepository;
         this.documentSignaturaRepository = documentSignaturaRepository;
         this.convocatoriaRepository = convocatoriaRepository;
         this.coreRestClient = coreRestClient;
+        this.oauthRestClient = oauthRestClient;
         this.documentGeneralRepository = documentGeneralRepository;
     }
 
@@ -177,7 +181,7 @@ public class DocumentService {
             try {
                 document.setIdUsuari(coreRestClient.getUsuariByEmail(driveFile.getOwners().get(0).getEmailAddress()).getBody().getIdusuari());
             } catch (Exception e) {
-                String token = coreRestClient.getToken(publicPassword).getBody();
+                String token = oauthRestClient.getToken(publicPassword).getBody();
                 document.setIdUsuari(coreRestClient.getUsuariByEmailSystem(driveFile.getOwners().get(0).getEmailAddress(), token).getBody().getIdusuari());
             }
         }

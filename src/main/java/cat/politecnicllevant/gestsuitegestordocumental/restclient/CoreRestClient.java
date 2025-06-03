@@ -40,9 +40,6 @@ public interface CoreRestClient {
     @GetMapping("/usuaris/tutorfct-by-codigrup/{cursgrup}")
     ResponseEntity<List<UsuariDto>> getTutorFCTByCodiGrup(@PathVariable("cursgrup") String cursGrup);
 
-    @PostMapping("/auth/admin/token")
-    ResponseEntity<String> getToken(@RequestBody String password);
-
     //CURS ACADEMIC
     @GetMapping("/cursAcademic/actual")
     public ResponseEntity<CursAcademicDto> getActualCursAcademic();
