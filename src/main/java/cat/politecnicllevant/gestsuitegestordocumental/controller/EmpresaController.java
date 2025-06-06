@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
 
 import io.jsonwebtoken.Claims;
@@ -62,7 +63,7 @@ public class EmpresaController {
             List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(company.getIdEmpresa());
 
             if(llocsTreball != null){
-                company.setLlocsTreball(llocsTreball);
+                company.setLlocsTreball(new HashSet<>(llocsTreball));
             }
         }
         return new ResponseEntity<>(companies,HttpStatus.OK);
@@ -74,7 +75,7 @@ public class EmpresaController {
         EmpresaDto empresa = empresaService.findCompanyById(id);
 
         List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(id);
-        empresa.setLlocsTreball(llocsTreball);
+        empresa.setLlocsTreball(new HashSet<>(llocsTreball));
 
         return new ResponseEntity<>(empresa,HttpStatus.OK);
     }
