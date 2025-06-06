@@ -63,6 +63,12 @@ public @Data class LlocTreball {
     @Column(name = "email",nullable = true, length = 255)
     private String emailTutorEmpresa;
 
+    @Column(name = "validat", nullable = false)
+    private boolean validat;
+
+    @Column(name = "email_creator",nullable = true, length = 255)
+    private String emailCreator;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn( name = "idEmpresa")
     private Empresa empresa;

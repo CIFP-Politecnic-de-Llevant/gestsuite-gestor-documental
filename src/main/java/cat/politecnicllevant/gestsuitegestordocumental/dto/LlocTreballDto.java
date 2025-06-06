@@ -22,5 +22,7 @@ public @Data class LlocTreballDto {
     private String municipi;
     private String carrecTutor;
     private String emailTutorEmpresa;
+    private boolean validat;
+    private String emailCreator;
     private EmpresaDto empresa;
 }

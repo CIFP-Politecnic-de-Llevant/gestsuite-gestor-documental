@@ -16,7 +16,6 @@ public interface LlocTreballRepository extends JpaRepository<LlocTreball,Long> {
 
     void deleteByIdLlocTreball(Long id);
 
-
     boolean existsByEmpresa_IdEmpresa(Long id);
 
 }

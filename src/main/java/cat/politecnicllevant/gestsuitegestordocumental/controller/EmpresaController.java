@@ -6,6 +6,9 @@ import cat.politecnicllevant.gestsuitegestordocumental.dto.EmpresaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.LlocTreballDto;
 import cat.politecnicllevant.gestsuitegestordocumental.service.EmpresaService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.LlocTreballService;
+import cat.politecnicllevant.gestsuitegestordocumental.service.TokenManager;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,19 +16,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import io.jsonwebtoken.Claims;
+
+@RequiredArgsConstructor
 @RestController
 @Slf4j
 public class EmpresaController {
     //EMPRESA
 
     private final EmpresaService empresaService;
-
     private final LlocTreballService llocTreballService;
-
-    public EmpresaController(EmpresaService empresaService, LlocTreballService llocTreballService) {
-        this.empresaService = empresaService;
-        this.llocTreballService = llocTreballService;
-    }
+    private final TokenManager tokenManager;
 
     @PostMapping("/empresa/save-company")
     public ResponseEntity<Notificacio> saveCompany(@RequestBody EmpresaDto empresa){
@@ -97,9 +98,12 @@ public class EmpresaController {
     }
 
     @PostMapping("/empresa/lloc-treball/save-workspace")
-    public ResponseEntity<Notificacio> saveWorkspace(@RequestBody LlocTreballDto llocTreball){
-
+    public ResponseEntity<Notificacio> saveWorkspace(@RequestBody LlocTreballDto llocTreball, HttpServletRequest request){
+        Claims claims = tokenManager.getClaims(request);
+        String myEmail = (String) claims.get("email");
         Notificacio notificacio = new Notificacio();
+
+        llocTreball.setEmailCreator(myEmail);
 
         llocTreballService.save(llocTreball);
 
