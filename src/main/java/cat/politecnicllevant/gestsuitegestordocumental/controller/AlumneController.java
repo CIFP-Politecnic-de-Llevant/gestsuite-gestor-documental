@@ -3,8 +3,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.AlumneDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.CursDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.GrupDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.AlumneService;

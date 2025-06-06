@@ -3,8 +3,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.domain;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
-
 
 @Entity
 @Table(name = "pll_tutor_empresa")
