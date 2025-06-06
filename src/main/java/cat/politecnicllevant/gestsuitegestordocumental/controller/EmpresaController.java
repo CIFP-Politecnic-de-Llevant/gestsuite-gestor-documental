@@ -2,6 +2,7 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
+import cat.politecnicllevant.gestsuitegestordocumental.domain.LlocTreball;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.EmpresaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.LlocTreballDto;
 import cat.politecnicllevant.gestsuitegestordocumental.service.EmpresaService;

@@ -44,13 +44,13 @@ public class LlocTreballService {
 
         llocTreballRepository.deleteByIdLlocTreball(id);
 
-        return !llocTreballRepository.existsById(id) ? true: false;
+        return !llocTreballRepository.existsById(id);
     }
     @Transactional
     public boolean deleteByIdEmpresa(Long id){
 
         llocTreballRepository.deleteAllByEmpresa_IdEmpresa(id);
 
-        return !llocTreballRepository.existsByEmpresa_IdEmpresa(id) ? true: false;
+        return !llocTreballRepository.existsByEmpresa_IdEmpresa(id);
     }
 }
