@@ -9,7 +9,8 @@ public @Data class EmpresaDto {
     private Long idEmpresa;
     private String numeroConveni;
     private String nomRepresentantLegal;
-    private String cognomsRepresentantLegal;
+    private String cognom1RepresentantLegal;
+    private String cognom2RepresentantLegal;
     private String dniRepresentantLegal;
     private String emailEmpresa;
     private String nom;

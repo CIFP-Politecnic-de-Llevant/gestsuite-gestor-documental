@@ -21,8 +21,11 @@ public @Data class Empresa {
     @Column(name = "nom_representant_legal",nullable = true, length = 255)
     private String nomRepresentantLegal;
 
-    @Column(name = "cognoms_representant_legal",nullable = true, length = 255)
-    private String cognomsRepresentantLegal;
+    @Column(name = "cognom1_representant_legal",nullable = true, length = 255)
+    private String cognom1RepresentantLegal;
+
+    @Column(name = "cognom2_representant_legal",nullable = true, length = 255)
+    private String cognom2RepresentantLegal;
 
     @Column(name = "dni_representant_legal",nullable = true, length = 128)
     private String dniRepresentantLegal;
