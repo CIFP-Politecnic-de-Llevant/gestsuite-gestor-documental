@@ -37,6 +37,5 @@ public class DocumentDto {
     //FK
     private TipusDocumentDto tipusDocument;
     private ConvocatoriaDto convocatoria;
-    private Set<DocumentSignaturaDto> documentSignatures;
 
 }
