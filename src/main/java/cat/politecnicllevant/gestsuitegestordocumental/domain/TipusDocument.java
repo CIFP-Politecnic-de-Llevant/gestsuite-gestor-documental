@@ -3,7 +3,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.domain;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Set;
 
 @Data
 @Entity
@@ -26,7 +25,4 @@ public class TipusDocument {
     @Column(name = "propietari", nullable = false)
     @Enumerated(EnumType.STRING)
     private TipusDocumentPropietari propietari;
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Signatura> signatures;
 }

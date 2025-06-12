@@ -10,7 +10,6 @@ import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDt
 import cat.politecnicllevant.gestsuitegestordocumental.repository.ConvocatoriaRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentGeneralRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentRepository;
-import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentSignaturaRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import com.google.api.services.drive.model.File;
 import com.google.gson.JsonObject;
@@ -30,7 +29,6 @@ import java.util.stream.Collectors;
 public class DocumentService {
 
     public final DocumentRepository documentRepository;
-    public final DocumentSignaturaRepository documentSignaturaRepository;
     public final ConvocatoriaRepository convocatoriaRepository;
     private final DocumentGeneralRepository documentGeneralRepository;
 
@@ -41,12 +39,11 @@ public class DocumentService {
 
     public DocumentService(
             DocumentRepository documentRepository,
-            DocumentSignaturaRepository documentSignaturaRepository, ConvocatoriaRepository convocatoriaRepository,
+            ConvocatoriaRepository convocatoriaRepository,
             CoreRestClient coreRestClient,
             DocumentGeneralRepository documentGeneralRepository
     ) {
         this.documentRepository = documentRepository;
-        this.documentSignaturaRepository = documentSignaturaRepository;
         this.convocatoriaRepository = convocatoriaRepository;
         this.coreRestClient = coreRestClient;
         this.documentGeneralRepository = documentGeneralRepository;

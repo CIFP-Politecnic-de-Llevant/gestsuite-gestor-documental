@@ -45,10 +45,6 @@ public class DocumentFCTController {
 
     private final TipusDocumentService tipusDocumentService;
 
-    private final SignaturaService signaturaService;
-
-    private final DocumentSignaturaService documentSignaturaService;
-
     private final Gson gson;
     private final ConvocatoriaService convocatoriaService;
     private final GrupService grupService;
@@ -90,16 +86,12 @@ public class DocumentFCTController {
             CoreRestClient coreRestClient,
             DocumentService documentService,
             TipusDocumentService tipusDocumentService,
-            SignaturaService signaturaService,
-            DocumentSignaturaService documentSignaturaService,
             Gson gson,
             ConvocatoriaService convocatoriaService, GrupService grupService) {
         this.googleDriveService = googleDriveService;
         this.coreRestClient = coreRestClient;
         this.documentService = documentService;
         this.tipusDocumentService = tipusDocumentService;
-        this.signaturaService = signaturaService;
-        this.documentSignaturaService = documentSignaturaService;
         this.gson = gson;
         this.convocatoriaService = convocatoriaService;
         this.grupService = grupService;
@@ -165,7 +157,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
                 if (document == null) {
                     document = documentService.getDocumentByGoogleDriveFile(driveFile, convocatoria);
-                    document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
+                    document.setEstat(DocumentEstatDto.PENDENT);
 
                     documents.add(document);
                 }
@@ -514,7 +506,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
             if (document == null) {
                 document = documentService.getDocumentByGoogleDriveFile(driveFile, convocatoria);
-                document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
+                document.setEstat(DocumentEstatDto.PENDENT);
 
                 documents.add(document);
             }
@@ -843,7 +835,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         document.setGrupCodi(curs);
 
         if (document.getEstat() == null) {
-            document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
+            document.setEstat(DocumentEstatDto.PENDENT);
         }
         if (document.getPathGoogleDrive() == null) {
             document.setPathGoogleDrive("");
@@ -996,11 +988,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         List<DocumentDto> documents = documentService.findAllByGrupCodi(grupCodi, convocatoria);
 
-        for (DocumentDto documentDto : documents) {
-            List<DocumentSignaturaDto> documentSignaturaDtos = documentSignaturaService.findByDocument(documentDto);
-            documentDto.setDocumentSignatures(new HashSet<>(documentSignaturaDtos));
-        }
-
         return new ResponseEntity<>(documents, HttpStatus.OK);
     }
 
@@ -1081,18 +1068,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
+        document.setEstat(DocumentEstatDto.PENDENT);
         DocumentDto documentSaved = documentService.save(document, convocatoria);
-
-        //Creem les signatures
-        Set<SignaturaDto> signatures = documentSaved.getTipusDocument().getSignatures();
-        for (SignaturaDto signatura : signatures) {
-            DocumentSignaturaDto documentSignaturaDto = new DocumentSignaturaDto();
-            documentSignaturaDto.setDocument(documentSaved);
-            documentSignaturaDto.setSignatura(signatura);
-            documentSignaturaDto.setSignat(false);
-            documentSignaturaService.save(documentSignaturaDto);
-        }
 
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
     }
@@ -1125,7 +1102,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         if (documentDto.getIdGoogleSharedDrive() != null)
             googleDriveService.deleteFileById(documentDto.getIdGoogleSharedDrive(), email);
 
-        documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
         documentService.deleteByIdDocument(documentId, convocatoria);
 
         Notificacio notificacio = new Notificacio();
@@ -1154,7 +1130,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             DocumentDto documentDto = this.documentService.getDocumentByIdGoogleDrive(id.getAsString(), convocatoria);
 
             this.googleDriveService.deleteFileById(id.getAsString(), email);
-            this.documentSignaturaService.deleteSignaturaByDocumentIdDocument(documentDto);
         }
 
         Long alumneId = this.documentService.getDocumentByIdGoogleDrive(documentIds.get(0).getAsString(), convocatoria).getIdUsuari();
@@ -1263,36 +1238,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     public ResponseEntity<List<TipusDocumentDto>> getTipusDocumentList() throws Exception {
         List<TipusDocumentDto> tipusDocumentList = tipusDocumentService.findAll();
         return new ResponseEntity<>(tipusDocumentList, HttpStatus.OK);
-    }
-
-    @GetMapping("/signatura/list")
-    public ResponseEntity<List<SignaturaDto>> getSignaturaList() throws Exception {
-        List<SignaturaDto> signatures = signaturaService.findAll();
-        return new ResponseEntity<>(signatures, HttpStatus.OK);
-    }
-
-    @PostMapping("/document/signar")
-    public ResponseEntity<Notificacio> signarDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
-        ConvocatoriaDto convocatoria;
-        if (idConvocatoria != null) {
-            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
-        } else {
-            convocatoria = convocatoriaService.findConvocatoriaActual();
-        }
-
-        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
-        Long idDocument = jsonObject.get("idDocument").getAsLong();
-        Long idSignatura = jsonObject.get("idSignatura").getAsLong();
-        boolean signat = jsonObject.get("signat").getAsBoolean();
-
-        DocumentDto document = documentService.getDocumentById(idDocument, convocatoria);
-        SignaturaDto signatura = signaturaService.getSignaturaById(idSignatura);
-        documentSignaturaService.signarDocument(document, signatura, signat);
-
-        Notificacio notificacio = new Notificacio();
-        notificacio.setNotifyMessage("Document signat correctament");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
 
     @PostMapping("/document/canviarEstatDocument")
@@ -1443,6 +1388,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         if (fitxerBucketSaved != null && fitxerBucketSaved.getIdfitxer() != null) {
             document.setIdFitxer(fitxerBucketSaved.getIdfitxer());
+            document.setEstat(DocumentEstatDto.PENDENT);
             documentService.save(document, convocatoria);
 
             Notificacio notificacio = new Notificacio();
