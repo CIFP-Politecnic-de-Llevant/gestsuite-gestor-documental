@@ -4,9 +4,11 @@ import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.EmpresaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.LlocTreballDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.TutorEmpresaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.service.EmpresaService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.LlocTreballService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.TokenManager;
+import cat.politecnicllevant.gestsuitegestordocumental.service.TutorEmpresaService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class EmpresaController {
 
     private final EmpresaService empresaService;
     private final LlocTreballService llocTreballService;
+    private final TutorEmpresaService tutorEmpresaService;
     private final TokenManager tokenManager;
 
     @PostMapping("/empresa/save-company")
@@ -97,6 +100,8 @@ public class EmpresaController {
         }
     }
 
+    // LLOCS DE TREBALL
+
     @PostMapping("/empresa/lloc-treball/save-workspace")
     public ResponseEntity<Notificacio> saveWorkspace(@RequestBody LlocTreballDto llocTreball, HttpServletRequest request){
         Claims claims = tokenManager.getClaims(request);
@@ -136,7 +141,50 @@ public class EmpresaController {
             notificacio.setNotifyType(NotificacioTipus.SUCCESS);
             return new ResponseEntity<>(notificacio, HttpStatus.OK);
         }else {
-            notificacio.setNotifyMessage("Aquest llod de treball no s'ha pogut eliminar");
+            notificacio.setNotifyMessage("El lloc de treball no s'ha pogut eliminar");
+            notificacio.setNotifyType(NotificacioTipus.ERROR);
+            return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    // TUTORS D'EMPRESA
+    @PostMapping("/empresa/tutor-empresa/save-tutor")
+    public ResponseEntity<Notificacio> saveTutorEmpresa(@RequestBody TutorEmpresaDto tutorEmpresa){
+        Notificacio notificacio = new Notificacio();
+
+        tutorEmpresaService.save(tutorEmpresa);
+
+        notificacio.setNotifyMessage("Tutor d'empresa creat correctament");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
+    @PostMapping("/empresa/tutor-empresa/update-tutor")
+    public ResponseEntity<Notificacio> updateTutorEmpresa(@RequestBody TutorEmpresaDto tutorEmpresa){
+
+        Notificacio notificacio = new Notificacio();
+
+        System.out.println(tutorEmpresa);
+        tutorEmpresaService.save(tutorEmpresa);
+
+        notificacio.setNotifyMessage("Tutor d'empresa actualitzat correctament");
+        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+    }
+
+    @GetMapping("/empresa/tutor-empresa/delete/{id}")
+    public ResponseEntity<Notificacio> deleteTutorEmpresa(@PathVariable Long id){
+
+        boolean eliminado = tutorEmpresaService.deleteById(id);
+        Notificacio notificacio = new Notificacio();
+
+
+        if(eliminado) {
+            notificacio.setNotifyMessage("Tutor d'empresa eliminat correctament");
+            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+            return new ResponseEntity<>(notificacio, HttpStatus.OK);
+        }else {
+            notificacio.setNotifyMessage("El tutor d'empresa no s'ha pogut eliminar");
             notificacio.setNotifyType(NotificacioTipus.ERROR);
             return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
         }
