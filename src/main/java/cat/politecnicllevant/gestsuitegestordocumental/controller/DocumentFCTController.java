@@ -157,7 +157,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
                 if (document == null) {
                     document = documentService.getDocumentByGoogleDriveFile(driveFile, convocatoria);
-                    document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
+                    document.setEstat(DocumentEstatDto.PENDENT);
 
                     documents.add(document);
                 }
@@ -506,7 +506,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
             if (document == null) {
                 document = documentService.getDocumentByGoogleDriveFile(driveFile, convocatoria);
-                document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
+                document.setEstat(DocumentEstatDto.PENDENT);
 
                 documents.add(document);
             }
@@ -835,7 +835,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         document.setGrupCodi(curs);
 
         if (document.getEstat() == null) {
-            document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
+            document.setEstat(DocumentEstatDto.PENDENT);
         }
         if (document.getPathGoogleDrive() == null) {
             document.setPathGoogleDrive("");
@@ -1068,7 +1068,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        document.setEstat(DocumentEstatDto.PENDENT_SIGNATURES);
+        document.setEstat(DocumentEstatDto.PENDENT);
         DocumentDto documentSaved = documentService.save(document, convocatoria);
 
         return new ResponseEntity<>(documentSaved, HttpStatus.OK);
@@ -1388,6 +1388,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         if (fitxerBucketSaved != null && fitxerBucketSaved.getIdfitxer() != null) {
             document.setIdFitxer(fitxerBucketSaved.getIdfitxer());
+            document.setEstat(DocumentEstatDto.PENDENT);
             documentService.save(document, convocatoria);
 
             Notificacio notificacio = new Notificacio();
