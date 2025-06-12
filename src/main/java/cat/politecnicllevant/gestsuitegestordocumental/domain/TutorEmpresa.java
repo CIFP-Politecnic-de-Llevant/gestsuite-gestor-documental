@@ -1,5 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -36,6 +37,7 @@ public @Data class TutorEmpresa {
     @Column(name = "carrec",nullable = true, length = 128)
     private String carrec;
 
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn( name = "idEmpresa")
     private Empresa empresa;

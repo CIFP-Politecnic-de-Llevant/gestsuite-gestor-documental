@@ -1,5 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -39,6 +40,7 @@ public @Data class LlocTreball {
     @Column(name = "email_creator",nullable = true, length = 255)
     private String emailCreator;
 
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn( name = "idEmpresa")
     private Empresa empresa;
