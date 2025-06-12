@@ -66,6 +66,11 @@ public class EmpresaController {
             if(llocsTreball != null){
                 company.setLlocsTreball(new HashSet<>(llocsTreball));
             }
+
+            List<TutorEmpresaDto> tutorsEmpresa = tutorEmpresaService.finaAllWorkspabeByIdCompany(company.getIdEmpresa());
+            if(tutorsEmpresa != null){
+                company.setTutorsEmpresa(new HashSet<>(tutorsEmpresa));
+            }
         }
         return new ResponseEntity<>(companies,HttpStatus.OK);
     }
@@ -78,6 +83,9 @@ public class EmpresaController {
         List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(id);
         empresa.setLlocsTreball(new HashSet<>(llocsTreball));
 
+        List<TutorEmpresaDto> tutorsEmpresa = tutorEmpresaService.finaAllWorkspabeByIdCompany(id);
+        empresa.setTutorsEmpresa(new HashSet<>(tutorsEmpresa));
+
         return new ResponseEntity<>(empresa,HttpStatus.OK);
     }
 
@@ -85,11 +93,13 @@ public class EmpresaController {
     public ResponseEntity<Notificacio> deleteCompany(@PathVariable Long id){
 
         llocTreballService.deleteByIdEmpresa(id);
-        boolean eliminado = empresaService.delete(id);
+        tutorEmpresaService.deleteByIdEmpresa(id);
+
+        boolean empresaEliminada = empresaService.delete(id);
+
         Notificacio notificacio = new Notificacio();
 
-
-        if(eliminado) {
+        if(empresaEliminada) {
             notificacio.setNotifyMessage("Empresa eliminada correctament");
             notificacio.setNotifyType(NotificacioTipus.SUCCESS);
             return new ResponseEntity<>(notificacio, HttpStatus.OK);
