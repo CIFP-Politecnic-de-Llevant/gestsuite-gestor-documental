@@ -37,6 +37,12 @@ public @Data class TutorEmpresa {
     @Column(name = "carrec",nullable = true, length = 128)
     private String carrec;
 
+    @Column(name = "validat", nullable = false)
+    private boolean validat;
+
+    @Column(name = "email_creator",nullable = true, length = 255)
+    private String emailCreator;
+
     @JsonBackReference
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn( name = "idEmpresa")

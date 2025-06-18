@@ -12,5 +12,7 @@ public @Data class TutorEmpresaDto {
     private String telefon;
     private String email;
     private String carrec;
+    private boolean validat;
+    private String emailCreator;
     private EmpresaDto empresa;
 }
