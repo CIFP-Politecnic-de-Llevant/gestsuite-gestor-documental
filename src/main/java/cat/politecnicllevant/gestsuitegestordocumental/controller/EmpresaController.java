@@ -2,9 +2,8 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.EmpresaDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.LlocTreballDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.TutorEmpresaDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
+import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.EmpresaService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.LlocTreballService;
 import cat.politecnicllevant.gestsuitegestordocumental.service.TokenManager;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @RestController
@@ -29,6 +29,7 @@ public class EmpresaController {
     private final EmpresaService empresaService;
     private final LlocTreballService llocTreballService;
     private final TutorEmpresaService tutorEmpresaService;
+    public final CoreRestClient coreRestClient;
     private final TokenManager tokenManager;
 
     @PostMapping("/empresa/save-company")
@@ -111,14 +112,26 @@ public class EmpresaController {
     }
 
     // LLOCS DE TREBALL
-
     @PostMapping("/empresa/lloc-treball/save-workspace")
-    public ResponseEntity<Notificacio> saveWorkspace(@RequestBody LlocTreballDto llocTreball, HttpServletRequest request){
+    public ResponseEntity<Notificacio> saveWorkspace(@RequestBody LlocTreballDto llocTreball, HttpServletRequest request) throws Exception {
         Claims claims = tokenManager.getClaims(request);
         String myEmail = (String) claims.get("email");
         Notificacio notificacio = new Notificacio();
 
         llocTreball.setEmailCreator(myEmail);
+
+        ResponseEntity<UsuariDto> usuariResponse = coreRestClient.getUsuariByEmail(myEmail);
+        UsuariDto usuariDto = usuariResponse.getBody();
+
+        if (usuariDto == null) {
+            notificacio.setNotifyMessage("Usuari no trobat");
+            notificacio.setNotifyType(NotificacioTipus.ERROR);
+            return new ResponseEntity<>(notificacio, HttpStatus.NOT_FOUND);
+        }
+
+        Set<RolDto> rolsUsuari = usuariDto.getRols();
+        llocTreball.setValidat(rolsUsuari.contains(RolDto.ADMINISTRADOR) || rolsUsuari.contains(RolDto.ADMINISTRADOR_FCT));
+
 
         llocTreballService.save(llocTreball);
 
@@ -159,8 +172,24 @@ public class EmpresaController {
 
     // TUTORS D'EMPRESA
     @PostMapping("/empresa/tutor-empresa/save-tutor")
-    public ResponseEntity<Notificacio> saveTutorEmpresa(@RequestBody TutorEmpresaDto tutorEmpresa){
+    public ResponseEntity<Notificacio> saveTutorEmpresa(@RequestBody TutorEmpresaDto tutorEmpresa, HttpServletRequest request) throws Exception {
+        Claims claims = tokenManager.getClaims(request);
+        String myEmail = (String) claims.get("email");
         Notificacio notificacio = new Notificacio();
+
+        tutorEmpresa.setEmailCreator(myEmail);
+
+        ResponseEntity<UsuariDto> usuariResponse = coreRestClient.getUsuariByEmail(myEmail);
+        UsuariDto usuariDto = usuariResponse.getBody();
+
+        if (usuariDto == null) {
+            notificacio.setNotifyMessage("Usuari no trobat");
+            notificacio.setNotifyType(NotificacioTipus.ERROR);
+            return new ResponseEntity<>(notificacio, HttpStatus.NOT_FOUND);
+        }
+
+        Set<RolDto> rolsUsuari = usuariDto.getRols();
+        tutorEmpresa.setValidat(rolsUsuari.contains(RolDto.ADMINISTRADOR) || rolsUsuari.contains(RolDto.ADMINISTRADOR_FCT));
 
         tutorEmpresaService.save(tutorEmpresa);
 
