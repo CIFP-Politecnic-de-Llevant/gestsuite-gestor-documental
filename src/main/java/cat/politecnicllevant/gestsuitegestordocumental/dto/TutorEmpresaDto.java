@@ -1,6 +1,7 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -20,6 +21,6 @@ public class TutorEmpresaDto {
     private String carrec;
     private boolean validat;
     private String emailCreator;
-    @JsonBackReference
+    @JsonManagedReference
     private EmpresaDto empresa;
 }

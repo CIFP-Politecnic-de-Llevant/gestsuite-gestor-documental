@@ -1,5 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,8 +27,8 @@ public class EmpresaDto {
     private String poblacio;
     private String provincia;
     private String telefon;
-    @JsonManagedReference
+    @JsonBackReference
     private Set<LlocTreballDto> llocsTreball = new HashSet<>();
-    @JsonManagedReference
+    @JsonBackReference
     private Set<TutorEmpresaDto> tutorsEmpresa = new HashSet<>();
 }

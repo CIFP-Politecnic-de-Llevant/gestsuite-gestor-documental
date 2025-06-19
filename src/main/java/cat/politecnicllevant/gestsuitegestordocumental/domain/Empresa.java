@@ -1,5 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -60,11 +61,11 @@ public class Empresa {
     @Column(name = "telefon",nullable = true, length = 128)
     private String telefon;
 
-    @JsonManagedReference
+    @JsonBackReference
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "empresa")
     private Set<LlocTreball> llocsTreball = new HashSet<>();
 
-    @JsonManagedReference
+    @JsonBackReference
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "empresa")
     private Set<TutorEmpresa> tutorsEmpresa = new HashSet<>();
 
