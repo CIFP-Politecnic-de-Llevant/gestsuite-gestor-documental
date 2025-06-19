@@ -1,5 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -19,5 +20,6 @@ public class LlocTreballDto {
     private String municipi;
     private boolean validat;
     private String emailCreator;
+    @JsonBackReference
     private EmpresaDto empresa;
 }
