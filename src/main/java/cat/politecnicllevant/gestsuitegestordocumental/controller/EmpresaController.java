@@ -118,8 +118,6 @@ public class EmpresaController {
         String myEmail = (String) claims.get("email");
         Notificacio notificacio = new Notificacio();
 
-        llocTreball.setEmailCreator(myEmail);
-
         ResponseEntity<UsuariDto> usuariResponse = coreRestClient.getUsuariByEmail(myEmail);
         UsuariDto usuariDto = usuariResponse.getBody();
 
@@ -131,6 +129,7 @@ public class EmpresaController {
 
         Set<RolDto> rolsUsuari = usuariDto.getRols();
         llocTreball.setValidat(rolsUsuari.contains(RolDto.ADMINISTRADOR) || rolsUsuari.contains(RolDto.ADMINISTRADOR_FCT));
+        llocTreball.setEmailCreator(myEmail);
 
 
         llocTreballService.save(llocTreball);
