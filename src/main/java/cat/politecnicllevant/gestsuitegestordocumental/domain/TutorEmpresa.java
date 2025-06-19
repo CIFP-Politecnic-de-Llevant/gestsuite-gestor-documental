@@ -3,11 +3,16 @@ package cat.politecnicllevant.gestsuitegestordocumental.domain;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 
 @Entity
 @Table(name = "pll_tutor_empresa")
-public @Data class TutorEmpresa {
+@Data
+@EqualsAndHashCode(exclude = "empresa")
+@ToString(exclude = {"empresa"})
+public class TutorEmpresa {
     @Id
     @Column( name = "idTutorEmpresa")
     @GeneratedValue(strategy = GenerationType.IDENTITY)

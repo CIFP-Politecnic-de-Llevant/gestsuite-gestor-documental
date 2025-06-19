@@ -3,10 +3,15 @@ package cat.politecnicllevant.gestsuitegestordocumental.domain;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Table(name = "pll_lloc_treball")
-public @Data class LlocTreball {
+@Data
+@EqualsAndHashCode(exclude = {"empresa"})
+@ToString(exclude = {"empresa"})
+public class LlocTreball {
 
     @Id
     @Column(name = "idLlocEmpresa")

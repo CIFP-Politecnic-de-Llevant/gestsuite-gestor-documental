@@ -203,7 +203,12 @@ public class EmpresaController {
 
         Notificacio notificacio = new Notificacio();
 
-        System.out.println(tutorEmpresa);
+        TutorEmpresaDto tutorEmrpesaDtoOld = tutorEmpresaService.findTutorById(tutorEmpresa.getIdTutorEmpresa());
+
+        // Map old values to new tutorEmpresaDto
+        tutorEmpresa.setEmailCreator(tutorEmrpesaDtoOld.getEmailCreator());
+        tutorEmpresa.setValidat(tutorEmrpesaDtoOld.isValidat());
+
         tutorEmpresaService.save(tutorEmpresa);
 
         notificacio.setNotifyMessage("Tutor d'empresa actualitzat correctament");

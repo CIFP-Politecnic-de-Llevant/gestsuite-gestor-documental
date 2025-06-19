@@ -1,8 +1,13 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-public @Data class TutorEmpresaDto {
+@Data
+@EqualsAndHashCode(exclude = "empresa")
+@ToString(exclude = "empresa")
+public class TutorEmpresaDto {
     private Long idTutorEmpresa;
     private String nom;
     private String cognom1;

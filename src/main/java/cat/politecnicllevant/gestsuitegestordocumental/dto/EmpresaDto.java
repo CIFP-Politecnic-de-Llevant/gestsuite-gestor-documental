@@ -1,11 +1,16 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public @Data class EmpresaDto {
+@Data
+@EqualsAndHashCode(exclude = {"llocsTreball", "tutorsEmpresa"})
+@ToString(exclude = {"llocsTreball", "tutorsEmpresa"})
+public class EmpresaDto {
     private Long idEmpresa;
     private String numeroConveni;
     private String nomRepresentantLegal;

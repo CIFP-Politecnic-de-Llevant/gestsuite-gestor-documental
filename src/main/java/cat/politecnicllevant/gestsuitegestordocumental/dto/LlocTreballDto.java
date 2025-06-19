@@ -1,8 +1,13 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-public @Data class LlocTreballDto {
+@Data
+@EqualsAndHashCode(exclude = "empresa")
+@ToString(exclude = "empresa")
+public class LlocTreballDto {
 
     private Long idLlocTreball;
     private String nom;

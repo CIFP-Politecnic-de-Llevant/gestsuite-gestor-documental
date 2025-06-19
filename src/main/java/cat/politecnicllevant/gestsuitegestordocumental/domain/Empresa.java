@@ -2,13 +2,18 @@ package cat.politecnicllevant.gestsuitegestordocumental.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "pll_empresa")
-public @Data class Empresa {
+@Data
+@EqualsAndHashCode(exclude = {"llocsTreball", "tutorsEmpresa"})
+@ToString(exclude = {"llocsTreball", "tutorsEmpresa"})
+public class Empresa {
 
     @Id
     @Column(name = "idEmpresa")

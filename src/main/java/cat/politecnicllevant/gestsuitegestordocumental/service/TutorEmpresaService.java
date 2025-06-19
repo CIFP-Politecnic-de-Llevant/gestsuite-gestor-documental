@@ -20,6 +20,13 @@ public class TutorEmpresaService {
         ModelMapper modelMapper = new ModelMapper();
         return tutorEmpresaRepository.findAll().stream().map(t -> modelMapper.map(t, TutorEmpresaDto.class)).collect(Collectors.toList());
     }
+
+    public TutorEmpresaDto findTutorById(Long id){
+        ModelMapper modelMapper =  new ModelMapper();
+        TutorEmpresa t = tutorEmpresaRepository.findById(id).orElse(null);
+
+        return modelMapper.map(t, TutorEmpresaDto.class);
+    }
     
     public TutorEmpresaDto save(TutorEmpresaDto tutorEmpresa){
 
