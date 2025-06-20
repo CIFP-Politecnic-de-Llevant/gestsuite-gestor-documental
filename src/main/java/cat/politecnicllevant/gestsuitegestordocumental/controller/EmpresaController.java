@@ -114,7 +114,6 @@ public class EmpresaController {
     // LLOCS DE TREBALL
     @GetMapping("/empresa/lloc-treball/all-workspaces/{idEmpresa}")
     public ResponseEntity<List<LlocTreballDto>> getWorkspacesByCompany(@PathVariable Long idEmpresa){
-
         List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(idEmpresa);
 
         if(llocsTreball == null || llocsTreball.isEmpty()){
@@ -143,13 +142,13 @@ public class EmpresaController {
         llocTreball.setValidat(rolsUsuari.contains(RolDto.ADMINISTRADOR) || rolsUsuari.contains(RolDto.ADMINISTRADOR_FCT));
         llocTreball.setEmailCreator(myEmail);
 
-
         llocTreballService.save(llocTreball);
 
         notificacio.setNotifyMessage("Lloc de treball creat");
         notificacio.setNotifyType(NotificacioTipus.SUCCESS);
         return new ResponseEntity<>(notificacio, HttpStatus.OK);
     }
+
     @PostMapping("/empresa/lloc-treball/update-workspace")
     public ResponseEntity<Notificacio> updateWorkspace(@RequestBody LlocTreballDto llocTreball){
 
