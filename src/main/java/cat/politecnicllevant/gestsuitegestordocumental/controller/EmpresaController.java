@@ -112,6 +112,18 @@ public class EmpresaController {
     }
 
     // LLOCS DE TREBALL
+    @GetMapping("/empresa/lloc-treball/all-workspaces/{idEmpresa}")
+    public ResponseEntity<List<LlocTreballDto>> getWorkspacesByCompany(@PathVariable Long idEmpresa){
+
+        List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(idEmpresa);
+
+        if(llocsTreball == null || llocsTreball.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(llocsTreball,HttpStatus.OK);
+    }
+
     @PostMapping("/empresa/lloc-treball/save-workspace")
     public ResponseEntity<Notificacio> saveWorkspace(@RequestBody LlocTreballDto llocTreball, HttpServletRequest request) throws Exception {
         Claims claims = tokenManager.getClaims(request);
@@ -170,6 +182,18 @@ public class EmpresaController {
     }
 
     // TUTORS D'EMPRESA
+    @GetMapping("/empresa/tutor-empresa/all-tutors/{idEmpresa}")
+    public ResponseEntity<List<TutorEmpresaDto>> getTutorsByCompany(@PathVariable Long idEmpresa){
+
+        List<TutorEmpresaDto> tutorsEmpresa = tutorEmpresaService.finaAllWorkspabeByIdCompany(idEmpresa);
+
+        if(tutorsEmpresa == null || tutorsEmpresa.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(tutorsEmpresa,HttpStatus.OK);
+    }
+
     @PostMapping("/empresa/tutor-empresa/save-tutor")
     public ResponseEntity<Notificacio> saveTutorEmpresa(@RequestBody TutorEmpresaDto tutorEmpresa, HttpServletRequest request) throws Exception {
         Claims claims = tokenManager.getClaims(request);
