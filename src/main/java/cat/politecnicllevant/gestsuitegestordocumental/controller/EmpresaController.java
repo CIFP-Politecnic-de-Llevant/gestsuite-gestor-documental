@@ -169,7 +169,6 @@ public class EmpresaController {
         boolean eliminado = llocTreballService.deleteById(id);
         Notificacio notificacio = new Notificacio();
 
-
         if(eliminado) {
             notificacio.setNotifyMessage("Lloc de treball eliminat correctament");
             notificacio.setNotifyType(NotificacioTipus.SUCCESS);
