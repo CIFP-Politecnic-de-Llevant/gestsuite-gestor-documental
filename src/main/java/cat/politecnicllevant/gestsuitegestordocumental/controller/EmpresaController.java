@@ -56,19 +56,20 @@ public class EmpresaController {
     }
 
     @GetMapping("/empresa/all-companies")
-    public ResponseEntity<List<EmpresaDto>> allCompanies(){
+    public ResponseEntity<List<EmpresaDto>> allCompanies(HttpServletRequest request) throws Exception {
+
+        UsuariDto usuari = getUsuariFromRequest(request);
 
         List<EmpresaDto> companies = empresaService.findAll();
 
         for (EmpresaDto company:companies){
 
-            List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(company.getIdEmpresa());
-
+            List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspaceByIdCompany(company.getIdEmpresa(), usuari);
             if(llocsTreball != null){
                 company.setLlocsTreball(new HashSet<>(llocsTreball));
             }
 
-            List<TutorEmpresaDto> tutorsEmpresa = tutorEmpresaService.finaAllWorkspabeByIdCompany(company.getIdEmpresa());
+            List<TutorEmpresaDto> tutorsEmpresa = tutorEmpresaService.finaAllTutorEmpresaByIdCompany(company.getIdEmpresa(), usuari);
             if(tutorsEmpresa != null){
                 company.setTutorsEmpresa(new HashSet<>(tutorsEmpresa));
             }
@@ -77,15 +78,21 @@ public class EmpresaController {
     }
 
     @PostMapping("/empresa/company/{id}")
-    public ResponseEntity<EmpresaDto> getCompany(@PathVariable Long id){
+    public ResponseEntity<EmpresaDto> getCompany(@PathVariable Long id, HttpServletRequest request) throws Exception {
+
+        UsuariDto usuari = getUsuariFromRequest(request);
 
         EmpresaDto empresa = empresaService.findCompanyById(id);
 
-        List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(id);
-        empresa.setLlocsTreball(new HashSet<>(llocsTreball));
+        List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspaceByIdCompany(empresa.getIdEmpresa(), usuari);
+        if(llocsTreball != null){
+            empresa.setLlocsTreball(new HashSet<>(llocsTreball));
+        }
 
-        List<TutorEmpresaDto> tutorsEmpresa = tutorEmpresaService.finaAllWorkspabeByIdCompany(id);
-        empresa.setTutorsEmpresa(new HashSet<>(tutorsEmpresa));
+        List<TutorEmpresaDto> tutorsEmpresa = tutorEmpresaService.finaAllTutorEmpresaByIdCompany(empresa.getIdEmpresa(), usuari);
+        if(tutorsEmpresa != null){
+            empresa.setTutorsEmpresa(new HashSet<>(tutorsEmpresa));
+        }
 
         return new ResponseEntity<>(empresa,HttpStatus.OK);
     }
@@ -113,8 +120,8 @@ public class EmpresaController {
 
     // LLOCS DE TREBALL
     @GetMapping("/empresa/lloc-treball/all-workspaces/{idEmpresa}")
-    public ResponseEntity<List<LlocTreballDto>> getWorkspacesByCompany(@PathVariable Long idEmpresa){
-        List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspabeByIdCompany(idEmpresa);
+    public ResponseEntity<?> getWorkspacesByCompany(@PathVariable Long idEmpresa, HttpServletRequest request) throws Exception {
+        List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspaceByIdCompany(idEmpresa, getUsuariFromRequest(request));
 
         if(llocsTreball == null || llocsTreball.isEmpty()){
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -181,9 +188,9 @@ public class EmpresaController {
 
     // TUTORS D'EMPRESA
     @GetMapping("/empresa/tutor-empresa/all-tutors/{idEmpresa}")
-    public ResponseEntity<List<TutorEmpresaDto>> getTutorsByCompany(@PathVariable Long idEmpresa){
+    public ResponseEntity<List<TutorEmpresaDto>> getTutorsByCompany(@PathVariable Long idEmpresa, HttpServletRequest request) throws Exception {
 
-        List<TutorEmpresaDto> tutorsEmpresa = tutorEmpresaService.finaAllWorkspabeByIdCompany(idEmpresa);
+        List<TutorEmpresaDto> tutorsEmpresa = tutorEmpresaService.finaAllTutorEmpresaByIdCompany(idEmpresa, getUsuariFromRequest(request));
 
         if(tutorsEmpresa == null || tutorsEmpresa.isEmpty()){
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -253,5 +260,16 @@ public class EmpresaController {
             notificacio.setNotifyType(NotificacioTipus.ERROR);
             return new ResponseEntity<>(notificacio,HttpStatus.NOT_ACCEPTABLE);
         }
+    }
+
+    private UsuariDto getUsuariFromRequest(HttpServletRequest request) throws Exception {
+        Claims claims = tokenManager.getClaims(request);
+        String myEmail = (String) claims.get("email");
+        ResponseEntity<UsuariDto> usuariResponse = coreRestClient.getUsuariByEmail(myEmail);
+        UsuariDto usuariDto = usuariResponse.getBody();
+        if (usuariDto == null) {
+            throw new Exception("Usuari no trobat");
+        }
+        return usuariDto;
     }
 }

@@ -21,6 +21,6 @@ public class TutorEmpresaDto {
     private String carrec;
     private boolean validat;
     private String emailCreator;
-    @JsonManagedReference
+    @JsonBackReference
     private EmpresaDto empresa;
 }

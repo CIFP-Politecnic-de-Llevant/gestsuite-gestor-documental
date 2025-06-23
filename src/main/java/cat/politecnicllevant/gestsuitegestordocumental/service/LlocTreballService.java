@@ -3,6 +3,8 @@ package cat.politecnicllevant.gestsuitegestordocumental.service;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.LlocTreball;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.LlocTreballDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.RolDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.LlocTreballRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -33,10 +35,15 @@ public class LlocTreballService {
 
         return modelMapper.map(llocTreballSaved,LlocTreballDto.class);
     }
-    public List<LlocTreballDto> finaAllWorkspabeByIdCompany(Long id){
+    public List<LlocTreballDto> finaAllWorkspaceByIdCompany(Long id, UsuariDto usuari){
 
         ModelMapper modelMapper = new ModelMapper();
-        return llocTreballRepository.findAllByEmpresa_IdEmpresa(id).stream().map(ll -> modelMapper.map(ll, LlocTreballDto.class)).collect(Collectors.toList());
+
+        if (usuari.getRols().contains(RolDto.ADMINISTRADOR) || usuari.getRols().contains(RolDto.ADMINISTRADOR_FCT))
+            return llocTreballRepository.findAllByEmpresa_IdEmpresa(id).stream().map(ll -> modelMapper.map(ll, LlocTreballDto.class)).collect(Collectors.toList());
+        else
+            return llocTreballRepository.findAllByEmpresaIdAndValidatTrueOrEmailCreator(id, usuari.getGsuiteEmail()).stream().map(ll -> modelMapper.map(ll, LlocTreballDto.class)).collect(Collectors.toList());
+
     }
 
     @Transactional

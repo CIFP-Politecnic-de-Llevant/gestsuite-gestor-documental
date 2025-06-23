@@ -21,6 +21,6 @@ public class LlocTreballDto {
     private String municipi;
     private boolean validat;
     private String emailCreator;
-    @JsonManagedReference
+    @JsonBackReference
     private EmpresaDto empresa;
 }

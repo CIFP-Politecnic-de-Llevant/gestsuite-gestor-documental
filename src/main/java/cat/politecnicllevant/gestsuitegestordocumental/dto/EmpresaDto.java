@@ -27,8 +27,8 @@ public class EmpresaDto {
     private String poblacio;
     private String provincia;
     private String telefon;
-    @JsonBackReference
+    @JsonManagedReference
     private Set<LlocTreballDto> llocsTreball = new HashSet<>();
-    @JsonBackReference
+    @JsonManagedReference
     private Set<TutorEmpresaDto> tutorsEmpresa = new HashSet<>();
 }

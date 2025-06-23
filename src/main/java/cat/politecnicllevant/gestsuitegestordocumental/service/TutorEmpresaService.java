@@ -1,7 +1,9 @@
 package cat.politecnicllevant.gestsuitegestordocumental.service;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.TutorEmpresa;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.RolDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.TutorEmpresaDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.TutorEmpresaRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -36,10 +39,14 @@ public class TutorEmpresaService {
 
         return modelMapper.map(tutorEmpresaSaved,TutorEmpresaDto.class);
     }
-    public List<TutorEmpresaDto> finaAllWorkspabeByIdCompany(Long id){
+    public List<TutorEmpresaDto> finaAllTutorEmpresaByIdCompany(Long id, UsuariDto usuari){
 
         ModelMapper modelMapper = new ModelMapper();
-        return tutorEmpresaRepository.findAllByEmpresa_IdEmpresa(id).stream().map(t -> modelMapper.map(t, TutorEmpresaDto.class)).collect(Collectors.toList());
+        if (usuari.getRols().contains(RolDto.ADMINISTRADOR) || usuari.getRols().contains(RolDto.ADMINISTRADOR_FCT))
+            return tutorEmpresaRepository.findAllByEmpresa_IdEmpresa(id).stream().map(t -> modelMapper.map(t, TutorEmpresaDto.class)).collect(Collectors.toList());
+        else
+            return tutorEmpresaRepository.findAllByEmpresaIdAndValidatTrueOrEmailCreator(id, usuari.getGsuiteEmail()).stream().map(t -> modelMapper.map(t, TutorEmpresaDto.class)).collect(Collectors.toList());
+
     }
 
     @Transactional
