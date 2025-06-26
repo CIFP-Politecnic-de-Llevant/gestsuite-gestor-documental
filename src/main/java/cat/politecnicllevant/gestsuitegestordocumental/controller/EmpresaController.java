@@ -235,7 +235,7 @@ public class EmpresaController {
 
         // Map old values to new tutorEmpresaDto
         tutorEmpresa.setEmailCreator(tutorEmrpesaDtoOld.getEmailCreator());
-        tutorEmpresa.setValidat(tutorEmrpesaDtoOld.isValidat());
+//        tutorEmpresa.setValidat(tutorEmrpesaDtoOld.isValidat());
 
         tutorEmpresaService.save(tutorEmpresa);
 
