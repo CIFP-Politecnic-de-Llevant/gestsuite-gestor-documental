@@ -46,6 +46,17 @@ public class LlocTreballService {
 
     }
 
+    public List<LlocTreballDto> findAllNotValidated(){
+        ModelMapper modelMapper = new ModelMapper();
+        return llocTreballRepository.findAllByValidatFalse().stream()
+                .map(ll -> {
+                    LlocTreballDto llocTreballDto = modelMapper.map(ll, LlocTreballDto.class);
+                    llocTreballDto.setIdEmpresa(ll.getEmpresa().getIdEmpresa());
+                    return llocTreballDto;
+                })
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public boolean deleteById(Long id){
 

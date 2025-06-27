@@ -23,4 +23,5 @@ public class TutorEmpresaDto {
     private String emailCreator;
     @JsonBackReference
     private EmpresaDto empresa;
+    private Long idEmpresa;
 }

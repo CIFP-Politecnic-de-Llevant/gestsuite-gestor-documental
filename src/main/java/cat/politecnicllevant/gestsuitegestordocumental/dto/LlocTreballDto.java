@@ -23,4 +23,5 @@ public class LlocTreballDto {
     private String emailCreator;
     @JsonBackReference
     private EmpresaDto empresa;
+    private Long idEmpresa;
 }

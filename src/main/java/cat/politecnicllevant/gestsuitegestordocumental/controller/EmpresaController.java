@@ -119,6 +119,17 @@ public class EmpresaController {
     }
 
     // LLOCS DE TREBALL
+    @GetMapping("/empresa/lloc-treball/all-workspaces-not-validated")
+    public ResponseEntity<?> getWorkspacesNoValid() {
+        List<LlocTreballDto> llocsTreball = llocTreballService.findAllNotValidated();
+
+        if(llocsTreball == null || llocsTreball.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(llocsTreball,HttpStatus.OK);
+    }
+
     @GetMapping("/empresa/lloc-treball/all-workspaces/{idEmpresa}")
     public ResponseEntity<?> getWorkspacesByCompany(@PathVariable Long idEmpresa, HttpServletRequest request) throws Exception {
         List<LlocTreballDto> llocsTreball = llocTreballService.finaAllWorkspaceByIdCompany(idEmpresa, getUsuariFromRequest(request));

@@ -26,5 +26,9 @@ public interface LlocTreballRepository extends JpaRepository<LlocTreball,Long> {
     List<LlocTreball> findAllByEmpresaIdAndValidatTrueOrEmailCreator(
         @Param("idEmpresa") Long idEmpresa,
         @Param("email") String email
-    );}
+    );
+
+    List<LlocTreball> findAllByValidatFalse();
+
+}
 
