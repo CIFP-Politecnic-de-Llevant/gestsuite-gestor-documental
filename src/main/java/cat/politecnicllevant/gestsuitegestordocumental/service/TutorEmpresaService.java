@@ -1,6 +1,7 @@
 package cat.politecnicllevant.gestsuitegestordocumental.service;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.TutorEmpresa;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.LlocTreballDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.RolDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.TutorEmpresaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
@@ -39,6 +40,7 @@ public class TutorEmpresaService {
 
         return modelMapper.map(tutorEmpresaSaved,TutorEmpresaDto.class);
     }
+
     public List<TutorEmpresaDto> finaAllTutorEmpresaByIdCompany(Long id, UsuariDto usuari){
 
         ModelMapper modelMapper = new ModelMapper();
@@ -46,7 +48,17 @@ public class TutorEmpresaService {
             return tutorEmpresaRepository.findAllByEmpresa_IdEmpresa(id).stream().map(t -> modelMapper.map(t, TutorEmpresaDto.class)).collect(Collectors.toList());
         else
             return tutorEmpresaRepository.findAllByEmpresaIdAndValidatTrueOrEmailCreator(id, usuari.getGsuiteEmail()).stream().map(t -> modelMapper.map(t, TutorEmpresaDto.class)).collect(Collectors.toList());
+    }
 
+    public List<TutorEmpresaDto> findAllNotValidated(){
+        ModelMapper modelMapper = new ModelMapper();
+        return tutorEmpresaRepository.findAllByValidatFalse().stream()
+                .map(ll -> {
+                    TutorEmpresaDto tutorEmpresaDto = modelMapper.map(ll, TutorEmpresaDto.class);
+                    tutorEmpresaDto.setIdEmpresa(ll.getEmpresa().getIdEmpresa());
+                    return tutorEmpresaDto;
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional

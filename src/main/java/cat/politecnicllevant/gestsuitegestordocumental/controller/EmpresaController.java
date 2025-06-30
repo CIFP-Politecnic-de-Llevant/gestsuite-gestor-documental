@@ -198,6 +198,17 @@ public class EmpresaController {
     }
 
     // TUTORS D'EMPRESA
+    @GetMapping("/empresa/tutor-empresa/all-tutors-empresa-not-validated")
+    public ResponseEntity<?> getTutorsEmpresaNoValid() {
+        List<TutorEmpresaDto> tutorsEmpresa = tutorEmpresaService.findAllNotValidated();
+
+        if(tutorsEmpresa == null || tutorsEmpresa.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(tutorsEmpresa,HttpStatus.OK);
+    }
+
     @GetMapping("/empresa/tutor-empresa/all-tutors/{idEmpresa}")
     public ResponseEntity<List<TutorEmpresaDto>> getTutorsByCompany(@PathVariable Long idEmpresa, HttpServletRequest request) throws Exception {
 

@@ -26,5 +26,8 @@ public interface TutorEmpresaRepository extends JpaRepository<TutorEmpresa,Long>
             @Param("idEmpresa") Long idEmpresa,
             @Param("email") String email
     );
+
+    List<TutorEmpresa> findAllByValidatFalse();
+
 }
 
