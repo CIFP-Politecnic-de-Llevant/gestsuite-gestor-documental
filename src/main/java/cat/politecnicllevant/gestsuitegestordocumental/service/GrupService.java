@@ -3,20 +3,20 @@ package cat.politecnicllevant.gestsuitegestordocumental.service;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Grup;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.GrupDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.GrupRepository;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class GrupService {
 
-    public final GrupRepository grupRepository;
+    private final GrupRepository grupRepository;
+    private final ModelMapper modelMapper;
 
-    public GrupService(GrupRepository grupRepository) {
-        this.grupRepository = grupRepository;
-    }
 
     public List<GrupDto> findAll() {
         List<GrupDto> grupDtos = new ArrayList<>();
@@ -51,7 +51,6 @@ public class GrupService {
     }
 
     public GrupDto getById(long id) {
-        ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(grupRepository.findById(id).orElse(null), GrupDto.class);
     }
 

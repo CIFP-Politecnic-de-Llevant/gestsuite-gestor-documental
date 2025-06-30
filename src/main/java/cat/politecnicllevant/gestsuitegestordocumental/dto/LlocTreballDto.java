@@ -1,8 +1,6 @@
 package cat.politecnicllevant.gestsuitegestordocumental.dto;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -24,6 +22,5 @@ public class LlocTreballDto {
     private String emailCreator;
     @JsonBackReference
     private EmpresaDto empresa;
-    @Transient
     private Long idEmpresa;
 }

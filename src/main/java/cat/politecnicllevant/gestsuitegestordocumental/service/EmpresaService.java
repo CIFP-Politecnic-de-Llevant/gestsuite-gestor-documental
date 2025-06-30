@@ -15,17 +15,18 @@ import java.util.stream.Collectors;
 @Service
 public class EmpresaService {
 
-    public final EmpresaRepository empresaRepository;
+    private final EmpresaRepository empresaRepository;
+    private final ModelMapper modelMapper;
 
     public List<EmpresaDto> findAll(){
-        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setAmbiguityIgnored(true);
         return empresaRepository.findAll().stream().map(e -> modelMapper.map(e,EmpresaDto.class)).collect(Collectors.toList());
     }
 
     public EmpresaDto findCompanyById(Long id){
-        ModelMapper modelMapper =  new ModelMapper();
-        Empresa e = empresaRepository.findByIdEmpresa(id);
+        modelMapper.getConfiguration().setAmbiguityIgnored(true);
 
+        Empresa e = empresaRepository.findByIdEmpresa(id);
         return modelMapper.map(e,EmpresaDto.class);
     }
 
@@ -36,7 +37,7 @@ public class EmpresaService {
         if(empresa.getTutorsEmpresa() != null){
             empresa.getTutorsEmpresa().clear();
         }
-        ModelMapper modelMapper =  new ModelMapper();
+        modelMapper.getConfiguration().setAmbiguityIgnored(true);
         
         Empresa e = modelMapper.map(empresa, Empresa.class);
         Empresa empresaSaved = empresaRepository.save(e);

@@ -3,6 +3,7 @@ package cat.politecnicllevant.gestsuitegestordocumental.service;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.ProgramaFormatiu;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.ProgramaFormatiuDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.ProgramaFormatiuRepository;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,25 +11,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class ProgramaFormatiuService {
 
-    public final ProgramaFormatiuRepository programaFormatiuRepository;
-
-
-    public ProgramaFormatiuService(ProgramaFormatiuRepository programaFormatiuRepository) {
-        this.programaFormatiuRepository = programaFormatiuRepository;
-    }
+    private final ProgramaFormatiuRepository programaFormatiuRepository;
+    private final ModelMapper modelMapper;
 
     public List<ProgramaFormatiuDto> findAll(){
-
-        ModelMapper modelMapper =  new ModelMapper();
         return programaFormatiuRepository.findAll().stream().map(pf->modelMapper.map(pf, ProgramaFormatiuDto.class)).collect(Collectors.toList());
     }
 
     public List<ProgramaFormatiuDto> findAllById(long id){
-
-        ModelMapper modelMapper = new ModelMapper();
         return programaFormatiuRepository.findAllByIdGrup(id).stream().map(pf->modelMapper.map(pf, ProgramaFormatiuDto.class)).collect(Collectors.toList());
     }
 
@@ -40,8 +34,6 @@ public class ProgramaFormatiuService {
     }
 
     public ProgramaFormatiuDto save(ProgramaFormatiuDto programaFormatiuDto){
-
-        ModelMapper modelMapper = new ModelMapper();
         ProgramaFormatiu pf = modelMapper.map(programaFormatiuDto, ProgramaFormatiu.class);
         ProgramaFormatiu pfSave = programaFormatiuRepository.save(pf);
 

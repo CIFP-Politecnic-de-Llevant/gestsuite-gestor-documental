@@ -6,6 +6,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.dto.LlocTreballDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.RolDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.UsuariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.LlocTreballRepository;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,23 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class LlocTreballService {
 
     public final LlocTreballRepository llocTreballRepository;
-
-    public LlocTreballService(LlocTreballRepository llocTreballRepository){
-        this.llocTreballRepository = llocTreballRepository;
-    }
+    public final ModelMapper modelMapper;
 
     public List<LlocTreballDto> findAll(){
-
-        ModelMapper modelMapper = new ModelMapper();
         return llocTreballRepository.findAll().stream().map(ll -> modelMapper.map(ll, LlocTreballDto.class)).collect(Collectors.toList());
     }
     public LlocTreballDto save(LlocTreballDto llocTreball){
-
-        ModelMapper modelMapper =  new ModelMapper();
         LlocTreball ll = modelMapper.map(llocTreball, LlocTreball.class);
         LlocTreball llocTreballSaved = llocTreballRepository.save(ll);
 
@@ -37,7 +32,7 @@ public class LlocTreballService {
     }
     public List<LlocTreballDto> finaAllWorkspaceByIdCompany(Long id, UsuariDto usuari){
 
-        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setAmbiguityIgnored(true);
 
         if (usuari.getRols().contains(RolDto.ADMINISTRADOR) || usuari.getRols().contains(RolDto.ADMINISTRADOR_FCT))
             return llocTreballRepository.findAllByEmpresa_IdEmpresa(id).stream().map(ll -> modelMapper.map(ll, LlocTreballDto.class)).collect(Collectors.toList());
@@ -47,7 +42,6 @@ public class LlocTreballService {
     }
 
     public List<LlocTreballDto> findAllNotValidated(){
-        ModelMapper modelMapper = new ModelMapper();
         return llocTreballRepository.findAllByValidatFalse().stream()
                 .map(ll -> {
                     LlocTreballDto llocTreballDto = modelMapper.map(ll, LlocTreballDto.class);

@@ -13,6 +13,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.repository.DocumentReposi
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import com.google.api.services.drive.model.File;
 import com.google.gson.JsonObject;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,63 +25,46 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 @Slf4j
 public class DocumentService {
 
-    public final DocumentRepository documentRepository;
-    public final ConvocatoriaRepository convocatoriaRepository;
+    private final DocumentRepository documentRepository;
+    private final ConvocatoriaRepository convocatoriaRepository;
     private final DocumentGeneralRepository documentGeneralRepository;
+    private final ModelMapper modelMapper;
 
     public final CoreRestClient coreRestClient;
 
     @Value("${public.password}")
     private String publicPassword;
 
-    public DocumentService(
-            DocumentRepository documentRepository,
-            ConvocatoriaRepository convocatoriaRepository,
-            CoreRestClient coreRestClient,
-            DocumentGeneralRepository documentGeneralRepository
-    ) {
-        this.documentRepository = documentRepository;
-        this.convocatoriaRepository = convocatoriaRepository;
-        this.coreRestClient = coreRestClient;
-        this.documentGeneralRepository = documentGeneralRepository;
-    }
-
 
     public List<DocumentDto> findAll(ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
-
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
 
         return documentRepository.findAllByConvocatoria(convocatoriaEntity).stream().map(d -> modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
     }
 
     public List<DocumentDto> findAllDocumentsBucketNoTraspassats(ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
-
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
 
         return documentRepository.findAllByIdFitxerIsNotNullAndTraspassatIsFalseAndConvocatoria(convocatoriaEntity).stream().map(d -> modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
     }
 
     public List<DocumentDto> findAllByGrupCodi(String grupCodi, ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
         return documentRepository.findAllByGrupCodiAndConvocatoria(grupCodi, convocatoriaEntity).stream().map(d -> modelMapper.map(d, DocumentDto.class)).collect(Collectors.toList());
     }
 
     public DocumentDto getDocumentById(Long id, ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
         Document document = documentRepository.findByIdDocumentAndConvocatoria(id, convocatoriaEntity).orElse(null);
         return modelMapper.map(document, DocumentDto.class);
     }
 
     public DocumentDto getDocumentByOriginalName(String nom, ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
         Document document = documentRepository.findByNomOriginalAndConvocatoria(nom, convocatoriaEntity).orElse(null);
         if (document == null) return null;
@@ -88,14 +72,12 @@ public class DocumentService {
     }
 
     public boolean existDocumentByOriginalName(String nom, ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
         Document document = documentRepository.findByNomOriginalAndConvocatoria(nom, convocatoriaEntity).orElse(null);
         return document != null;
     }
 
     public DocumentDto getDocumentByIdDriveGoogleDrive(String idDrive, ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
         Document document = documentRepository.findByIdDriveGoogleDriveAndConvocatoria(idDrive, convocatoriaEntity).orElse(null);
 
@@ -105,7 +87,6 @@ public class DocumentService {
     }
 
     public DocumentDto getDocumentByIdGoogleDrive(String id, ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
         Document document = documentRepository.findByIdGoogleDriveAndConvocatoria(id, convocatoriaEntity).orElse(null);
 
@@ -116,7 +97,6 @@ public class DocumentService {
 
     @Transactional
     public DocumentDto save(DocumentDto documentDto, ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
 
         Document document = modelMapper.map(documentDto, Document.class);
@@ -127,7 +107,6 @@ public class DocumentService {
     }
 
     public DocumentDto findByNomOriginal(String nomOriginal, ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
         Document document = documentRepository.findByNomOriginalAndConvocatoria(nomOriginal, convocatoriaEntity).orElse(null);
         if (document == null) return null;
@@ -136,14 +115,12 @@ public class DocumentService {
 
     @Transactional
     public void deleteByIdDocument(Long idDocument, ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
         documentRepository.deleteByIdDocumentAndConvocatoria(idDocument, convocatoriaEntity);
     }
 
     @Transactional
     public void deleteAllByIdUsuari(Long idusuari, ConvocatoriaDto convocatoria) {
-        ModelMapper modelMapper = new ModelMapper();
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
         documentRepository.deleteAllByIdUsuariAndConvocatoria(idusuari, convocatoriaEntity);
     }
@@ -207,7 +184,6 @@ public class DocumentService {
 
     public List<DocumentGeneralDto> findAllDocumentsGenerals() {
         List<DocumentGeneral> docs = documentGeneralRepository.findAll();
-        ModelMapper modelMapper = new ModelMapper();
         return docs.stream().map(d -> modelMapper.map(d, DocumentGeneralDto.class)).collect(Collectors.toList());
     }
 }

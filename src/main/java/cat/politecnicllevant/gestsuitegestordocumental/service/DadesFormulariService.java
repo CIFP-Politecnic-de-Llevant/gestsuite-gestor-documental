@@ -3,24 +3,21 @@ package cat.politecnicllevant.gestsuitegestordocumental.service;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.DadesFormulari;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.DadesFormulariDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.DadesFormulariRepository;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class DadesFormulariService{
 
     private final DadesFormulariRepository dadesFormulariRepository;
-
-    public DadesFormulariService(DadesFormulariRepository dadesFormulariRepository) {
-        this.dadesFormulariRepository = dadesFormulariRepository;
-    }
+    private final ModelMapper modelMapper;
 
     public DadesFormulariDto save(DadesFormulariDto dadesFormulariDto){
-
-        ModelMapper modelMapper= new ModelMapper();
         DadesFormulari df = modelMapper.map(dadesFormulariDto, DadesFormulari.class);
         DadesFormulari dfSave = dadesFormulariRepository.save(df);
 
@@ -28,17 +25,11 @@ public class DadesFormulariService{
     }
 
     public void delete(DadesFormulariDto dadesFormulariDto){
-
-        ModelMapper modelMapper = new ModelMapper();
         DadesFormulari df = modelMapper.map(dadesFormulariDto, DadesFormulari.class);
-
         dadesFormulariRepository.delete(df);
     }
 
     public List<DadesFormulariDto> findAll(){
-
-        ModelMapper modelMapper = new ModelMapper();
-
         return dadesFormulariRepository.findAll().stream().map(df -> modelMapper.map(df, DadesFormulariDto.class)).collect(Collectors.toList());
     }
 }
