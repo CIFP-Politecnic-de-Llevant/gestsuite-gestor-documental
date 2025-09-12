@@ -649,40 +649,44 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
                     File fitxer = this.copyFile(gson.toJson(jsonFitxer)).getBody();
 
-                    //Desem el fitxer
-                    JsonObject tipusFitxer = new JsonObject();
-                    tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
+                    //Desem el fitxer NOMÉS si no existeix
+                    DocumentDto documentSaved = documentService.getDocumentByOriginalName(document.getNomOriginal(), convocatoria);
+                    if (documentSaved == null) {
+                        //Desem el fitxer
+                        JsonObject tipusFitxer = new JsonObject();
+                        tipusFitxer.addProperty("id", tipusDocumentDto.getIdTipusDocument());
 
 
-                    JsonObject jsonFitxerDesat = new JsonObject();
-                    jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
-                    jsonFitxerDesat.addProperty("path", FOLDER_BASE + "/" + cicle + "/" + cognoms + " " + nom + "/" + cognoms + " " + nom + "_" + nomDocument);
-                    jsonFitxerDesat.addProperty("email", email);
-                    jsonFitxerDesat.addProperty("tipus", nomDocument);
-                    jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
-                    jsonFitxerDesat.add("tipusDocument", tipusFitxer);
-                    jsonFitxerDesat.addProperty("idusuari", alumne.getIdusuari());
-                    jsonFitxerDesat.addProperty("codiGrup", cicle);
+                        JsonObject jsonFitxerDesat = new JsonObject();
+                        jsonFitxerDesat.addProperty("idFile", document.getIdGoogleDrive());
+                        jsonFitxerDesat.addProperty("path", FOLDER_BASE + "/" + cicle + "/" + cognoms + " " + nom + "/" + cognoms + " " + nom + "_" + nomDocument);
+                        jsonFitxerDesat.addProperty("email", email);
+                        jsonFitxerDesat.addProperty("tipus", nomDocument);
+                        jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                        jsonFitxerDesat.add("tipusDocument", tipusFitxer);
+                        jsonFitxerDesat.addProperty("idusuari", alumne.getIdusuari());
+                        jsonFitxerDesat.addProperty("codiGrup", cicle);
 
-                    this.createDocument(gson.toJson(jsonFitxerDesat));
+                        this.createDocument(gson.toJson(jsonFitxerDesat));
 
-                    //Si és un document d'empresa avisem al coordinador FCT
-                    if (tipusDocumentDto.getNom().contains("Dades alumne empresa")) {
-                        /** TODO - Avisar al coordinador/s FCT **/
-                        JsonObject jsonNotificacio = new JsonObject();
-                        jsonNotificacio.addProperty("assumpte", "Document d'empresa pujat a " + cicle + " per " + cognoms + " " + nom);
-                        jsonNotificacio.addProperty("missatge", "Document d'empresa pujat a " + cicle + " per " + cognoms + " " + nom + " amb el número d'expedient " + numExpedient);
-                        jsonNotificacio.addProperty("to", "ppulido@politecnicllevant.cat");
+                        //Si és un document d'empresa avisem al coordinador FCT
+                        if (tipusDocumentDto.getNom().contains("Dades alumne empresa")) {
+                            /** TODO - Avisar al coordinador/s FCT **/
+                            JsonObject jsonNotificacio = new JsonObject();
+                            jsonNotificacio.addProperty("assumpte", "Document d'empresa pujat a " + cicle + " per " + cognoms + " " + nom);
+                            jsonNotificacio.addProperty("missatge", "Document d'empresa pujat a " + cicle + " per " + cognoms + " " + nom + " amb el número d'expedient " + numExpedient);
+                            jsonNotificacio.addProperty("to", "ppulido@politecnicllevant.cat");
 
-                        coreRestClient.sendEmail(gson.toJson(jsonNotificacio));
+                            coreRestClient.sendEmail(gson.toJson(jsonNotificacio));
 
-                        /*List<UsuariDto> coordinadorsFCT = this.coreRestClient.getCoordinadorFCT().getBody();
-                        if(coordinadosrFCT!=null){
-                            Notificacio notificacio = new Notificacio();
-                            notificacio.setNotifyMessage("S'ha pujat un document de dades d'empresa de l'alumne "+cognoms+" "+nom+" amb el número d'expedient "+numExpedient);
-                            notificacio.setNotifyType(NotificacioTipus.INFO);
-                            this.coreRestClient.sendNotification(notificacio, coordinadorFCT.getIdusuari());
-                        }*/
+                            /*List<UsuariDto> coordinadorsFCT = this.coreRestClient.getCoordinadorFCT().getBody();
+                            if(coordinadosrFCT!=null){
+                                Notificacio notificacio = new Notificacio();
+                                notificacio.setNotifyMessage("S'ha pujat un document de dades d'empresa de l'alumne "+cognoms+" "+nom+" amb el número d'expedient "+numExpedient);
+                                notificacio.setNotifyType(NotificacioTipus.INFO);
+                                this.coreRestClient.sendNotification(notificacio, coordinadorFCT.getIdusuari());
+                            }*/
+                        }
                     }
                 }
                 log.info("Document traspassat {}", document.getNomOriginal());
