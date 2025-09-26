@@ -149,6 +149,11 @@ public class DocumentFCTController {
                 DocumentDto document = documentService.getDocumentByIdDriveGoogleDrive(driveFile.getId(), convocatoria);
 
                 if (document == null) {
+                    DocumentDto documentTraspassat = documentService.getDocumentByOriginalName(driveFile.getName(), convocatoria);
+                    if (documentTraspassat != null && Boolean.TRUE.equals(documentTraspassat.getTraspassat())) {
+                        log.debug("El document {} ja està traspassat. S'omet de la sincronització.", driveFile.getName());
+                        continue;
+                    }
                     document = documentService.getDocumentByGoogleDriveFile(driveFile, convocatoria);
                     document.setEstat(DocumentEstatDto.PENDENT);
 
@@ -157,7 +162,9 @@ public class DocumentFCTController {
             }
         }
 
-        List<DocumentDto> documentsNoTraspassats = documentService.findAll(convocatoria);
+        List<DocumentDto> documentsNoTraspassats = documentService.findAll(convocatoria).stream()
+                .filter(doc -> Boolean.TRUE.equals(doc.getTraspassat()))
+                .toList();
 
         //Esborrem els documents trobats
         for (DocumentDto documentDto : documentsNoTraspassats) {
@@ -167,6 +174,11 @@ public class DocumentFCTController {
 
         //Traspassam els documents
         for (DocumentDto document : documents) {
+            DocumentDto documentTraspassat = documentService.getDocumentByOriginalName(document.getNomOriginal(), convocatoria);
+            if (documentTraspassat != null && Boolean.TRUE.equals(documentTraspassat.getTraspassat())) {
+                log.debug("El document {} ja està traspassat. S'omet de la sincronització.", document.getNomOriginal());
+                continue;
+            }
             log.info("Traspassant document {}...", document.getNomOriginal());
             try {
                 String[] documentParts = document.getNomOriginal().split("_");
@@ -1061,7 +1073,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         if (tipusDocumentDto != null) {
             document.setTipusDocument(tipusDocumentDto);
             document.setVisibilitat(tipusDocumentDto.getVisibilitatDefecte());
-            document.setTraspassat(false);
+            document.setTraspassat(true);
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -1124,13 +1136,17 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String parentFolderId = jsonObject.get("parentFolderId").getAsString();
 
         for (JsonElement id : documentIds) {
-            DocumentDto documentDto = this.documentService.getDocumentByIdGoogleDrive(id.getAsString(), convocatoria);
+            String googleId = id.getAsString();
+            DocumentDto documentDto = this.documentService.getDocumentByIdGoogleDrive(googleId, convocatoria);
 
-            this.googleDriveService.deleteFileById(id.getAsString(), email);
+            this.googleDriveService.deleteFileById(googleId, email);
+
+            if (documentDto != null) {
+                documentDto.setVisibilitat(false);
+                documentDto.setTraspassat(true);
+                documentService.save(documentDto, convocatoria);
+            }
         }
-
-        Long alumneId = this.documentService.getDocumentByIdGoogleDrive(documentIds.get(0).getAsString(), convocatoria).getIdUsuari();
-        this.documentService.deleteAllByIdUsuari(alumneId, convocatoria);
 
         this.googleDriveService.deleteFolder(folderName, email, parentFolderId);
 
@@ -1203,9 +1219,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         //Comprovem si ja existeix
         System.out.println("nom original: " + originalName);
         ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
-        boolean existDocumentByOriginalName = this.documentService.existDocumentByOriginalName(originalName, convocatoria);
+        boolean documentTraspassat = this.documentService.isDocumentTraspassat(originalName, convocatoria);
 
-        if (existDocumentByOriginalName) {
+        if (documentTraspassat) {
             return new ResponseEntity<>(null, HttpStatus.OK);
         }
 

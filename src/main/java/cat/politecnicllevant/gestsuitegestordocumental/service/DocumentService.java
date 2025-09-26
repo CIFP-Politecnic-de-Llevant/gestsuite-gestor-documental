@@ -77,6 +77,13 @@ public class DocumentService {
         return document != null;
     }
 
+    public boolean isDocumentTraspassat(String nom, ConvocatoriaDto convocatoria) {
+        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
+        return documentRepository.findByNomOriginalAndConvocatoria(nom, convocatoriaEntity)
+                .map(Document::getTraspassat)
+                .orElse(false);
+    }
+
     public DocumentDto getDocumentByIdDriveGoogleDrive(String idDrive, ConvocatoriaDto convocatoria) {
         Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
         Document document = documentRepository.findByIdDriveGoogleDriveAndConvocatoria(idDrive, convocatoriaEntity).orElse(null);
