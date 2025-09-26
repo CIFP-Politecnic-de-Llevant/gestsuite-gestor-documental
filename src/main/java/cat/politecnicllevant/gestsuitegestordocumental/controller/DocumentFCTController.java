@@ -114,14 +114,7 @@ public class DocumentFCTController {
         }*/
     }
 
-
-    /*
-Second Minute Hour Day-of-Month
-second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
-0 0 2 * * * = a les 2AM de cada dia
-*/
     @Scheduled(cron = "0 0 * * * *")
-    //@Scheduled(fixedRate = 60*60*1000, initialDelay = 60*1000)
     public void sincronitzaDocumentsAutomaticFEMPO() throws Exception {
         if (environment.equals("dev")) {
             log.warn("No es sincronitzen els documents en entorn dev");
