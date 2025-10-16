@@ -46,6 +46,23 @@ public class LlocTreball {
     @Column(name = "email_creator",nullable = true, length = 255)
     private String emailCreator;
 
+    // Dades contacte Lloc de Treball
+    @Column(name = "nom_contacte", nullable = true, length = 128)
+    private String nomContacte;
+
+    @Column(name = "cognom1_contacte", nullable = true, length = 128)
+    private String cognom1Contacte;
+
+    @Column(name = "cognom2_contacte", nullable = true, length = 128)
+    private String cognom2Contacte;
+
+    @Column(name = "telefon_contacte",nullable = true, length = 128)
+    private String telefonContacte;
+
+    @Column(name = "email_contacte",nullable = true, length = 255)
+    private String emailContacte;
+    /////////////
+
     @JsonManagedReference
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn( name = "idEmpresa")
