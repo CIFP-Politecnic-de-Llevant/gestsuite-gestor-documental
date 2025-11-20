@@ -2,7 +2,6 @@ package cat.politecnicllevant.gestsuitegestordocumental.service;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Grup;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.GrupRelacio;
-import cat.politecnicllevant.gestsuitegestordocumental.domain.GrupRelacioId;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.GrupDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.GrupRelacioRepository;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.GrupRepository;
@@ -52,7 +51,6 @@ public class GrupRelacioService {
                 Grup grupRelacionat = grupRepository.findById(grupRelacionatId)
                         .orElseThrow(() -> new IllegalArgumentException("Grup relacionat no trobat"));
                 GrupRelacio novaRelacio = new GrupRelacio();
-                novaRelacio.setId(new GrupRelacioId(grupId, grupRelacionatId));
                 novaRelacio.setGrup(grupPrincipal);
                 novaRelacio.setGrupRelacionat(grupRelacionat);
                 grupRelacioRepository.save(novaRelacio);
