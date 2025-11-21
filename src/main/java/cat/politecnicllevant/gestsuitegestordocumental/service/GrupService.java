@@ -67,4 +67,15 @@ public class GrupService {
         }
         return null;
     }
+
+    public static GrupDto mapToDto(Grup grup) {
+        GrupDto dto = new GrupDto();
+        dto.setIdgrup(grup.getIdGrupGestorDocumental());
+        dto.setCoreIdGrup(grup.getCoreIdGrup());
+        dto.setIdGoogleSpreadsheet(grup.getIdGoogleSpreadsheet());
+        dto.setFolderGoogleDrive(grup.getFolderGoogleDrive());
+        dto.setCursGrup(grup.getCursGrup());
+        dto.setActiu(grup.getActiu());
+        return dto;
+    }
 }

@@ -26,7 +26,7 @@ public class GrupRelacioService {
         return grupRelacioRepository.findAllByGrup_IdGrupGestorDocumental(grupId)
                 .stream()
                 .map(GrupRelacio::getGrupRelacionat)
-                .map(this::mapToDto)
+                .map(GrupService::mapToDto)
                 .collect(Collectors.toList());
     }
 
@@ -58,15 +58,5 @@ public class GrupRelacioService {
         }
 
         return getGrupsRelacionats(grupId);
-    }
-
-    private GrupDto mapToDto(Grup grup) {
-        GrupDto dto = new GrupDto();
-        dto.setIdgrup(grup.getIdGrupGestorDocumental());
-        dto.setCoreIdGrup(grup.getCoreIdGrup());
-        dto.setIdGoogleSpreadsheet(grup.getIdGoogleSpreadsheet());
-        dto.setFolderGoogleDrive(grup.getFolderGoogleDrive());
-        dto.setCursGrup(grup.getCursGrup());
-        return dto;
     }
 }
