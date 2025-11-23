@@ -48,6 +48,7 @@ public class DocumentFCTController {
     private final Gson gson;
     private final ConvocatoriaService convocatoriaService;
     private final GrupService grupService;
+    private final GrupRelacioService grupRelacioService;
 
     @Value("${app.allowed-users}")
     private String[] autoritzats;
@@ -87,7 +88,9 @@ public class DocumentFCTController {
             DocumentService documentService,
             TipusDocumentService tipusDocumentService,
             Gson gson,
-            ConvocatoriaService convocatoriaService, GrupService grupService) {
+            ConvocatoriaService convocatoriaService,
+            GrupService grupService,
+            GrupRelacioService grupRelacioService) {
         this.googleDriveService = googleDriveService;
         this.coreRestClient = coreRestClient;
         this.documentService = documentService;
@@ -95,6 +98,7 @@ public class DocumentFCTController {
         this.gson = gson;
         this.convocatoriaService = convocatoriaService;
         this.grupService = grupService;
+        this.grupRelacioService = grupRelacioService;
     }
 
     @PostConstruct
@@ -252,7 +256,15 @@ public class DocumentFCTController {
                     UsuariDto alumne = alumneResponse.getBody();
 
                     //Permisos
+                    //Consultem els grups associats al grup del cicle per també incloure els tutors d'aquests grups
+                    //com a gestors de contingut igual que els tutors FCT del grup
                     List<UsuariDto> tutorsFCT = this.coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+                    GrupDto grupTutor = grupService.getByCursGrup(cicle);
+                    if (grupTutor != null) {
+                        List<GrupDto> grupsAssociats = grupRelacioService.getGrupsRelacionats(grupTutor.getIdgrup());
+                        grupsAssociats.forEach(grupDto -> tutorsFCT.addAll(coreRestClient.getTutorFCTByCodiGrup(grupDto.getCursGrup()).getBody()));
+                    }
+
 
                     //Creem l'estructura de carpetes
                     JsonObject jsonCarpetaRoot = new JsonObject();
@@ -531,6 +543,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     }
 
                     //Permisos
+                    //TODO: TREURE TUTORS DE GRUPS ASSOCIATS (FCT)
                     List<UsuariDto> tutorsFCT = coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
 
                     JsonObject jsonCarpetaRoot = new JsonObject();

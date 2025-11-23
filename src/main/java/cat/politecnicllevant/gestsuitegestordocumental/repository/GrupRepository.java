@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface GrupRepository extends JpaRepository<Grup,Long> {
     Grup findByCoreIdGrup(Long id);
+    Grup findByCursGrup(String cursGrup);
     List<Grup> findByIdGoogleSpreadsheetIsNotNull();
 }

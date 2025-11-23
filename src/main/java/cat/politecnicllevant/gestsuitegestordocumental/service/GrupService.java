@@ -68,6 +68,12 @@ public class GrupService {
         return null;
     }
 
+    public GrupDto getByCursGrup(String cursGrup) {
+        Grup grup = grupRepository.findByCursGrup(cursGrup);
+        if (grup == null) return null;
+        return mapToDto(grup);
+    }
+
     public static GrupDto mapToDto(Grup grup) {
         GrupDto dto = new GrupDto();
         dto.setIdgrup(grup.getIdGrupGestorDocumental());
