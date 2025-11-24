@@ -187,7 +187,14 @@ public class DocumentFCTController {
                     }
 
                     //Permisos
-                    List<UsuariDto> tutorsFCT = coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+                    //Consultem els grups associats al grup del cicle per també incloure els tutors d'aquests grups
+                    //com a gestors de contingut igual que els tutors FCT del grup
+                    List<UsuariDto> tutorsFCT = this.coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+                    GrupDto grupTutor = grupService.getByCursGrup(cicle);
+                    if (grupTutor != null) {
+                        List<GrupDto> grupsAssociats = grupRelacioService.getGrupsRelacionats(grupTutor.getIdgrup());
+                        grupsAssociats.forEach(grupDto -> tutorsFCT.addAll(coreRestClient.getTutorFCTByCodiGrup(grupDto.getCursGrup()).getBody()));
+                    }
 
                     JsonObject jsonCarpetaRoot = new JsonObject();
                     jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
@@ -543,8 +550,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     }
 
                     //Permisos
-                    //TODO: TREURE TUTORS DE GRUPS ASSOCIATS (FCT)
-                    List<UsuariDto> tutorsFCT = coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+                    //Consultem els grups associats al grup del cicle per també incloure els tutors d'aquests grups
+                    //com a gestors de contingut igual que els tutors FCT del grup
+                    List<UsuariDto> tutorsFCT = this.coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+                    GrupDto grupTutor = grupService.getByCursGrup(cicle);
+                    if (grupTutor != null) {
+                        List<GrupDto> grupsAssociats = grupRelacioService.getGrupsRelacionats(grupTutor.getIdgrup());
+                        grupsAssociats.forEach(grupDto -> tutorsFCT.addAll(coreRestClient.getTutorFCTByCodiGrup(grupDto.getCursGrup()).getBody()));
+                    }
 
                     JsonObject jsonCarpetaRoot = new JsonObject();
                     jsonCarpetaRoot.addProperty("folderName", FOLDER_BASE);
@@ -613,7 +626,14 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     UsuariDto alumne = alumneResponse.getBody();
 
                     //Permisos
+                    //Consultem els grups associats al grup del cicle per també incloure els tutors d'aquests grups
+                    //com a gestors de contingut igual que els tutors FCT del grup
                     List<UsuariDto> tutorsFCT = this.coreRestClient.getTutorFCTByCodiGrup(cicle).getBody();
+                    GrupDto grupTutor = grupService.getByCursGrup(cicle);
+                    if (grupTutor != null) {
+                        List<GrupDto> grupsAssociats = grupRelacioService.getGrupsRelacionats(grupTutor.getIdgrup());
+                        grupsAssociats.forEach(grupDto -> tutorsFCT.addAll(coreRestClient.getTutorFCTByCodiGrup(grupDto.getCursGrup()).getBody()));
+                    }
 
                     //Creem l'estructura de carpetes
                     JsonObject jsonCarpetaRoot = new JsonObject();
