@@ -22,6 +22,13 @@ public @Data class DadesFormulariDto {
     private String cicleFormatiu;
     private String grup;
     private String duradaCicle;
+    private String cursEstada;
+    private String ocasio;
+    private Boolean acumulaEstadesPrimer;
+    private Integer horesPrimerASegon;
+    private Boolean mobilitat;
+    private String zonaMobilitat;
+    private String caracteristiquesMobilitat;
     private String totalHoresProposadesFct;
     private String horesDiaries;
     private String km;

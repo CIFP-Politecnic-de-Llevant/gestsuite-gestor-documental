@@ -14,7 +14,7 @@ public @Data class DadesFormulari {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "any_curs", nullable = true, length = 128)
+    @Column(name = "any_curs", nullable = true, length = 32)
     private String anyCurs;
 
     @Column(name = "nom_alumne", nullable = true, length = 128)
@@ -23,13 +23,13 @@ public @Data class DadesFormulari {
     @Column(name = "llinatges_alumne", nullable = true, length = 128)
     private String llinatgesAlumne;
 
-    @Column(name = "poblacio", nullable = true, length = 1024)
+    @Column(name = "poblacio", nullable = true, columnDefinition = "TEXT")
     private String poblacioAlumne;
 
-    @Column(name = "dni", nullable = true, length = 128)
+    @Column(name = "dni", nullable = true, length = 64)
     private String dniAlumne;
 
-    @Column(name = "telefon_alumne", nullable = true, length = 128)
+    @Column(name = "telefon_alumne", nullable = true, length = 64)
     private String telefonAlumne;
 
     @Column(name = "email_alumne", nullable = true, length = 128)
@@ -50,11 +50,32 @@ public @Data class DadesFormulari {
     @Column(name = "cicle_formatiu", nullable = true, length = 128)
     private String cicleFormatiu;
 
-    @Column(name = "grup", nullable = true, length = 128)
+    @Column(name = "grup", nullable = true, length = 16)
     private String grup;
 
-    @Column(name = "durada_cicle", nullable = true, length = 128)
+    @Column(name = "durada_cicle", nullable = true, length = 32)
     private String duradaCicle;
+
+    @Column(name = "curs_estada", nullable = true, length = 32)
+    private String cursEstada;
+
+    @Column(name = "ocasio", nullable = true, length = 32)
+    private String ocasio;
+
+    @Column(name = "acumula_estades_primer", nullable = true)
+    private Boolean acumulaEstadesPrimer;
+
+    @Column(name = "hores_primer_a_segon", nullable = true)
+    private Integer horesPrimerASegon;
+
+    @Column(name = "mobilitat", nullable = true)
+    private Boolean mobilitat;
+
+    @Column(name = "zona_mobilitat", nullable = true, length = 128)
+    private String zonaMobilitat;
+
+    @Column(name = "caracteristiques_mobilitat", nullable = true, columnDefinition = "TEXT")
+    private String caracteristiquesMobilitat;
 
     @Column(name = "hores_fct_proposades", nullable = true, length = 128)
     private String totalHoresProposadesFct;
@@ -89,7 +110,7 @@ public @Data class DadesFormulari {
     @Column(name = "llinatges_tutor", nullable = true, length = 256)
     private String llinatgesTutor;
 
-    @Column(name = "telefon_tutor", nullable = true, length = 128)
+    @Column(name = "telefon_tutor", nullable = true, length = 64)
     private String telefonTutor;
 
     @Column(name = "email_tutor", nullable = true, length = 128)
@@ -110,10 +131,10 @@ public @Data class DadesFormulari {
     @Column(name = "cif", nullable = true, length = 128)
     private String cif;
 
-    @Column(name = "adreca_empresa", nullable = true, length = 2048)
+    @Column(name = "adreca_empresa", nullable = true, columnDefinition = "TEXT")
     private String adrecaEmpresa;
 
-    @Column(name = "cp_empresa", nullable = true, length = 128)
+    @Column(name = "cp_empresa", nullable = true, length = 10)
     private String cpEmpresa;
 
     @Column(name = "poblacio_empresa", nullable = true, length = 128)
@@ -122,7 +143,7 @@ public @Data class DadesFormulari {
     @Column(name = "provincia_empresa", nullable = true, length = 128)
     private String provinciaEmpresa;
 
-    @Column(name = "telefon_empresa", nullable = true, length = 128)
+    @Column(name = "telefon_empresa", nullable = true, length = 64)
     private String telefonEmpresa;
 
     @Column(name = "email_empresa", nullable = true, length = 128)
@@ -131,25 +152,25 @@ public @Data class DadesFormulari {
     @Column(name = "nom_lloc_treball", nullable = true, length = 128)
     private String nomLlocTreball;
 
-    @Column(name = "adreca_lloc_treball", nullable = true, length = 2048)
+    @Column(name = "adreca_lloc_treball", nullable = true, columnDefinition = "TEXT")
     private String adrecaLlocTreball;
 
     @Column(name = "cp_lloc_treball", nullable = true, length = 10)
     private String cpLlocTreball;
 
-    @Column(name = "poblacio_lloc_treball", nullable = true, length = 512)
+    @Column(name = "poblacio_lloc_treball", nullable = true, columnDefinition = "TEXT")
     private String poblacioLlocTreball;
 
     @Column(name = "telefon_lloc_treball", nullable = true, length = 64)
     private String telefonLlocTreball;
 
-    @Column(name = "activitat_lloc_treball", nullable = true, length = 2048)
+    @Column(name = "activitat_lloc_treball", nullable = true, columnDefinition = "TEXT")
     private String activitatLlocTreball;
 
     @Column(name = "nom_complet_representant_legal", nullable = true, length = 512)
     private String nomCompletRepresentantLegal;
 
-    @Column(name = "nom_representant_legal", nullable = true, length = 512)
+    @Column(name = "nom_representant_legal", nullable = true, length = 128)
     private String nomRepresentantLegal;
 
     @Column(name = "cognoms_representant_legal", nullable = true, length = 512)
@@ -158,7 +179,7 @@ public @Data class DadesFormulari {
     @Column(name = "nif_representant_legal", nullable = true, length = 64)
     private String nifRepresentantLegal;
 
-    @Column(name = "nom_complet_tutor_empresa", nullable = true, length = 512)
+    @Column(name = "nom_complet_tutor_empresa", nullable = true, length = 128)
     private String nomCompletTutorEmpresa;
 
     @Column(name = "nom_tutor_empresa", nullable = true, length = 128)
@@ -212,6 +233,6 @@ public @Data class DadesFormulari {
     @Column(name = "motiu", nullable = true, columnDefinition = "TEXT")
     private String motiu;
 
-    @Column(name = "curs_academic",nullable = false, length = 128)
+    @Column(name = "curs_academic",nullable = false, length = 16)
     private Long idCursAcademic;
 }

@@ -129,6 +129,13 @@ public class FormulariFCTController {
         getterDataForm.put("Cicle_Formatiu", (form.getCicleFormatiu()!=null)?form.getCicleFormatiu():"");
         getterDataForm.put("Grup", (form.getGrup()!=null)?form.getGrup():"");
         getterDataForm.put("Durada_cicle", (form.getDuradaCicle()!=null)?form.getDuradaCicle():"");
+        getterDataForm.put("Curs_estada", (form.getCursEstada()!=null)?form.getCursEstada():"");
+        getterDataForm.put("Ocasio", (form.getOcasio()!=null)?form.getOcasio():"");
+        getterDataForm.put("Acumula_estades", (form.getAcumulaEstadesPrimer()!=null && form.getAcumulaEstadesPrimer())? "Si":"No");
+        getterDataForm.put("Hores_primer_a_segon", (form.getHoresPrimerASegon()!=null)?form.getHoresPrimerASegon().toString():"");
+        getterDataForm.put("Mobilitat", (form.getMobilitat()!=null && form.getMobilitat())? "Si":"No");
+        getterDataForm.put("Zona_mobilitat", (form.getZonaMobilitat()!=null)?form.getZonaMobilitat():"");
+        getterDataForm.put("Caracteristiques_mobilitat", (form.getCaracteristiquesMobilitat()!=null)?form.getCaracteristiquesMobilitat():"");
         getterDataForm.put("Periode", (form.getPeriode()!=null)?form.getPeriode():"");
         getterDataForm.put("Hores_FEMPO", (form.getTotalHoresProposadesFct()!=null)?form.getTotalHoresProposadesFct():"");
         getterDataForm.put("Hores_diaries", (form.getHoresDiaries()!=null)?form.getHoresDiaries():"");
