@@ -1456,14 +1456,20 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
             List<GrupDto> grups = grupService.findAllWithFempo();
 
-            grups.forEach(grup -> {
-                String folderName = grup.getCursGrup() + "_Q_FEMPO";
+            List<String> cicles = grups.stream()
+                    .map(GrupDto::getCursGrup)
+                    .map(curs -> curs.substring(0, curs.length() - 1))
+                    .distinct()
+                    .toList();
+
+            cicles.forEach(cicle -> {
+                String folderName = cicle + "_Q_FEMPO";
                 File groupFolder = googleDriveService.getFolder(folderName, userEmail, parentFolder.getId());
 
                 if (groupFolder != null) {
                     System.out.println("groupFolder: " + groupFolder.getName());
                     String folderPath = userPathDocsMigrats+"/"+folderName;
-                    String nomDocument = grup.getCursGrup() + "_" + docFile.getName();
+                    String nomDocument = cicle + "_" + docFile.getName();
                     try {
                         List<File> existingFiles = googleDriveService.getFilesInFolder(folderPath,userEmail);
                         if (!fileAlreadyExist(nomDocument, existingFiles)) {
