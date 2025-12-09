@@ -242,7 +242,7 @@ public class FormulariFCTController {
         getterDataForm.put("Telèfon Centre de treball ", form.getTelefonLlocTreball());
         getterDataForm.put("Activitat Centre de treball ", form.getActivitatLlocTreball());
         getterDataForm.put("Nom representant legal", form.getNomCompletRepresentantLegal());
-        getterDataForm.put("Llinatges representant legal", ""); //TODO: mirar si es necessita
+        getterDataForm.put("Llinatges representant legal", "");
         getterDataForm.put("NIF representant legal", form.getNifRepresentantLegal());
         getterDataForm.put("Nom tutor empresa", form.getNomCompletTutorEmpresa());
         getterDataForm.put("Llinatges tutor empresa", "");

@@ -136,8 +136,16 @@ public class DocumentFCTController {
         List<DocumentDto> documents = new ArrayList<>();
         List<GrupDto> grups = grupService.findAll();
 
-        for (GrupDto grup : grups) {
-            String path = "FEMPO/" + grup.getCursGrup() + "_Q_FEMPO";
+        List<String> cicles = grups.stream()
+                .map(GrupDto::getCursGrup)
+                .map(curs -> curs.substring(0, curs.length() - 1))
+                .distinct()
+                .toList();
+
+        for (String cicle : cicles) {
+            if (cicle.isEmpty()) continue;
+
+            String path = "FEMPO/" + cicle + "_Q_FEMPO";
             List<File> driveFiles = googleDriveService.getFilesInFolder(path, email);
 
             if (driveFiles == null || driveFiles.isEmpty()) {
