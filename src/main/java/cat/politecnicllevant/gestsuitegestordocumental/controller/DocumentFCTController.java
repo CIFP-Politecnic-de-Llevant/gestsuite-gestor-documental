@@ -1165,12 +1165,12 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String parentFolderId = jsonObject.get("parentFolderId").getAsString();
 
         for (JsonElement id : documentIds) {
-            DocumentDto documentDto = this.documentService.getDocumentByIdGoogleDrive(id.getAsString(), convocatoria);
-
-            this.googleDriveService.deleteFileById(id.getAsString(), email);
+            String documentId = id.getAsString();
+            this.googleDriveService.deleteFileById(documentId, email);
         }
 
-        Long alumneId = this.documentService.getDocumentByIdGoogleDrive(documentIds.get(0).getAsString(), convocatoria).getIdUsuari();
+        String firstDocumentId = documentIds.get(0).getAsString();
+        Long alumneId = this.documentService.getDocumentByIdGoogleDrive(firstDocumentId, convocatoria).getIdUsuari();
         this.documentService.deleteAllByIdUsuari(alumneId, convocatoria);
 
         this.googleDriveService.deleteFolder(folderName, email, parentFolderId);
