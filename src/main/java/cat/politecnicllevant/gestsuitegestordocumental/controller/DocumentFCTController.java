@@ -169,7 +169,7 @@ public class DocumentFCTController {
             }
         }
 
-        List<DocumentDto> documentsNoTraspassats = documentService.findAll(convocatoria);
+        List<DocumentDto> documentsNoTraspassats = documentService.findAllIncludingEliminats(convocatoria);
 
         //Esborrem els documents trobats
         for (DocumentDto documentDto : documentsNoTraspassats) {
@@ -532,7 +532,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             }
         }
 
-        List<DocumentDto> documentsNoTraspassats = documentService.findAll(convocatoria);
+        List<DocumentDto> documentsNoTraspassats = documentService.findAllIncludingEliminats(convocatoria);
 
         //Esborrem els documents trobats
         for (DocumentDto documentDto : documentsNoTraspassats) {
@@ -888,6 +888,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         if (document.getTraspassat() == null) {
             document.setTraspassat(false);
         }
+        if (document.getEliminat() == null) {
+            document.setEliminat(false);
+        }
 
         document.setNomOriginal("CUSTOM_" + tipusDocumentDto.getNom() + "_" + curs + "_" + idusuari);
         //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
@@ -1001,7 +1004,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             }
         }
 
-        List<DocumentDto> documentsTraspassats = documentService.findAll(convocatoria);
+        List<DocumentDto> documentsTraspassats = documentService.findAllIncludingEliminats(convocatoria);
 
         //Esborrem els documents trobats
         for (DocumentDto documentDto : documentsTraspassats) {
@@ -1103,6 +1106,9 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             document.setTipusDocument(tipusDocumentDto);
             document.setVisibilitat(tipusDocumentDto.getVisibilitatDefecte());
             document.setTraspassat(false);
+            if (document.getEliminat() == null) {
+                document.setEliminat(false);
+            }
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

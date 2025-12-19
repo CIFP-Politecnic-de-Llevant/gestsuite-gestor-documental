@@ -23,6 +23,7 @@ public class DocumentDto {
     //VISIBILITAT
     private Boolean visibilitat;
     private Boolean traspassat;
+    private Boolean eliminat;
 
     //ESTAT
     private DocumentEstatDto estat;
