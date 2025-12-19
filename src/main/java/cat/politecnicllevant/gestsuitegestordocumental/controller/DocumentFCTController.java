@@ -247,6 +247,7 @@ public class DocumentFCTController {
                         jsonFitxerDesat.addProperty("email", email);
                         jsonFitxerDesat.addProperty("tipus", nomDocument);
                         jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                        jsonFitxerDesat.addProperty("traspassat", true);
                         jsonFitxerDesat.add("tipusDocument", tipusFitxer);
                         jsonFitxerDesat.addProperty("codiGrup", cicle);
 
@@ -332,6 +333,7 @@ public class DocumentFCTController {
                     jsonFitxerDesat.addProperty("email", email);
                     jsonFitxerDesat.addProperty("tipus", nomDocument);
                     jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                    jsonFitxerDesat.addProperty("traspassat", true);
                     jsonFitxerDesat.add("tipusDocument", tipusFitxer);
                     jsonFitxerDesat.addProperty("idusuari", alumne.getIdusuari());
                     jsonFitxerDesat.addProperty("codiGrup", cicle);
@@ -610,6 +612,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                         jsonFitxerDesat.addProperty("email", email);
                         jsonFitxerDesat.addProperty("tipus", nomDocument);
                         jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                        jsonFitxerDesat.addProperty("traspassat", true);
                         jsonFitxerDesat.add("tipusDocument", tipusFitxer);
                         jsonFitxerDesat.addProperty("codiGrup", cicle);
 
@@ -697,6 +700,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                         jsonFitxerDesat.addProperty("email", email);
                         jsonFitxerDesat.addProperty("tipus", nomDocument);
                         jsonFitxerDesat.addProperty("originalName", document.getNomOriginal());
+                        jsonFitxerDesat.addProperty("traspassat", true);
                         jsonFitxerDesat.add("tipusDocument", tipusFitxer);
                         jsonFitxerDesat.addProperty("idusuari", alumne.getIdusuari());
                         jsonFitxerDesat.addProperty("codiGrup", cicle);
@@ -1056,6 +1060,10 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         String tipus = jsonObject.get("tipus").getAsString();
         String originalName = jsonObject.get("originalName").getAsString();
         String codiGrup = jsonObject.get("codiGrup").getAsString();
+        Boolean traspassat = null;
+        if (jsonObject.get("traspassat") != null && !jsonObject.get("traspassat").isJsonNull()) {
+            traspassat = jsonObject.get("traspassat").getAsBoolean();
+        }
 
         JsonObject jsonObjectTipusDocument = jsonObject.get("tipusDocument").getAsJsonObject();
         Long idTipusDocument = jsonObjectTipusDocument.get("id").getAsLong();
@@ -1105,7 +1113,11 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         if (tipusDocumentDto != null) {
             document.setTipusDocument(tipusDocumentDto);
             document.setVisibilitat(tipusDocumentDto.getVisibilitatDefecte());
-            document.setTraspassat(false);
+            if (traspassat != null) {
+                document.setTraspassat(traspassat);
+            } else if (document.getTraspassat() == null) {
+                document.setTraspassat(false);
+            }
             if (document.getEliminat() == null) {
                 document.setEliminat(false);
             }
