@@ -2,17 +2,14 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.CursAcademicDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.DadesFormulariDto;
-import cat.politecnicllevant.gestsuitegestordocumental.dto.GrupDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
-import cat.politecnicllevant.gestsuitegestordocumental.service.DadesFormulariService;
-import cat.politecnicllevant.gestsuitegestordocumental.service.GoogleDriveService;
-import cat.politecnicllevant.gestsuitegestordocumental.service.GrupService;
+import cat.politecnicllevant.gestsuitegestordocumental.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -33,6 +30,8 @@ public class FormulariFCTController {
     private final DadesFormulariService dadesFormulariService;
     private final CoreRestClient coreRestClient;
     private final GrupService grupService;
+    private final DocumentService documentService;
+    private final ConvocatoriaService convocatoriaService;
     private final String idSpreadsheetFEMPOGeneral = "1B452x9ovCin40_yQpyJ_-TgunGQYVr50zGESGgE8Y2o";
 
     //FORMULARI FCT
@@ -59,50 +58,100 @@ public class FormulariFCTController {
     }
 
     @PostMapping("/formulari/save-formulari-fempo")
-    public ResponseEntity<Notificacio> saveFormFEMPO(@RequestBody DadesFormulariDto form, @RequestParam String email) throws NoSuchMethodException, GeneralSecurityException, IOException, InvocationTargetException, IllegalAccessException {
+    public ResponseEntity<Notificacio> saveFormFEMPO(@RequestBody DadesFormulariDto form, @RequestParam String email, @RequestParam(required = false) Long idConvocatoria) throws NoSuchMethodException, GeneralSecurityException, IOException, InvocationTargetException, IllegalAccessException {
+
+        ConvocatoriaDto convocatoria;
+        if (idConvocatoria != null) {
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
+        if (convocatoria == null) {
+            log.error("No s'ha pogut determinar la convocatòria");
+            Notificacio notificacio = new Notificacio();
+            notificacio.setNotifyMessage("Error guardant el formulari FEMPO");
+            notificacio.setNotifyType(NotificacioTipus.ERROR);
+            return new ResponseEntity<>(notificacio, HttpStatus.NOT_ACCEPTABLE);
+        }
 
         CursAcademicDto cursAcademic = this.coreRestClient.getActualCursAcademic().getBody();
+        if (cursAcademic == null) {
+            log.error("No s'ha pogut obtenir el curs acadèmic");
+            Notificacio notificacio = new Notificacio();
+            notificacio.setNotifyMessage("Error guardant el formulari FEMPO");
+            notificacio.setNotifyType(NotificacioTipus.ERROR);
+            return new ResponseEntity<>(notificacio, HttpStatus.NOT_ACCEPTABLE);
+        }
 
         form.setIdCursAcademic(cursAcademic.getIdcursAcademic());
 
         dadesFormulariService.save(form);
 
-        System.out.println("Configurant grups...<<<"+form.getGrup()+">>>");
-        ResponseEntity<GrupDto> responseEntity = coreRestClient.getByCodigrup(form.getGrup());
-        String idFolder = null;
-        String idSpreadSheet = null;
-        if(responseEntity != null && responseEntity.getBody() != null){
-            GrupDto grupDtoCore = responseEntity.getBody();
-            System.out.println("GrupDtoCore: "+grupDtoCore);
-            if(grupDtoCore != null && grupDtoCore.getIdgrup() != null) {
-                GrupDto grupDtoGestorDocumental = grupService.getByIdGrupCore(grupDtoCore.getIdgrup());
+        log.info("Configurant grups...<<<{}>>>", form.getGrup());
+        GrupDto grupDtoGestorDocumental = getGrupGestorDocumentalByCodi(form.getGrup());
+        String idFolder = grupDtoGestorDocumental != null ? grupDtoGestorDocumental.getFolderGoogleDrive() : null;
+        String idSpreadSheet = grupDtoGestorDocumental != null ? grupDtoGestorDocumental.getIdGoogleSpreadsheet() : null;
 
-                System.out.println("grupDtoGestorDocumental: "+grupDtoGestorDocumental);
+        if (StringUtils.hasText(idFolder) && StringUtils.hasText(idSpreadSheet)) {
+            Map<String, String> data = getGettersDataFormPosition(form, email);
 
-                if(grupDtoGestorDocumental != null) {
-                    idFolder = grupDtoGestorDocumental.getFolderGoogleDrive();
-                    idSpreadSheet = grupDtoGestorDocumental.getIdGoogleSpreadsheet();
+            try {
+                // Carpeta específica del grup
+                googleDriveService.writeDataPosition(data, idSpreadSheet);
+
+                // Carpeta general
+                googleDriveService.writeDataPosition(data, this.idSpreadsheetFEMPOGeneral);
+
+                // Borrar documents de pll_document de eliminats de l'alumne
+                UsuariDto usuariAlumne = coreRestClient.getUsuariByEmail(form.getEmailAlumne()).getBody();
+                if (usuariAlumne == null || usuariAlumne.getIdusuari() == null) {
+                    log.error("No s'ha pogut obtenir l'usuari de l'alumne per email {}", form.getEmailAlumne());
+                    Notificacio notificacio = new Notificacio();
+                    notificacio.setNotifyMessage("Error guardant el formulari FEMPO");
+                    notificacio.setNotifyType(NotificacioTipus.ERROR);
+                    return new ResponseEntity<>(notificacio, HttpStatus.NOT_ACCEPTABLE);
                 }
+                List<DocumentDto> documentsEliminats = documentService.deleteAllByIdUsuariAndEliminatTrue(
+                        usuariAlumne.getIdusuari(),
+                        convocatoria
+                );
+
+                log.info("Documents borrats:");
+                documentsEliminats.forEach(s -> log.info("{}", s.getNomOriginal()));
+
+                Notificacio notificacio = new Notificacio();
+                notificacio.setNotifyMessage("Formulari FEMPO guardat correctament");
+                notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+                return new ResponseEntity<>(notificacio, HttpStatus.OK);
+            }catch (Exception ex) {
+                log.error("Error borrant documents antics o enviant dades a xls", ex);
+                Notificacio notificacio = new Notificacio();
+                notificacio.setNotifyMessage("Error borrant documents antics o enviant dades a xls");
+                notificacio.setNotifyType(NotificacioTipus.ERROR);
+                return new ResponseEntity<>(notificacio, HttpStatus.NOT_ACCEPTABLE);
             }
+
         }
-
-        if(idFolder!=null && idSpreadSheet!=null && !idFolder.isEmpty() && !idSpreadSheet.isEmpty()){
-            // Carpeta específica del grup
-            googleDriveService.writeDataPosition(getGettersDataFormPosition(form, email), idSpreadSheet);
-
-            // Carpeta general
-            googleDriveService.writeDataPosition(getGettersDataFormPosition(form, email), this.idSpreadsheetFEMPOGeneral);
-
-            Notificacio notificacio = new Notificacio();
-            notificacio.setNotifyMessage("Formulari FEMPO guardat correctament");
-            notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-            return new ResponseEntity<>(notificacio, HttpStatus.OK);
-        }
-        log.error("Error guardant el formulari FEMPO");
+        log.error("Error guardant el formulari FEMPO: dades de grup incompletes");
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Error guardant el formulari FEMPO");
         notificacio.setNotifyType(NotificacioTipus.ERROR);
         return new ResponseEntity<>(notificacio, HttpStatus.NOT_ACCEPTABLE);
+    }
+
+    private GrupDto getGrupGestorDocumentalByCodi(String codiGrup) {
+        ResponseEntity<GrupDto> responseEntity = coreRestClient.getByCodigrup(codiGrup);
+        GrupDto grupDtoCore = responseEntity != null ? responseEntity.getBody() : null;
+        if (grupDtoCore == null || grupDtoCore.getIdgrup() == null) {
+            log.error("No s'ha trobat el grup al core per codi {}", codiGrup);
+            return null;
+        }
+
+        GrupDto grupDtoGestorDocumental = grupService.getByIdGrupCore(grupDtoCore.getIdgrup());
+        if (grupDtoGestorDocumental == null) {
+            log.error("No s'ha trobat el grup al gestor documental per id {}", grupDtoCore.getIdgrup());
+        }
+        return grupDtoGestorDocumental;
     }
 
     private static Map<String,String> getGettersDataFormPosition(DadesFormulariDto form, String email) {
