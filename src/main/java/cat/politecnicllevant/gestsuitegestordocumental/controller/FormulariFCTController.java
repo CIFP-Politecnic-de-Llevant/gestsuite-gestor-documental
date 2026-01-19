@@ -30,8 +30,6 @@ public class FormulariFCTController {
     private final DadesFormulariService dadesFormulariService;
     private final CoreRestClient coreRestClient;
     private final GrupService grupService;
-    private final DocumentService documentService;
-    private final ConvocatoriaService convocatoriaService;
     private final String idSpreadsheetFEMPOGeneral = "1B452x9ovCin40_yQpyJ_-TgunGQYVr50zGESGgE8Y2o";
 
     //FORMULARI FCT
@@ -58,21 +56,7 @@ public class FormulariFCTController {
     }
 
     @PostMapping("/formulari/save-formulari-fempo")
-    public ResponseEntity<Notificacio> saveFormFEMPO(@RequestBody DadesFormulariDto form, @RequestParam String email, @RequestParam(required = false) Long idConvocatoria) throws NoSuchMethodException, GeneralSecurityException, IOException, InvocationTargetException, IllegalAccessException {
-
-        ConvocatoriaDto convocatoria;
-        if (idConvocatoria != null) {
-            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
-        } else {
-            convocatoria = convocatoriaService.findConvocatoriaActual();
-        }
-        if (convocatoria == null) {
-            log.error("No s'ha pogut determinar la convocatòria");
-            Notificacio notificacio = new Notificacio();
-            notificacio.setNotifyMessage("Error guardant el formulari FEMPO");
-            notificacio.setNotifyType(NotificacioTipus.ERROR);
-            return new ResponseEntity<>(notificacio, HttpStatus.NOT_ACCEPTABLE);
-        }
+    public ResponseEntity<Notificacio> saveFormFEMPO(@RequestBody DadesFormulariDto form, @RequestParam String email) throws NoSuchMethodException, GeneralSecurityException, IOException, InvocationTargetException, IllegalAccessException {
 
         CursAcademicDto cursAcademic = this.coreRestClient.getActualCursAcademic().getBody();
         if (cursAcademic == null) {
@@ -101,23 +85,6 @@ public class FormulariFCTController {
 
                 // Carpeta general
                 googleDriveService.writeDataPosition(data, this.idSpreadsheetFEMPOGeneral);
-
-                // Borrar documents de pll_document de eliminats de l'alumne
-                UsuariDto usuariAlumne = coreRestClient.getUsuariByEmail(form.getEmailAlumne()).getBody();
-                if (usuariAlumne == null || usuariAlumne.getIdusuari() == null) {
-                    log.error("No s'ha pogut obtenir l'usuari de l'alumne per email {}", form.getEmailAlumne());
-                    Notificacio notificacio = new Notificacio();
-                    notificacio.setNotifyMessage("Error guardant el formulari FEMPO");
-                    notificacio.setNotifyType(NotificacioTipus.ERROR);
-                    return new ResponseEntity<>(notificacio, HttpStatus.NOT_ACCEPTABLE);
-                }
-                List<DocumentDto> documentsEliminats = documentService.deleteAllByIdUsuariAndEliminatTrue(
-                        usuariAlumne.getIdusuari(),
-                        convocatoria
-                );
-
-                log.info("Documents borrats:");
-                documentsEliminats.forEach(s -> log.info("{}", s.getNomOriginal()));
 
                 Notificacio notificacio = new Notificacio();
                 notificacio.setNotifyMessage("Formulari FEMPO guardat correctament");

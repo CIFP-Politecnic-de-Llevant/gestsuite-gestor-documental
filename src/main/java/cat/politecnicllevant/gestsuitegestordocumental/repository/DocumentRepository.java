@@ -17,12 +17,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     Optional<Document> findByNomOriginalAndConvocatoria(String nom, Convocatoria convocatoria);
     Optional<Document> findByIdDocumentAndConvocatoria(Long id, Convocatoria convocatoria);
     Optional<Document> findByIdDocumentAndConvocatoriaAndEliminatFalse(Long id, Convocatoria convocatoria);
-    List<Document> findAllByGrupCodiAndConvocatoria(String grupCodi, Convocatoria convocatoria);
     List<Document> findAllByGrupCodiAndConvocatoriaAndEliminatFalse(String grupCodi, Convocatoria convocatoria);
-    void deleteByIdDocumentAndConvocatoria(Long idDocument, Convocatoria convocatoria);
-    void deleteAllByIdUsuariAndConvocatoria(Long idusuari, Convocatoria convocatoria);
-    List<Document> deleteAllByIdUsuariAndConvocatoriaAndEliminatTrue(Long idUsuari, Convocatoria convocatoria);
-    List<Document> findAllByIdFitxerIsNotNullAndTraspassatIsFalseAndConvocatoria(Convocatoria convocatoria);
     List<Document> findAllByIdFitxerIsNotNullAndTraspassatIsFalseAndEliminatFalseAndConvocatoria(Convocatoria convocatoria);
     List<Document> findAllByIdUsuariAndConvocatoria(Long idusuari, Convocatoria convocatoria);
 }

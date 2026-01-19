@@ -158,13 +158,6 @@ public class DocumentService {
         documentRepository.saveAll(documents);
     }
 
-    @Transactional
-    public List<DocumentDto> deleteAllByIdUsuariAndEliminatTrue(Long idusuari, ConvocatoriaDto convocatoria) {
-        Convocatoria convocatoriaEntity = modelMapper.map(convocatoria, Convocatoria.class);
-        List<Document> documents = documentRepository.deleteAllByIdUsuariAndConvocatoriaAndEliminatTrue(idusuari, convocatoriaEntity);
-        return documents.stream().map(d -> modelMapper.map(d, DocumentDto.class)).toList();
-    }
-
     public DocumentDto getDocumentByGoogleDriveFile(File driveFile, ConvocatoriaDto convocatoria) throws Exception {
         DocumentDto document = new DocumentDto();
 
