@@ -180,7 +180,6 @@ public class GoogleDriveService {
 
             service.files().delete(id)
                     .setSupportsAllDrives(true)
-                    .setUseDomainAdminAccess(useDomainAdminAccess)
                     .execute();
         } catch (GoogleJsonResponseException e) {
             if (e.getStatusCode() == 403 && !useDomainAdminAccess && !adminUser.equalsIgnoreCase(user)) {
