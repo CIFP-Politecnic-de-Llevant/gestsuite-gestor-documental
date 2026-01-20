@@ -59,9 +59,6 @@ public @Data class Document {
     @Column(name = "traspassat", nullable = false)
     private Boolean traspassat;
 
-    @Column(name = "eliminat", nullable = false, columnDefinition = "boolean default false")
-    private Boolean eliminat = false;
-
 
     //MS CORE
     @Column(name = "idusuari", nullable = true)
@@ -86,11 +83,4 @@ public @Data class Document {
     //@JsonBackReference
     private Convocatoria convocatoria;
 
-    @PrePersist
-    @PreUpdate
-    private void ensureDefaults() {
-        if (eliminat == null) {
-            eliminat = false;
-        }
-    }
 }

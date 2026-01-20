@@ -892,9 +892,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         if (document.getTraspassat() == null) {
             document.setTraspassat(false);
         }
-        if (document.getEliminat() == null) {
-            document.setEliminat(false);
-        }
 
         document.setNomOriginal("CUSTOM_" + tipusDocumentDto.getNom() + "_" + curs + "_" + idusuari);
         //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
@@ -1118,9 +1115,6 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             } else if (document.getTraspassat() == null) {
                 document.setTraspassat(false);
             }
-            if (document.getEliminat() == null) {
-                document.setEliminat(false);
-            }
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -1188,8 +1182,41 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
 
         String firstDocumentId = documentIds.get(0).getAsString();
-        Long alumneId = this.documentService.getDocumentByIdGoogleDrive(firstDocumentId, convocatoria).getIdUsuari();
-        this.documentService.deleteAllByIdUsuari(alumneId, convocatoria);
+        DocumentDto firstDocument = this.documentService.getDocumentByIdGoogleDrive(firstDocumentId, convocatoria);
+        Long alumneId = firstDocument != null ? firstDocument.getIdUsuari() : null;
+        String cicle = getCicleFromDocument(firstDocument);
+
+        if (alumneId != null && cicle != null) {
+            try {
+                UsuariDto alumne = coreRestClient.getProfile(String.valueOf(alumneId)).getBody();
+                if (alumne != null) {
+                    String expedient = normalizeToken(alumne.getGestibExpedient());
+                    String fullName = normalizeToken(buildStudentName(alumne.getGestibCognom1(), alumne.getGestibCognom2(), alumne.getGestibNom()));
+                    String shortName = normalizeToken(buildStudentName(alumne.getGestibCognom1(), alumne.getGestibNom()));
+                    String sharedPath = "FEMPO/" + cicle + "_Q_FEMPO";
+
+                    List<File> sharedFiles = googleDriveService.getFilesInFolder(sharedPath, email);
+                    for (File sharedFile : sharedFiles) {
+                        String normalizedFileName = normalizeToken(sharedFile.getName());
+                        boolean matchesName = (!fullName.isEmpty() && normalizedFileName.contains(fullName))
+                                || (!shortName.isEmpty() && normalizedFileName.contains(shortName));
+                        boolean matchesExpedient = !expedient.isEmpty() && normalizedFileName.contains(expedient);
+                        if (matchesName || matchesExpedient) {
+                            googleDriveService.deleteFileById(sharedFile.getId(), email);
+                        }
+                    }
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Error obtenint documents FEMPO per al cicle {}", cicle, e);
+            } catch (Exception e) {
+                log.error("Error esborrant documents FEMPO de l'alumne {}", alumneId, e);
+            }
+        }
+
+        if (alumneId != null) {
+            this.documentService.deleteAllByIdUsuari(alumneId, convocatoria);
+        }
 
         this.googleDriveService.deleteFolder(folderName, email, parentFolderId);
 
@@ -1510,5 +1537,46 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
     private boolean fileAlreadyExist(String fileName, List<File> folderFiles) {
         return folderFiles.stream().anyMatch(folderFile -> folderFile.getName().equals(fileName));
+    }
+
+    private String getCicleFromDocument(DocumentDto document) {
+        if (document == null) {
+            return null;
+        }
+        if (document.getNomOriginal() != null) {
+            String[] parts = document.getNomOriginal().split("_");
+            if (parts.length > 0 && !parts[0].isEmpty()) {
+                return parts[0];
+            }
+        }
+        return document.getGrupCodi();
+    }
+
+    private String buildStudentName(String... parts) {
+        StringBuilder builder = new StringBuilder();
+        if (parts == null) {
+            return "";
+        }
+        for (String part : parts) {
+            if (part == null) {
+                continue;
+            }
+            String trimmed = part.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            if (builder.length() > 0) {
+                builder.append(' ');
+            }
+            builder.append(trimmed);
+        }
+        return builder.toString();
+    }
+
+    private String normalizeToken(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.toLowerCase().replace('_', ' ').replaceAll("\\s+", " ").trim();
     }
 }
