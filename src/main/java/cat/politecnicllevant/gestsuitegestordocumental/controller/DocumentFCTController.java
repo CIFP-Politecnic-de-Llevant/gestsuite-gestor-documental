@@ -1195,7 +1195,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     String shortName = normalizeToken(buildStudentName(alumne.getGestibCognom1(), alumne.getGestibNom()));
                     String sharedPath = "FEMPO/" + cicle + "_Q_FEMPO";
 
-                    List<File> sharedFiles = googleDriveService.getFilesInFolder(sharedPath, email);
+                    List<File> sharedFiles = googleDriveService.getFilesInFolder(sharedPath, userEmail);
                     log.info(
                             "Fitxers FEMPO trobats: path={} total={}",
                             sharedPath,
@@ -1215,7 +1215,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                                     matchesName,
                                     matchesExpedient
                             );
-                            googleDriveService.deleteFileById(sharedFile.getId(), email);
+                            googleDriveService.deleteFileById(sharedFile.getId(), userEmail);
                         }
                     }
                 }
