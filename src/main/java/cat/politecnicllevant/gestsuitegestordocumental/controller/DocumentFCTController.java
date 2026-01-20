@@ -1196,12 +1196,25 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                     String sharedPath = "FEMPO/" + cicle + "_Q_FEMPO";
 
                     List<File> sharedFiles = googleDriveService.getFilesInFolder(sharedPath, email);
+                    log.info(
+                            "Fitxers FEMPO trobats: path={} total={}",
+                            sharedPath,
+                            sharedFiles != null ? sharedFiles.size() : 0
+                    );
                     for (File sharedFile : sharedFiles) {
                         String normalizedFileName = normalizeToken(sharedFile.getName());
                         boolean matchesName = (!fullName.isEmpty() && normalizedFileName.contains(fullName))
                                 || (!shortName.isEmpty() && normalizedFileName.contains(shortName));
                         boolean matchesExpedient = !expedient.isEmpty() && normalizedFileName.contains(expedient);
                         if (matchesName || matchesExpedient) {
+                            log.info(
+                                    "Esborrant fitxer FEMPO: path={} id={} name={} matchName={} matchExpedient={}",
+                                    sharedPath,
+                                    sharedFile.getId(),
+                                    sharedFile.getName(),
+                                    matchesName,
+                                    matchesExpedient
+                            );
                             googleDriveService.deleteFileById(sharedFile.getId(), email);
                         }
                     }
@@ -1546,10 +1559,10 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         if (document.getNomOriginal() != null) {
             String[] parts = document.getNomOriginal().split("_");
             if (parts.length > 0 && !parts[0].isEmpty()) {
-                return parts[0];
+                return normalizeCicleFromGroup(parts[0]);
             }
         }
-        return document.getGrupCodi();
+        return normalizeCicleFromGroup(document.getGrupCodi());
     }
 
     private String buildStudentName(String... parts) {
@@ -1578,5 +1591,20 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             return "";
         }
         return value.toLowerCase().replace('_', ' ').replaceAll("\\s+", " ").trim();
+    }
+
+    private String normalizeCicleFromGroup(String groupCode) {
+        if (groupCode == null) {
+            return null;
+        }
+        String trimmed = groupCode.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        int lastIndex = trimmed.length() - 1;
+        if (Character.isLetter(trimmed.charAt(lastIndex))) {
+            return trimmed.substring(0, lastIndex);
+        }
+        return trimmed;
     }
 }
