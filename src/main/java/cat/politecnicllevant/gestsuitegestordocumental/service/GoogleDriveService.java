@@ -3,6 +3,7 @@ package cat.politecnicllevant.gestsuitegestordocumental.service;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.MimeType;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -164,6 +165,10 @@ public class GoogleDriveService {
     }
 
     public void deleteFileById(String id, String user) {
+        deleteFileById(id, user, false);
+    }
+
+    private void deleteFileById(String id, String user, boolean useDomainAdminAccess) {
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
@@ -173,9 +178,19 @@ public class GoogleDriveService {
 
             Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
 
-            service.files().delete(id).setSupportsAllDrives(true).execute();
+            service.files().delete(id)
+                    .setSupportsAllDrives(true)
+                    .setUseDomainAdminAccess(useDomainAdminAccess)
+                    .execute();
+        } catch (GoogleJsonResponseException e) {
+            if (e.getStatusCode() == 403 && !useDomainAdminAccess && !adminUser.equalsIgnoreCase(user)) {
+                log.warn("Insufficient permissions deleting file {} as {}. Retrying as admin.", id, user);
+                deleteFileById(id, adminUser, true);
+                return;
+            }
+            log.error("Error deleting file {} as {}", id, user, e);
         } catch (IOException | GeneralSecurityException e) {
-            e.printStackTrace();
+            log.error("Error deleting file {} as {}", id, user, e);
         }
     }
 
