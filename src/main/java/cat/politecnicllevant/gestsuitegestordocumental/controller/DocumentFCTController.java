@@ -9,6 +9,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.dto.google.FitxerBucketDt
 import cat.politecnicllevant.gestsuitegestordocumental.restclient.CoreRestClient;
 import cat.politecnicllevant.gestsuitegestordocumental.service.*;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -1215,7 +1216,8 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
                                     matchesName,
                                     matchesExpedient
                             );
-                            googleDriveService.deleteFileById(sharedFile.getId(), userEmail);
+                            String ownerEmail = resolveOwnerEmail(sharedFile);
+                            googleDriveService.deleteFileByIdWithOwnerFallback(sharedFile.getId(), userEmail, ownerEmail);
                         }
                     }
                 }
@@ -1563,6 +1565,26 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             }
         }
         return normalizeCicleFromGroup(document.getGrupCodi());
+    }
+
+    private String resolveOwnerEmail(File file) {
+        if (file == null) {
+            return null;
+        }
+        List<User> owners = file.getOwners();
+        if (owners == null || owners.isEmpty()) {
+            return null;
+        }
+        for (User owner : owners) {
+            if (owner == null) {
+                continue;
+            }
+            String email = owner.getEmailAddress();
+            if (email != null && !email.isBlank()) {
+                return email;
+            }
+        }
+        return null;
     }
 
     private String buildStudentName(String... parts) {

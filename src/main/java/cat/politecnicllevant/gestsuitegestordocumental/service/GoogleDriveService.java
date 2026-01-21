@@ -165,10 +165,18 @@ public class GoogleDriveService {
     }
 
     public void deleteFileById(String id, String user) {
-        deleteFileById(id, user, false);
+        deleteFileByIdInternal(id, user);
     }
 
-    private void deleteFileById(String id, String user, boolean useDomainAdminAccess) {
+    public void deleteFileByIdWithOwnerFallback(String id, String user, String ownerEmail) {
+        boolean deleted = deleteFileByIdInternal(id, user);
+        if (!deleted && ownerEmail != null && !ownerEmail.isBlank() && !ownerEmail.equalsIgnoreCase(user)) {
+            log.warn("Retrying delete for file {} as owner {}", id, ownerEmail);
+            deleteFileByIdInternal(id, ownerEmail);
+        }
+    }
+
+    private boolean deleteFileByIdInternal(String id, String user) {
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
@@ -181,15 +189,13 @@ public class GoogleDriveService {
             service.files().delete(id)
                     .setSupportsAllDrives(true)
                     .execute();
+            return true;
         } catch (GoogleJsonResponseException e) {
-            if (e.getStatusCode() == 403 && !useDomainAdminAccess && !adminUser.equalsIgnoreCase(user)) {
-                log.warn("Insufficient permissions deleting file {} as {}. Retrying as admin.", id, user);
-                deleteFileById(id, adminUser, true);
-                return;
-            }
             log.error("Error deleting file {} as {}", id, user, e);
+            return false;
         } catch (IOException | GeneralSecurityException e) {
             log.error("Error deleting file {} as {}", id, user, e);
+            return false;
         }
     }
 
