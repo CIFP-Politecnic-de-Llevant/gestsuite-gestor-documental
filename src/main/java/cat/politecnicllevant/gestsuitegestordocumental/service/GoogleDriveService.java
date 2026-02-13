@@ -243,13 +243,20 @@ public class GoogleDriveService {
                 fileMetadata.setMimeType(MimeType.FOLDER.toString());
 
                 System.out.println("Folder created with name "+folderName+" and idParent "+idParent);
-                return service.files().create(fileMetadata)
+                File createdFile = service.files().create(fileMetadata)
                         .setSupportsAllDrives(true)
                         .setFields("id")
                         .execute();
+                
+                // Afegim la propietat només a l'objecte retornat, no es persisteix a Google Drive
+                createdFile.setAppProperties(Collections.singletonMap("isNewFolder", "true"));
+                return createdFile;
             } else {
                 System.out.println("Folder not created. Folder already exists");
-                return service.files().get(idCurrent).setSupportsAllDrives(true).execute();
+                // Recuperem la carpeta existent i afegim la propietat per a ús intern
+                File existingFile = service.files().get(idCurrent).setSupportsAllDrives(true).setFields("id").execute();
+                existingFile.setAppProperties(Collections.singletonMap("isNewFolder", "false"));
+                return existingFile;
             }
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
