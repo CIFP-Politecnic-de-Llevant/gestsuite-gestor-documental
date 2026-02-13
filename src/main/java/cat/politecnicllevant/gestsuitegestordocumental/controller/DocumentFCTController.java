@@ -1538,48 +1538,47 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         });
     }
 
-    // TODO: BORRAR AQUEST ENDPOINT QUAN LA MIGRACIÓ SIGUI AUTOMÀTICA
-    @PostMapping("/document/migrarDocumentsGenerals")
-    public ResponseEntity<Notificacio> migrarDocumentsGeneralsLegacy() throws Exception {
-
-        List<DocumentGeneralDto> docs = documentService.findAllDocumentsGenerals();
-
-        File parentFolder = googleDriveService.getFolder(userPathDocsMigrats, userEmail, "root");
-        System.out.println("parentFolder: " + parentFolder);
-
-        docs.forEach(document -> {
-            System.out.println("Provant d'obtenir document amb id: " + document.getIdGoogleDrive() + " amb nom: " + document.getNomOriginal());
-            File docFile = googleDriveService.getFileById(document.getIdGoogleDrive(), userEmail);
-
-            List<GrupDto> grups = grupService.findAllWithFempo();
-
-            grups.forEach(grup -> {
-                String cursGrup = grup.getCursGrup();
-                String cicle = cursGrup.substring(0, cursGrup.length() - 1);
-                String folderName = cicle + "_Q_FEMPO";
-                File groupFolder = googleDriveService.getFolder(folderName, userEmail, parentFolder.getId());
-                if (groupFolder != null) {
-                    System.out.println("groupFolder: " + groupFolder.getName());
-                    String folderPath = userPathDocsMigrats+"/"+folderName;
-                    String nomDocument = cursGrup + "_" + docFile.getName();
-                    try {
-                        List<File> existingFiles = googleDriveService.getFilesInFolder(folderPath,userEmail);
-                        if (!fileAlreadyExist(nomDocument, existingFiles)) {
-                            googleDriveService.copy(docFile,userEmail,nomDocument,groupFolder.getId());
-                        }
-                    } catch (InterruptedException e) {
-                        System.out.println("Error obtenint documents de la carpeta " + folderPath);
-                    }
-                }
-            });
-        });
-
-        Notificacio notificacio = new Notificacio();
-        notificacio.setNotifyMessage("Els documents generals s'han migrat a les carpetes de grup FEMPO");
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
-
-        return new ResponseEntity<>(notificacio, HttpStatus.OK);
-    }
+//    @PostMapping("/document/migrarDocumentsGenerals")
+//    public ResponseEntity<Notificacio> migrarDocumentsGeneralsLegacy() throws Exception {
+//
+//        List<DocumentGeneralDto> docs = documentService.findAllDocumentsGenerals();
+//
+//        File parentFolder = googleDriveService.getFolder(userPathDocsMigrats, userEmail, "root");
+//        System.out.println("parentFolder: " + parentFolder);
+//
+//        docs.forEach(document -> {
+//            System.out.println("Provant d'obtenir document amb id: " + document.getIdGoogleDrive() + " amb nom: " + document.getNomOriginal());
+//            File docFile = googleDriveService.getFileById(document.getIdGoogleDrive(), userEmail);
+//
+//            List<GrupDto> grups = grupService.findAllWithFempo();
+//
+//            grups.forEach(grup -> {
+//                String cursGrup = grup.getCursGrup();
+//                String cicle = cursGrup.substring(0, cursGrup.length() - 1);
+//                String folderName = cicle + "_Q_FEMPO";
+//                File groupFolder = googleDriveService.getFolder(folderName, userEmail, parentFolder.getId());
+//                if (groupFolder != null) {
+//                    System.out.println("groupFolder: " + groupFolder.getName());
+//                    String folderPath = userPathDocsMigrats+"/"+folderName;
+//                    String nomDocument = cursGrup + "_" + docFile.getName();
+//                    try {
+//                        List<File> existingFiles = googleDriveService.getFilesInFolder(folderPath,userEmail);
+//                        if (!fileAlreadyExist(nomDocument, existingFiles)) {
+//                            googleDriveService.copy(docFile,userEmail,nomDocument,groupFolder.getId());
+//                        }
+//                    } catch (InterruptedException e) {
+//                        System.out.println("Error obtenint documents de la carpeta " + folderPath);
+//                    }
+//                }
+//            });
+//        });
+//
+//        Notificacio notificacio = new Notificacio();
+//        notificacio.setNotifyMessage("Els documents generals s'han migrat a les carpetes de grup FEMPO");
+//        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+//
+//        return new ResponseEntity<>(notificacio, HttpStatus.OK);
+//    }
 
     private boolean fileAlreadyExist(String fileName, List<File> folderFiles) {
         return folderFiles.stream().anyMatch(folderFile -> folderFile.getName().equals(fileName));
