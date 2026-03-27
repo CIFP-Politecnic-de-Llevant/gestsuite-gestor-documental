@@ -872,7 +872,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     }
 
     @PostMapping("/documents/saveDocumentExtra")
-    public ResponseEntity<DocumentDto> saveDocument(@RequestBody String json) throws Exception {
+    public ResponseEntity<DocumentDto> saveDocument(@RequestBody String json, @RequestParam(required = false) Long idConvocatoria) throws Exception {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
 
         Long idusuari = null;
@@ -884,7 +884,12 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
 
         JsonObject documentJson = jsonObject.get("document").getAsJsonObject();
 
-        ConvocatoriaDto convocatoria = convocatoriaService.findConvocatoriaActual();
+        ConvocatoriaDto convocatoria;
+        if (idConvocatoria != null) {
+            convocatoria = convocatoriaService.findConvocatoriaById(idConvocatoria);
+        } else {
+            convocatoria = convocatoriaService.findConvocatoriaActual();
+        }
 
         DocumentDto document = gson.fromJson(documentJson, DocumentDto.class);
 
