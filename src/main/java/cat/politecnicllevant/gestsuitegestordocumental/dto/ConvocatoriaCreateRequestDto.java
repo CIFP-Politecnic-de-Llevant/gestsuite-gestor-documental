@@ -6,4 +6,5 @@ public @Data class ConvocatoriaCreateRequestDto {
     private ConvocatoriaDto convocatoria;
     private Long previousConvocatoriaId;
     private String previousPathDesti;
+    private Boolean applyDriveChanges;
 }
