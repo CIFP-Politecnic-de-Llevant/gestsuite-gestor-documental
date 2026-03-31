@@ -4,8 +4,11 @@ import cat.politecnicllevant.gestsuitegestordocumental.domain.Convocatoria;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.ConvocatoriaCreateRequestDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.ConvocatoriaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.ConvocatoriaRepository;
+import com.google.api.services.drive.model.File;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +16,7 @@ import java.util.List;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ConvocatoriaService {
@@ -20,6 +24,9 @@ public class ConvocatoriaService {
     private final ConvocatoriaRepository convocatoriaRepository;
     private final ModelMapper modelMapper;
     private final GoogleDriveService googleDriveService;
+
+    @Value("${app.google.drive.user.email}")
+    private String driveUserEmail;
 
     public List<ConvocatoriaDto> findAll(){
         return convocatoriaRepository.findAll().stream()
@@ -114,10 +121,39 @@ public class ConvocatoriaService {
             convocatoria.setIdCursAcademic(convocatoriaDto.getIdCursAcademic());
 
             Convocatoria convocatoriaSaved = convocatoriaRepository.save(convocatoria);
+
+            if (Boolean.TRUE.equals(request.getDeleteOriginDocuments())) {
+                try {
+                    googleDriveService.deleteAllFilesInFolder("FCT", driveUserEmail);
+                } catch (Exception ex) {
+                    log.error("Error esborrant documents de la carpeta FCT", ex);
+                }
+
+                if (request.getSelectedQFempoFolders() != null) {
+                    for (String folderName : request.getSelectedQFempoFolders()) {
+                        try {
+                            googleDriveService.deleteFolderByPath("FEMPO/" + folderName, driveUserEmail);
+                        } catch (Exception ex) {
+                            log.error("Error esborrant FEMPO/{}", folderName, ex);
+                        }
+                    }
+                }
+            }
+
             return modelMapper.map(convocatoriaSaved, ConvocatoriaDto.class);
         } catch (RuntimeException e) {
             compensateDriveChanges(previousFolderRenamed, newFolderCreated, oldPreviousPathDesti, effectivePreviousPathDesti, newFolderId);
             throw e;
+        }
+    }
+
+    public List<String> listQFempoFolderNames() {
+        try {
+            List<File> folders = googleDriveService.getSubfoldersInFolder("FEMPO", "_Q_FEMPO", driveUserEmail);
+            return folders.stream().map(File::getName).sorted().collect(Collectors.toList());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interromput mentre es llistaven les carpetes Q_FEMPO", e);
         }
     }
 

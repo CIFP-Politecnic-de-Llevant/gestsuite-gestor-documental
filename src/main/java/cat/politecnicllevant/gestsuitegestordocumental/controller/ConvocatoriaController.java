@@ -21,6 +21,11 @@ public class ConvocatoriaController {
         return new ResponseEntity<>(convocatoriaService.findAll(), HttpStatus.OK);
     }
 
+    @GetMapping("/admin/convocatories/fempo-folders")
+    public ResponseEntity<List<String>> listFempoFolders() {
+        return new ResponseEntity<>(convocatoriaService.listQFempoFolderNames(), HttpStatus.OK);
+    }
+
     @PostMapping("/admin/convocatories")
     public ResponseEntity<ConvocatoriaDto> createConvocatoria(@RequestBody ConvocatoriaCreateRequestDto request) {
         return new ResponseEntity<>(convocatoriaService.create(request), HttpStatus.OK);

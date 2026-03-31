@@ -504,6 +504,99 @@ public class GoogleDriveService {
         }
     }
 
+    public List<File> getSubfoldersInFolder(String parentPath, String suffix, String user) throws InterruptedException {
+        return getSubfoldersInFolder(parentPath, suffix, user, 0);
+    }
+
+    private List<File> getSubfoldersInFolder(String parentPath, String suffix, String user, int retry) throws InterruptedException {
+        try {
+            String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+            HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
+
+            String[] folders = parentPath.split("/");
+            String folderId = "root";
+            for (String folder : folders) {
+                folderId = getFolderIdByNameAndIdParent(service, folder, folderId);
+            }
+
+            if (folderId == null) {
+                log.warn("Parent folder not found: {}", parentPath);
+                return Collections.emptyList();
+            }
+
+            FileList result = service.files().list()
+                    .setQ("mimeType='" + MimeType.FOLDER + "' and '" + folderId + "' in parents and not trashed")
+                    .setSupportsAllDrives(true)
+                    .setFields("files(id,name)")
+                    .setPageSize(1000)
+                    .execute();
+
+            List<File> allFolders = result.getFiles();
+            if (allFolders == null) {
+                return Collections.emptyList();
+            }
+
+            if (suffix != null && !suffix.isEmpty()) {
+                List<File> filtered = new ArrayList<>();
+                for (File f : allFolders) {
+                    if (f.getName().endsWith(suffix)) {
+                        filtered.add(f);
+                    }
+                }
+                return filtered;
+            }
+            return allFolders;
+        } catch (GeneralSecurityException | IOException e) {
+            if (retry < 5) {
+                TimeUnit.MILLISECONDS.sleep(((2 ^ retry) * 1000L) + getRandomMilliseconds());
+                return getSubfoldersInFolder(parentPath, suffix, user, retry + 1);
+            }
+            log.error("Error llistant subcarpetes de {} amb suffix {}", parentPath, suffix, e);
+        }
+        return Collections.emptyList();
+    }
+
+    public void deleteAllFilesInFolder(String path, String user) throws InterruptedException {
+        List<File> files = getFilesInFolder(path, user);
+        for (File file : files) {
+            try {
+                deleteFileByIdInternal(file.getId(), user);
+            } catch (Exception e) {
+                log.error("Error esborrant fitxer {} ({}) de la carpeta {}", file.getName(), file.getId(), path, e);
+            }
+        }
+    }
+
+    public void deleteFolderByPath(String path, String user) {
+        try {
+            String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+            HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
+
+            String[] folders = path.split("/");
+            String folderId = "root";
+            for (String folder : folders) {
+                folderId = getFolderIdByNameAndIdParent(service, folder, folderId);
+            }
+
+            if (folderId == null) {
+                log.warn("Folder not found for deletion: {}", path);
+                return;
+            }
+
+            service.files().delete(folderId).setSupportsAllDrives(true).execute();
+        } catch (IOException | GeneralSecurityException e) {
+            throw new IllegalStateException("No s'ha pogut esborrar la carpeta " + path, e);
+        }
+    }
+
     public void assignPermission(File file,PermissionType permissionType, PermissionRole permissionRole, String email, String user){
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
