@@ -30,4 +30,10 @@ public class ConvocatoriaController {
     public ResponseEntity<ConvocatoriaDto> createConvocatoria(@RequestBody ConvocatoriaCreateRequestDto request) {
         return new ResponseEntity<>(convocatoriaService.create(request), HttpStatus.OK);
     }
+
+    @PostMapping("/admin/convocatories/test-delete-fempo-folders")
+    public ResponseEntity<Void> testDeleteFempoFolders(@RequestBody List<String> folderNames) {
+        convocatoriaService.deleteQFempoFolders(folderNames);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

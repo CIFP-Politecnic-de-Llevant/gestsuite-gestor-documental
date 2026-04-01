@@ -157,6 +157,27 @@ public class ConvocatoriaService {
         }
     }
 
+    public void deleteQFempoFolders(List<String> folderNames) {
+        try {
+            googleDriveService.deleteAllFilesInFolder("FCT", driveUserEmail);
+            log.info("Fitxers de la carpeta FCT esborrats correctament (test)");
+        } catch (Exception e) {
+            log.error("Error esborrant fitxers de la carpeta FCT", e);
+            throw new IllegalStateException("Error esborrant fitxers de la carpeta FCT", e);
+        }
+
+        if (folderNames == null) return;
+        for (String folderName : folderNames) {
+            try {
+                googleDriveService.deleteFolderByPath("FEMPO/" + folderName, driveUserEmail);
+                log.info("Carpeta FEMPO/{} esborrada correctament", folderName);
+            } catch (Exception e) {
+                log.error("Error esborrant FEMPO/{}", folderName, e);
+                throw new IllegalStateException("Error esborrant la carpeta FEMPO/" + folderName, e);
+            }
+        }
+    }
+
     @Transactional
     public void delete(Long id){
         convocatoriaRepository.deleteById(id);
