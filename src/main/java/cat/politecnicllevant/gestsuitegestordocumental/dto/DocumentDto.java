@@ -8,6 +8,7 @@ import java.util.Set;
 public class DocumentDto {
     private Long idDocument;
     private String nomOriginal;
+    private String nomDocument;
 
     //GOOGLE DRIVE
     private String idGoogleDrive;

@@ -913,6 +913,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
             document.setTraspassat(false);
         }
 
+        document.setNomDocument(document.getNomOriginal());
         document.setNomOriginal("CUSTOM_" + tipusDocumentDto.getNom() + "_" + curs + "_" + idusuari);
         //Comprovem si el document ja existeix el nom, en posem  un altre d'únic
         int i = 1;
