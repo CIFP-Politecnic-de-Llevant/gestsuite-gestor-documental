@@ -1472,25 +1472,12 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         DocumentDto document = documentService.getDocumentById(idDocument, convocatoria);
         Part filePart = request.getPart("arxiu");
 
-        InputStream is = filePart.getInputStream();
-
-        // Reads the file into memory
-        /*
-         * Path path = Paths.get(audioPath); byte[] data = Files.readAllBytes(path);
-         * ByteString audioBytes = ByteString.copyFrom(data);
-         */
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        byte[] readBuf = new byte[4096];
-        while (is.available() > 0) {
-            int bytesRead = is.read(readBuf);
-            os.write(readBuf, 0, bytesRead);
-        }
-
         // Passam l'arxiu a dins una carpeta
         String pathArxiu = this.tmpPath + "/arxiu-fct-" + document.getIdDocument() + ".pdf";
 
-        OutputStream outputStream = new FileOutputStream(pathArxiu);
-        os.writeTo(outputStream);
+        try (InputStream is = filePart.getInputStream()) {
+            Files.copy(is, Paths.get(pathArxiu), StandardCopyOption.REPLACE_EXISTING);
+        }
 
         java.io.File f = new java.io.File(pathArxiu);
 
@@ -1527,7 +1514,7 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         }
         Notificacio notificacio = new Notificacio();
         notificacio.setNotifyMessage("Error pujant el fitxer." + bucketPathFiles + "/fct/" + document.getGrupCodi() + "/" + document.getNomOriginal());
-        notificacio.setNotifyType(NotificacioTipus.SUCCESS);
+        notificacio.setNotifyType(NotificacioTipus.ERROR);
 
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
     }
