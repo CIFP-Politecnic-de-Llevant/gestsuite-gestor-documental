@@ -168,6 +168,74 @@ public class GoogleDriveService {
         return Collections.emptyList();
     }
 
+    public List<File> getFilesInFolderById(String folderId, String user) {
+        return getFilesInFolderById(folderId, user, 0);
+    }
+
+    private List<File> getFilesInFolderById(String folderId, String user, int retry) {
+        try {
+            String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
+
+            HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
+
+            List<File> result = new ArrayList<>();
+
+            FileList query = service.files().list()
+                    .setQ("'" + folderId + "' in parents and not trashed")
+                    .setSupportsAllDrives(true)
+                    .setIncludeItemsFromAllDrives(true)
+                    .setCorpora("drive")
+                    .setDriveId(this.sharedDriveId)
+                    .setFields("nextPageToken, files(id,name,owners,mimeType,createdTime,modifiedTime,webViewLink,fullFileExtension,driveId,originalFilename,webContentLink)")
+                    .setPageSize(1000)
+                    .execute();
+
+            List<File> files = query.getFiles();
+            String pageToken = query.getNextPageToken();
+
+            if (files != null) {
+                result.addAll(files);
+
+                while (pageToken != null) {
+                    FileList query2 = service.files().list()
+                            .setQ("'" + folderId + "' in parents and not trashed")
+                            .setSupportsAllDrives(true)
+                            .setIncludeItemsFromAllDrives(true)
+                            .setCorpora("drive")
+                            .setDriveId(this.sharedDriveId)
+                            .setFields("nextPageToken, files(id,name,owners,mimeType,createdTime,modifiedTime,webViewLink,fullFileExtension,driveId,originalFilename,webContentLink)")
+                            .setPageToken(pageToken)
+                            .execute();
+                    List<File> files2 = query2.getFiles();
+                    pageToken = query2.getNextPageToken();
+
+                    if (files2 != null) {
+                        result.addAll(files2);
+                    }
+                }
+            }
+
+            return result;
+        } catch (GeneralSecurityException | IOException e) {
+            if (retry < 5) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(((2 ^ retry) * 1000L) + getRandomMilliseconds());
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return Collections.emptyList();
+                }
+                return getFilesInFolderById(folderId, user, retry + 1);
+            }
+            log.error("Error aconseguint documents de la carpeta amb id " + folderId + " i usuari " + user, e);
+        }
+        return Collections.emptyList();
+    }
+
     public void deleteFileById(String id, String user) {
         deleteFileByIdInternal(id, user);
     }

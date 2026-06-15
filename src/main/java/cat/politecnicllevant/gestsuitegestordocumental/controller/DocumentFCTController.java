@@ -228,12 +228,6 @@ public class DocumentFCTController {
                     ResponseEntity<File> responseCarpetaCicle = this.createFolder(gson.toJson(jsonCarpetaCicle));
                     File carpetaCicle = responseCarpetaCicle.getBody();
 
-                    // Si la carpeta és nova, traspassem els documents generals
-                    if (carpetaCicle != null && "true".equals(carpetaCicle.getAppProperties().get("isNewFolder"))) {
-                        log.info("La carpeta de cicle {} és nova, traspassant documents generals...", cicle);
-                        migrarDocumentsGenerals(carpetaCicle, cicle);
-                    }
-
                     JsonObject jsonFitxer = new JsonObject();
                     jsonFitxer.addProperty("idFile", document.getIdGoogleDrive());
                     jsonFitxer.addProperty("email", email);
@@ -314,12 +308,6 @@ public class DocumentFCTController {
                     // AQUÍ ES CREA LA CARPETA DE GRUP MENTRE ES VOL TRASPASSAR UN DOCUMENT GENERAL
                     File carpetaCicle = this.createFolder(gson.toJson(jsonCarpetaCicle)).getBody();
 
-                    // Si la carpeta és nova, traspassem els documents generals
-                    if (carpetaCicle != null && "true".equals(carpetaCicle.getAppProperties().get("isNewFolder"))) {
-                        log.info("La carpeta de cicle {} és nova, traspassant documents generals...", cicle);
-                        migrarDocumentsGenerals(carpetaCicle, cicle);
-                    }
-
                     JsonObject jsonCarpetaAlumne = new JsonObject();
                     jsonCarpetaAlumne.addProperty("folderName", cognoms + " " + nom);
                     jsonCarpetaAlumne.addProperty("email", email);
@@ -377,6 +365,28 @@ public class DocumentFCTController {
                 log.info("Document traspassat {}", document.getNomOriginal());
             } catch (Exception e) {
                 log.error("Error traspassant document", e);
+            }
+        }
+
+        //Traspassem els documents generals a totes les carpetes de cicle existents (noves i ja existents)
+        log.info("Traspassant documents generals a les carpetes de cicle...");
+        JsonObject jsonCarpetaRootGenerals = new JsonObject();
+        jsonCarpetaRootGenerals.addProperty("folderName", FOLDER_BASE);
+        jsonCarpetaRootGenerals.addProperty("email", email);
+        jsonCarpetaRootGenerals.addProperty("parentFolderId", APP_SHAREDDRIVE_GESTORDOCUMENTAL);
+
+        File carpetaRootGenerals = this.createFolder(gson.toJson(jsonCarpetaRootGenerals)).getBody();
+
+        for (String cicle : cicles) {
+            if (cicle.isEmpty()) continue;
+
+            try {
+                File carpetaCicleExistent = googleDriveService.getFolder(cicle, email, carpetaRootGenerals.getId());
+                if (carpetaCicleExistent != null) {
+                    migrarDocumentsGenerals(carpetaCicleExistent, cicle);
+                }
+            } catch (Exception e) {
+                log.error("Error traspassant documents generals a la carpeta de cicle {}", cicle, e);
             }
         }
 
@@ -1525,22 +1535,26 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
     private void migrarDocumentsGenerals(File carpetaGrupDesti, String cursGrup){
         List<DocumentGeneralDto> docs = documentService.findAllDocumentsGenerals();
 
-        File parentFolder = googleDriveService.getFolder(userPathDocsMigrats, userEmail, "root");
-        System.out.println("parentFolder: " + parentFolder);
+        List<File> fitxersExistents = googleDriveService.getFilesInFolderById(carpetaGrupDesti.getId(), userEmail);
 
         docs.forEach(document -> {
-            System.out.println("Provant d'obtenir document amb id: " + document.getIdGoogleDrive() + " amb nom: " + document.getNomOriginal());
             File documentGeneral = googleDriveService.getFileById(document.getIdGoogleDrive(), userEmail);
 
-            // copiar com es fa amb el traspas per respectar permisos etc...
-            JsonObject jsonFitxer = new JsonObject();
-            jsonFitxer.addProperty("idFile", document.getIdGoogleDrive());
-            jsonFitxer.addProperty("email", userEmail);
-            jsonFitxer.addProperty("filename", documentGeneral.getName());
-            jsonFitxer.addProperty("parentFolderId", carpetaGrupDesti.getId());
-            jsonFitxer.addProperty("originalName", document.getNomOriginal());
+            if (documentGeneral == null) {
+                log.warn("No s'ha trobat el document general amb id {} i nom {}", document.getIdGoogleDrive(), document.getNomOriginal());
+                return;
+            }
 
-            this.copyFile(gson.toJson(jsonFitxer)).getBody();
+            String nomFitxer = documentGeneral.getName();
+
+            if (fileAlreadyExist(nomFitxer, fitxersExistents)) {
+                return;
+            }
+
+            log.info("Traspassant document general {} a la carpeta de cicle {}...", nomFitxer, cursGrup);
+
+            // copiar com es fa amb el traspas per respectar permisos etc... (els permisos ja s'hereten de la carpeta de cicle)
+            googleDriveService.copy(documentGeneral, userEmail, nomFitxer, carpetaGrupDesti.getId());
         });
     }
 
