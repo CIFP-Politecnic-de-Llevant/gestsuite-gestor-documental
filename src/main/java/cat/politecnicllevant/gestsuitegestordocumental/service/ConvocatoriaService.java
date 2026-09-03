@@ -146,16 +146,21 @@ public class ConvocatoriaService {
                     for (String folderName : request.getSelectedQFempoFolders()) {
                         String path = driveUserPathDocsMigrats + "/" + folderName;
                         try {
-                            if (googleDriveService.deleteFolderByPathWithOwnerFallback(path, driveUserEmail)) {
-                                log.info("Carpeta {} esborrada correctament", path);
-                                response.getCarpetesEsborrades().add(folderName);
+                            int fallits = googleDriveService.emptyFolderByPathWithOwnerFallback(path, driveUserEmail);
+                            if (fallits == 0) {
+                                log.info("Carpeta {} buidada correctament", path);
+                                response.getCarpetesBuidades().add(folderName);
                             } else {
-                                log.error("No s'ha pogut esborrar la carpeta {}", path);
-                                response.getCarpetesNoEsborrades().add(folderName);
+                                log.error("No s'ha pogut buidar del tot la carpeta {}", path);
+                                response.getCarpetesNoBuidades().add(folderName);
                             }
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                            log.error("Interromput mentre es buidava {}", path, ex);
+                            response.getCarpetesNoBuidades().add(folderName);
                         } catch (Exception ex) {
-                            log.error("Error esborrant {}", path, ex);
-                            response.getCarpetesNoEsborrades().add(folderName);
+                            log.error("Error buidant {}", path, ex);
+                            response.getCarpetesNoBuidades().add(folderName);
                         }
                     }
                 }
@@ -171,18 +176,18 @@ public class ConvocatoriaService {
     }
 
     private void aplicaNotificacio(ConvocatoriaCreateResponseDto response) {
-        int noEsborrades = response.getCarpetesNoEsborrades().size();
+        int noBuidades = response.getCarpetesNoBuidades().size();
         int fitxersFallits = response.getFitxersOrigenNoEsborrats() != null ? response.getFitxersOrigenNoEsborrats() : 0;
 
-        if (noEsborrades == 0 && fitxersFallits == 0) {
+        if (noBuidades == 0 && fitxersFallits == 0) {
             response.setNotifyType(NotificacioTipus.SUCCESS);
             response.setNotifyMessage("Convocatòria creada correctament");
             return;
         }
 
-        StringBuilder missatge = new StringBuilder("Convocatòria creada, però no s'ha pogut esborrar tot l'origen:");
-        if (noEsborrades > 0) {
-            missatge.append(" carpetes ").append(String.join(", ", response.getCarpetesNoEsborrades())).append(".");
+        StringBuilder missatge = new StringBuilder("Convocatòria creada, però no s'ha pogut buidar tot l'origen:");
+        if (noBuidades > 0) {
+            missatge.append(" carpetes ").append(String.join(", ", response.getCarpetesNoBuidades())).append(".");
         }
         if (fitxersFallits > 0) {
             missatge.append(" ").append(fitxersFallits).append(" fitxer/s de ").append(driveUserPathOrigen).append(".");
@@ -205,7 +210,7 @@ public class ConvocatoriaService {
         }
     }
 
-    public void deleteQFempoFolders(List<String> folderNames) {
+    public void emptyQFempoFolders(List<String> folderNames) {
         try {
             googleDriveService.deleteAllFilesInFolder(driveUserPathOrigen, driveUserEmail);
             log.info("Fitxers de la carpeta {} esborrats correctament (test)", driveUserPathOrigen);
@@ -218,13 +223,16 @@ public class ConvocatoriaService {
         for (String folderName : folderNames) {
             String path = driveUserPathDocsMigrats + "/" + folderName;
             try {
-                if (!googleDriveService.deleteFolderByPathWithOwnerFallback(path, driveUserEmail)) {
-                    throw new IllegalStateException("Error esborrant la carpeta " + path);
+                if (googleDriveService.emptyFolderByPathWithOwnerFallback(path, driveUserEmail) != 0) {
+                    throw new IllegalStateException("Error buidant la carpeta " + path);
                 }
-                log.info("Carpeta {} esborrada correctament", path);
+                log.info("Carpeta {} buidada correctament", path);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Interromput mentre es buidava la carpeta " + path, e);
             } catch (Exception e) {
-                log.error("Error esborrant {}", path, e);
-                throw new IllegalStateException("Error esborrant la carpeta " + path, e);
+                log.error("Error buidant {}", path, e);
+                throw new IllegalStateException("Error buidant la carpeta " + path, e);
             }
         }
     }

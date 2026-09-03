@@ -8,8 +8,8 @@ import java.util.List;
 
 public @Data class ConvocatoriaCreateResponseDto {
     private ConvocatoriaDto convocatoria;
-    private List<String> carpetesEsborrades = new ArrayList<>();
-    private List<String> carpetesNoEsborrades = new ArrayList<>();
+    private List<String> carpetesBuidades = new ArrayList<>();
+    private List<String> carpetesNoBuidades = new ArrayList<>();
     private Integer fitxersOrigenNoEsborrats = 0;
     private NotificacioTipus notifyType;
     private String notifyMessage;
