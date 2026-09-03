@@ -6,6 +6,7 @@ import cat.politecnicllevant.gestsuitegestordocumental.repository.GrupRepository
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,16 +36,20 @@ public class GrupService {
         return grupDtos;
     }
 
+    /**
+     * Grups que realment es poden fer servir per desar un formulari FEMPO: han de tenir
+     * carpeta de Drive i full de càlcul configurats, que és el que exigeix el guardat.
+     */
     public List<GrupDto> findAllWithFempo() {
         List<GrupDto> grupWithFempoDtos = new ArrayList<>();
         List<Grup> grupsWithFempo = grupRepository.findByIdGoogleSpreadsheetIsNotNull();
         for (Grup grup : grupsWithFempo) {
-            GrupDto grupDto = new GrupDto();
-            grupDto.setIdGoogleSpreadsheet(grup.getIdGoogleSpreadsheet());
-            grupDto.setFolderGoogleDrive(grup.getFolderGoogleDrive());
-            grupDto.setCursGrup(grup.getCursGrup());
-
-            grupWithFempoDtos.add(grupDto);
+            if (Boolean.FALSE.equals(grup.getActiu())
+                    || !StringUtils.hasText(grup.getIdGoogleSpreadsheet())
+                    || !StringUtils.hasText(grup.getFolderGoogleDrive())) {
+                continue;
+            }
+            grupWithFempoDtos.add(mapToDto(grup));
         }
 
         return grupWithFempoDtos;

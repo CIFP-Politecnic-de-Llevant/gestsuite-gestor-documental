@@ -23,6 +23,15 @@ public class GrupController {
         return new ResponseEntity<>(grupService.findAll(), HttpStatus.OK);
     }
 
+    /**
+     * Grups configurats per a FEMPO (amb carpeta de Drive i full de càlcul).
+     * Els que no hi surten no es poden desar des del formulari FEMPO.
+     */
+    @GetMapping("/fempo")
+    public ResponseEntity<List<GrupDto>> getGrupsFempo() {
+        return new ResponseEntity<>(grupService.findAllWithFempo(), HttpStatus.OK);
+    }
+
     @GetMapping("/{id}/relacions")
     public ResponseEntity<List<GrupDto>> getRelacions(@PathVariable Long id) {
         List<GrupDto> grupsRelacionats = grupRelacioService.getGrupsRelacionats(id);
