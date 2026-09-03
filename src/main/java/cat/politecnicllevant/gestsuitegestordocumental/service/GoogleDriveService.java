@@ -14,6 +14,7 @@ import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.Permission;
 import com.google.api.services.drive.model.PermissionList;
+import com.google.api.services.drive.model.User;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
@@ -240,12 +241,13 @@ public class GoogleDriveService {
         deleteFileByIdInternal(id, user);
     }
 
-    public void deleteFileByIdWithOwnerFallback(String id, String user, String ownerEmail) {
+    public boolean deleteFileByIdWithOwnerFallback(String id, String user, String ownerEmail) {
         boolean deleted = deleteFileByIdInternal(id, user);
         if (!deleted && ownerEmail != null && !ownerEmail.isBlank() && !ownerEmail.equalsIgnoreCase(user)) {
             log.warn("Retrying delete for file {} as owner {}", id, ownerEmail);
-            deleteFileByIdInternal(id, ownerEmail);
+            return deleteFileByIdInternal(id, ownerEmail);
         }
+        return deleted;
     }
 
     private boolean deleteFileByIdInternal(String id, String user) {
@@ -628,18 +630,34 @@ public class GoogleDriveService {
         return Collections.emptyList();
     }
 
-    public void deleteAllFilesInFolder(String path, String user) throws InterruptedException {
+    /**
+     * Esborra tots els fitxers de la carpeta indicada i retorna quants no s'han pogut esborrar.
+     */
+    public int deleteAllFilesInFolder(String path, String user) throws InterruptedException {
         List<File> files = getFilesInFolder(path, user);
+        int fallits = 0;
         for (File file : files) {
             try {
-                deleteFileByIdInternal(file.getId(), user);
+                if (!deleteFileByIdWithOwnerFallback(file.getId(), user, getOwnerEmail(file))) {
+                    fallits++;
+                }
             } catch (Exception e) {
+                fallits++;
                 log.error("Error esborrant fitxer {} ({}) de la carpeta {}", file.getName(), file.getId(), path, e);
             }
         }
+        log.info("Carpeta {}: {} fitxers processats, {} no esborrats", path, files.size(), fallits);
+        return fallits;
     }
 
-    public void deleteFolderByPath(String path, String user) {
+    /**
+     * Esborra la carpeta indicada pel path. Drive només permet esborrar un element de "La meva unitat"
+     * al seu propietari, així que si l'usuari delegat no ho pot fer es reintenta delegant en el propietari.
+     */
+    public boolean deleteFolderByPathWithOwnerFallback(String path, String user) {
+        String folderId;
+        String ownerEmail;
+
         try {
             String[] scopes = {DriveScopes.DRIVE_METADATA_READONLY, DriveScopes.DRIVE};
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(this.keyFile)).createScoped(scopes).createDelegated(user);
@@ -649,20 +667,47 @@ public class GoogleDriveService {
             Drive service = new Drive.Builder(HTTP_TRANSPORT, GsonFactory.getDefaultInstance(), requestInitializer).setApplicationName(this.nomProjecte).build();
 
             String[] folders = path.split("/");
-            String folderId = "root";
+            folderId = "root";
             for (String folder : folders) {
                 folderId = getFolderIdByNameAndIdParent(service, folder, folderId);
+                if (folderId == null) {
+                    log.warn("Folder not found for deletion: {}", path);
+                    return false;
+                }
             }
 
-            if (folderId == null) {
-                log.warn("Folder not found for deletion: {}", path);
-                return;
-            }
-
-            service.files().delete(folderId).setSupportsAllDrives(true).execute();
+            File folder = service.files().get(folderId)
+                    .setSupportsAllDrives(true)
+                    .setFields("id,name,owners")
+                    .execute();
+            ownerEmail = getOwnerEmail(folder);
         } catch (IOException | GeneralSecurityException e) {
-            throw new IllegalStateException("No s'ha pogut esborrar la carpeta " + path, e);
+            throw new IllegalStateException("No s'ha pogut localitzar la carpeta " + path, e);
         }
+
+        if (deleteFileByIdInternal(folderId, user)) {
+            return true;
+        }
+
+        if (ownerEmail == null || ownerEmail.isBlank() || ownerEmail.equalsIgnoreCase(user)) {
+            log.error("No s'ha pogut esborrar la carpeta {} ({}) com a {} i no hi ha cap propietari alternatiu", path, folderId, user);
+            return false;
+        }
+
+        log.warn("Reintentant esborrar la carpeta {} ({}) com a propietari {}", path, folderId, ownerEmail);
+        return deleteFileByIdInternal(folderId, ownerEmail);
+    }
+
+    private String getOwnerEmail(File file) {
+        if (file == null || file.getOwners() == null) {
+            return null;
+        }
+        for (User owner : file.getOwners()) {
+            if (owner != null && owner.getEmailAddress() != null && !owner.getEmailAddress().isBlank()) {
+                return owner.getEmailAddress();
+            }
+        }
+        return null;
     }
 
     public void assignPermission(File file,PermissionType permissionType, PermissionRole permissionRole, String email, String user){

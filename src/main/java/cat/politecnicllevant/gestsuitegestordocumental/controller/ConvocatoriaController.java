@@ -1,6 +1,7 @@
 package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.gestsuitegestordocumental.dto.ConvocatoriaCreateRequestDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.ConvocatoriaCreateResponseDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.ConvocatoriaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.service.ConvocatoriaService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class ConvocatoriaController {
     }
 
     @PostMapping("/admin/convocatories")
-    public ResponseEntity<ConvocatoriaDto> createConvocatoria(@RequestBody ConvocatoriaCreateRequestDto request) {
+    public ResponseEntity<ConvocatoriaCreateResponseDto> createConvocatoria(@RequestBody ConvocatoriaCreateRequestDto request) {
         return new ResponseEntity<>(convocatoriaService.create(request), HttpStatus.OK);
     }
 

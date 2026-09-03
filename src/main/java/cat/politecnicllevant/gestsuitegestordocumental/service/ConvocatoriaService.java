@@ -1,7 +1,9 @@
 package cat.politecnicllevant.gestsuitegestordocumental.service;
 
 import cat.politecnicllevant.gestsuitegestordocumental.domain.Convocatoria;
+import cat.politecnicllevant.common.model.NotificacioTipus;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.ConvocatoriaCreateRequestDto;
+import cat.politecnicllevant.gestsuitegestordocumental.dto.ConvocatoriaCreateResponseDto;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.ConvocatoriaDto;
 import cat.politecnicllevant.gestsuitegestordocumental.repository.ConvocatoriaRepository;
 import com.google.api.services.drive.model.File;
@@ -27,6 +29,12 @@ public class ConvocatoriaService {
 
     @Value("${app.google.drive.user.email}")
     private String driveUserEmail;
+
+    @Value("${app.google.drive.user.path}")
+    private String driveUserPathOrigen;
+
+    @Value("${app.google.drive.user.pathdocsmigrats}")
+    private String driveUserPathDocsMigrats;
 
     public List<ConvocatoriaDto> findAll(){
         return convocatoriaRepository.findAll().stream()
@@ -64,7 +72,7 @@ public class ConvocatoriaService {
     }
 
     @Transactional
-    public ConvocatoriaDto create(ConvocatoriaCreateRequestDto request){
+    public ConvocatoriaCreateResponseDto create(ConvocatoriaCreateRequestDto request){
         ConvocatoriaDto convocatoriaDto = request.getConvocatoria();
         Convocatoria previousConvocatoria = null;
         String oldPreviousPathDesti = null;
@@ -113,7 +121,7 @@ public class ConvocatoriaService {
 
             Convocatoria convocatoria = new Convocatoria();
             convocatoria.setNom(convocatoriaDto.getNom());
-            convocatoria.setPathOrigen("FCT");
+            convocatoria.setPathOrigen(driveUserPathOrigen);
             convocatoria.setIsUnitatOrganitzativaOrigen(false);
             convocatoria.setPathDesti(convocatoriaDto.getPathDesti());
             convocatoria.setIsUnitatOrganitzativaDesti(true);
@@ -122,34 +130,74 @@ public class ConvocatoriaService {
 
             Convocatoria convocatoriaSaved = convocatoriaRepository.save(convocatoria);
 
+            ConvocatoriaCreateResponseDto response = new ConvocatoriaCreateResponseDto();
+            response.setConvocatoria(modelMapper.map(convocatoriaSaved, ConvocatoriaDto.class));
+
             if (Boolean.TRUE.equals(request.getDeleteOriginDocuments())) {
                 try {
-                    googleDriveService.deleteAllFilesInFolder("FCT", driveUserEmail);
+                    response.setFitxersOrigenNoEsborrats(
+                            googleDriveService.deleteAllFilesInFolder(driveUserPathOrigen, driveUserEmail));
                 } catch (Exception ex) {
-                    log.error("Error esborrant documents de la carpeta FCT", ex);
+                    log.error("Error esborrant documents de la carpeta {}", driveUserPathOrigen, ex);
+                    response.setFitxersOrigenNoEsborrats(-1);
                 }
 
                 if (request.getSelectedQFempoFolders() != null) {
                     for (String folderName : request.getSelectedQFempoFolders()) {
+                        String path = driveUserPathDocsMigrats + "/" + folderName;
                         try {
-                            googleDriveService.deleteFolderByPath("FEMPO/" + folderName, driveUserEmail);
+                            if (googleDriveService.deleteFolderByPathWithOwnerFallback(path, driveUserEmail)) {
+                                log.info("Carpeta {} esborrada correctament", path);
+                                response.getCarpetesEsborrades().add(folderName);
+                            } else {
+                                log.error("No s'ha pogut esborrar la carpeta {}", path);
+                                response.getCarpetesNoEsborrades().add(folderName);
+                            }
                         } catch (Exception ex) {
-                            log.error("Error esborrant FEMPO/{}", folderName, ex);
+                            log.error("Error esborrant {}", path, ex);
+                            response.getCarpetesNoEsborrades().add(folderName);
                         }
                     }
                 }
             }
 
-            return modelMapper.map(convocatoriaSaved, ConvocatoriaDto.class);
+            aplicaNotificacio(response);
+
+            return response;
         } catch (RuntimeException e) {
             compensateDriveChanges(previousFolderRenamed, newFolderCreated, oldPreviousPathDesti, effectivePreviousPathDesti, newFolderId);
             throw e;
         }
     }
 
+    private void aplicaNotificacio(ConvocatoriaCreateResponseDto response) {
+        int noEsborrades = response.getCarpetesNoEsborrades().size();
+        int fitxersFallits = response.getFitxersOrigenNoEsborrats() != null ? response.getFitxersOrigenNoEsborrats() : 0;
+
+        if (noEsborrades == 0 && fitxersFallits == 0) {
+            response.setNotifyType(NotificacioTipus.SUCCESS);
+            response.setNotifyMessage("Convocatòria creada correctament");
+            return;
+        }
+
+        StringBuilder missatge = new StringBuilder("Convocatòria creada, però no s'ha pogut esborrar tot l'origen:");
+        if (noEsborrades > 0) {
+            missatge.append(" carpetes ").append(String.join(", ", response.getCarpetesNoEsborrades())).append(".");
+        }
+        if (fitxersFallits > 0) {
+            missatge.append(" ").append(fitxersFallits).append(" fitxer/s de ").append(driveUserPathOrigen).append(".");
+        } else if (fitxersFallits < 0) {
+            missatge.append(" No s'han pogut llistar els fitxers de ").append(driveUserPathOrigen).append(".");
+        }
+        missatge.append(" Revisa els permisos a Google Drive.");
+
+        response.setNotifyType(NotificacioTipus.WARNING);
+        response.setNotifyMessage(missatge.toString());
+    }
+
     public List<String> listQFempoFolderNames() {
         try {
-            List<File> folders = googleDriveService.getSubfoldersInFolder("FEMPO", "_Q_FEMPO", driveUserEmail);
+            List<File> folders = googleDriveService.getSubfoldersInFolder(driveUserPathDocsMigrats, "_Q_FEMPO", driveUserEmail);
             return folders.stream().map(File::getName).sorted().collect(Collectors.toList());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -159,21 +207,24 @@ public class ConvocatoriaService {
 
     public void deleteQFempoFolders(List<String> folderNames) {
         try {
-            googleDriveService.deleteAllFilesInFolder("FCT", driveUserEmail);
-            log.info("Fitxers de la carpeta FCT esborrats correctament (test)");
+            googleDriveService.deleteAllFilesInFolder(driveUserPathOrigen, driveUserEmail);
+            log.info("Fitxers de la carpeta {} esborrats correctament (test)", driveUserPathOrigen);
         } catch (Exception e) {
-            log.error("Error esborrant fitxers de la carpeta FCT", e);
-            throw new IllegalStateException("Error esborrant fitxers de la carpeta FCT", e);
+            log.error("Error esborrant fitxers de la carpeta {}", driveUserPathOrigen, e);
+            throw new IllegalStateException("Error esborrant fitxers de la carpeta " + driveUserPathOrigen, e);
         }
 
         if (folderNames == null) return;
         for (String folderName : folderNames) {
+            String path = driveUserPathDocsMigrats + "/" + folderName;
             try {
-                googleDriveService.deleteFolderByPath("FEMPO/" + folderName, driveUserEmail);
-                log.info("Carpeta FEMPO/{} esborrada correctament", folderName);
+                if (!googleDriveService.deleteFolderByPathWithOwnerFallback(path, driveUserEmail)) {
+                    throw new IllegalStateException("Error esborrant la carpeta " + path);
+                }
+                log.info("Carpeta {} esborrada correctament", path);
             } catch (Exception e) {
-                log.error("Error esborrant FEMPO/{}", folderName, e);
-                throw new IllegalStateException("Error esborrant la carpeta FEMPO/" + folderName, e);
+                log.error("Error esborrant {}", path, e);
+                throw new IllegalStateException("Error esborrant la carpeta " + path, e);
             }
         }
     }
