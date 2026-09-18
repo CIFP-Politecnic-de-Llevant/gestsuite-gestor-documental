@@ -2,6 +2,7 @@ package cat.politecnicllevant.gestsuitegestordocumental.controller;
 
 import cat.politecnicllevant.common.model.Notificacio;
 import cat.politecnicllevant.common.model.NotificacioTipus;
+import cat.politecnicllevant.gestsuitegestordocumental.domain.MimeType;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionRole;
 import cat.politecnicllevant.gestsuitegestordocumental.domain.PermissionType;
 import cat.politecnicllevant.gestsuitegestordocumental.dto.*;
@@ -368,8 +369,10 @@ public class DocumentFCTController {
             }
         }
 
-        //Traspassem els documents generals a totes les carpetes de cicle existents (noves i ja existents)
-        log.info("Traspassant documents generals a les carpetes de cicle...");
+        //Traspassem els documents generals a totes les carpetes de grup existents (noves i ja existents).
+        //Les carpetes de grup es diuen com el prefix dels documents de Q_FEMPO (ex: TMV31A), no com el cicle (TMV31),
+        //per això recorrem les subcarpetes reals de la carpeta base i ens quedem amb les que pertanyen a algun cicle.
+        log.info("Traspassant documents generals a les carpetes de grup...");
         JsonObject jsonCarpetaRootGenerals = new JsonObject();
         jsonCarpetaRootGenerals.addProperty("folderName", FOLDER_BASE);
         jsonCarpetaRootGenerals.addProperty("email", email);
@@ -377,16 +380,25 @@ public class DocumentFCTController {
 
         File carpetaRootGenerals = this.createFolder(gson.toJson(jsonCarpetaRootGenerals)).getBody();
 
-        for (String cicle : cicles) {
-            if (cicle.isEmpty()) continue;
+        List<File> documentsGenerals = getDocumentsGeneralsDrive();
 
-            try {
-                File carpetaCicleExistent = googleDriveService.getFolder(cicle, email, carpetaRootGenerals.getId());
-                if (carpetaCicleExistent != null) {
-                    migrarDocumentsGenerals(carpetaCicleExistent, cicle);
+        if (carpetaRootGenerals == null) {
+            log.error("No s'ha pogut obtenir la carpeta base {} per traspassar els documents generals", FOLDER_BASE);
+        } else if (documentsGenerals.isEmpty()) {
+            log.info("No hi ha documents generals per traspassar");
+        } else {
+            Set<String> ciclesSet = new HashSet<>(cicles);
+            List<File> carpetesGrup = googleDriveService.getFilesInFolderById(carpetaRootGenerals.getId(), email).stream()
+                    .filter(f -> MimeType.FOLDER.toString().equals(f.getMimeType()))
+                    .filter(f -> ciclesSet.contains(normalizeCicleFromGroup(f.getName())))
+                    .toList();
+
+            for (File carpetaGrup : carpetesGrup) {
+                try {
+                    migrarDocumentsGenerals(carpetaGrup, carpetaGrup.getName(), documentsGenerals);
+                } catch (Exception e) {
+                    log.error("Error traspassant documents generals a la carpeta de grup {}", carpetaGrup.getName(), e);
                 }
-            } catch (Exception e) {
-                log.error("Error traspassant documents generals a la carpeta de cicle {}", cicle, e);
             }
         }
 
@@ -1519,29 +1531,40 @@ second, minute, hour, day(1-31), month(1-12), weekday(1-7) SUN-SAT
         return new ResponseEntity<>(notificacio, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private void migrarDocumentsGenerals(File carpetaGrupDesti, String cursGrup){
-        List<DocumentGeneralDto> docs = documentService.findAllDocumentsGenerals();
-
-        List<File> fitxersExistents = googleDriveService.getFilesInFolderById(carpetaGrupDesti.getId(), userEmail);
-
-        docs.forEach(document -> {
+    /**
+     * Documents generals (manteniment de Documents Generals) resolts a Google Drive.
+     * Els que no es troben a Drive s'ometen.
+     */
+    private List<File> getDocumentsGeneralsDrive() {
+        List<File> documentsGenerals = new ArrayList<>();
+        for (DocumentGeneralDto document : documentService.findAllDocumentsGenerals()) {
             File documentGeneral = googleDriveService.getFileById(document.getIdGoogleDrive(), userEmail);
-
             if (documentGeneral == null) {
                 log.warn("No s'ha trobat el document general amb id {} i nom {}", document.getIdGoogleDrive(), document.getNomOriginal());
-                return;
+                continue;
             }
+            documentsGenerals.add(documentGeneral);
+        }
+        return documentsGenerals;
+    }
 
+    private void migrarDocumentsGenerals(File carpetaGrupDesti, String cursGrup, List<File> documentsGenerals){
+        List<File> fitxersExistents = googleDriveService.getFilesInFolderById(carpetaGrupDesti.getId(), userEmail);
+
+        documentsGenerals.forEach(documentGeneral -> {
             String nomFitxer = documentGeneral.getName();
 
             if (fileAlreadyExist(nomFitxer, fitxersExistents)) {
                 return;
             }
 
-            log.info("Traspassant document general {} a la carpeta de cicle {}...", nomFitxer, cursGrup);
+            log.info("Traspassant document general {} a la carpeta de grup {}...", nomFitxer, cursGrup);
 
-            // copiar com es fa amb el traspas per respectar permisos etc... (els permisos ja s'hereten de la carpeta de cicle)
-            googleDriveService.copy(documentGeneral, userEmail, nomFitxer, carpetaGrupDesti.getId());
+            // els permisos ja s'hereten de la carpeta de grup
+            File copia = googleDriveService.copy(documentGeneral, userEmail, nomFitxer, carpetaGrupDesti.getId());
+            if (copia == null) {
+                log.error("No s'ha pogut copiar el document general {} a la carpeta de grup {}", nomFitxer, cursGrup);
+            }
         });
     }
 
