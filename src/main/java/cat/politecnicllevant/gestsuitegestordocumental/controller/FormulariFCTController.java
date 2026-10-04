@@ -137,10 +137,20 @@ public class FormulariFCTController {
 
         // Alternativa: cerca directa pel codi de grup (curs_grup), sense dependre de l'id del core.
         GrupDto grupPerCursGrup = grupService.getByCursGrup(codiGrup);
-        if (grupPerCursGrup == null) {
-            log.error("No s'ha trobat el grup al gestor documental per codi {}", codiGrup);
+        if (grupPerCursGrup != null) {
+            return grupPerCursGrup;
         }
-        return grupPerCursGrup;
+
+        // Darrera opció: el full FEMPO és per cicle, així que un grup del core que no s'ha donat d'alta
+        // al gestor documental (p. ex. ADG32F) fa servir la configuració d'un altre grup del seu cicle.
+        String cicle = codiGrup.substring(0, codiGrup.length() - 1);
+        GrupDto grupPerCicle = grupService.getFempoByCicle(cicle);
+        if (grupPerCicle == null) {
+            log.error("No s'ha trobat el grup al gestor documental per codi {} ni cap grup FEMPO del cicle {}", codiGrup, cicle);
+        } else {
+            log.warn("El grup {} no està donat d'alta al gestor documental. Es fa servir la configuració FEMPO del grup {} del mateix cicle", codiGrup, grupPerCicle.getCursGrup());
+        }
+        return grupPerCicle;
     }
 
     private static Map<String,String> getGettersDataFormPosition(DadesFormulariDto form, String email) {

@@ -57,7 +57,13 @@ public interface CoreRestClient {
     @GetMapping("/curs/getByCodiGestib/{id}")
     ResponseEntity<CursDto> getCursByCodiGestib(@PathVariable("id") String identificador);
 
+    @GetMapping("/curs/llistat")
+    ResponseEntity<List<CursDto>> getCursos();
+
     //GRUP
+    @GetMapping("/grup/llistat")
+    ResponseEntity<List<GrupDto>> getGrups();
+
     @GetMapping("/grup/getById/{idgrup}")
     ResponseEntity<GrupDto> getById(@PathVariable("idgrup") Long idgrup);
 
